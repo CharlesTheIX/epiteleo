@@ -22,7 +22,7 @@ pub const UI = struct {
         rl.drawRectangleRec(rect, color);
     }
 
-    pub fn drawText(self: UI, text: []const u8, position: rl.Vector2, font_size: ?i32, color: ?rl.Color) void {
+    pub fn drawText(self: UI, text: []const u8, pos: rl.Vector2, font_size: ?i32, color: ?rl.Color) void {
         var buffer: [1024]u8 = undefined;
         if (text.len + 1 > buffer.len) return; // Avoid overflow
         const size = if (font_size) |s| s else @as(i32, self.font.size);
@@ -31,9 +31,15 @@ pub const UI = struct {
         buffer[text.len] = 0;
         const txt: [:0]const u8 = buffer[0..text.len :0];
         if (self.font.custom) |font| {
-            return rl.drawTextEx(font, txt, position, @floatFromInt(size), 0, clr);
+            return rl.drawTextEx(font, txt, pos, @floatFromInt(size), 0, clr);
         }
-        rl.drawText(txt, @as(i32, @intFromFloat(position.x)), @as(i32, @intFromFloat(position.y)), size, clr);
+        rl.drawText(txt, @as(i32, @intFromFloat(pos.x)), @as(i32, @intFromFloat(pos.y)), size, clr);
+    }
+
+    pub fn drawTexture(self: UI, texture: rl.Texture2D, src_rect: rl.Rectangle, pos: rl.Vector2, color: ?rl.Color) void {
+        _ = self; // Avoid unused parameter warning
+        const clr = if (color) |c| c else rl.Color.white;
+        rl.drawTextureRec(texture, src_rect, pos, clr);
     }
 
     pub fn load(self: *UI) void {

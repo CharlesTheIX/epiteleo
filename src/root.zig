@@ -6,11 +6,12 @@ const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
 pub const App = struct {
     ui: UI,
     input_handler: InputHandler,
+    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) App {
         const ui = UI.init();
         const input_handler = InputHandler.init(allocator);
-        return App{ .ui = ui, .input_handler = input_handler };
+        return App{ .ui = ui, .input_handler = input_handler, .allocator = allocator };
     }
 
     pub fn deinit(self: *App) void {
@@ -21,9 +22,6 @@ pub const App = struct {
     fn draw(self: App) void {
         rl.beginDrawing();
         rl.clearBackground(rl.Color.white);
-        const pos = rl.Vector2.init(10, 10);
-        const txt = "Hello, my name is David!";
-        self.ui.drawText(txt, pos, null, null);
         self.drawInfo();
         rl.endDrawing();
     }
@@ -69,6 +67,6 @@ pub const App = struct {
     // ********************************************************************************************
 
     pub fn drawInfo(self: App) void {
-        self.input_handler.drawInfo(self.ui);
+        self.input_handler.drawInfo(self.ui, self.allocator);
     }
 };

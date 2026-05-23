@@ -127,4 +127,46 @@ pub const Key = enum {
             .Zero => rl.KeyboardKey.zero,
         };
     }
+
+    pub fn toString(self: Key) []const u8 {
+        return switch (self) {
+            // Movement
+            .W => "W",
+            .A => "A",
+            .S => "S",
+            .D => "D",
+            .Up => "Up",
+            .Down => "Down",
+            .Left => "Left",
+            .Right => "Right",
+            // Actions
+            .Space => "Space",
+            .Enter => "Enter",
+            .Equal => "Equal", // Zoom in (with LeftShift or RightShift)
+            .Minus => "Minus", // Zoom out
+            .LeftBracket => "LeftBracket", // Rotate left (with LeftShift or RightShift)
+            .RightBracket => "RightBracket", // Rotate right (with LeftShift or RightShift)
+            .P => "P", // Pause
+            // Esc
+            .Escape => "Escape",
+            // Modifiers
+            .LeftAlt => "LeftAlt",
+            .RightAlt => "RightAlt",
+            .LeftShift => "LeftShift",
+            .RightShift => "RightShift",
+            .LeftControl => "LeftControl",
+            .RightControl => "RightControl",
+            // Numbers
+            .One => "One",
+            .Two => "Two",
+            .Three => "Three",
+            .Four => "Four",
+            .Five => "Five",
+            .Six => "Six",
+            .Seven => "Seven",
+            .Eight => "Eight",
+            .Nine => "Nine",
+            .Zero => "Zero",
+        };
+    }
 };

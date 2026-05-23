@@ -16,9 +16,10 @@ pub const Font = struct {
         self.loaded = true;
     }
 
-    pub fn measureText(self: Font, text: [:0]const u8) rl.Vector2 {
-        if (self.custom) |font| return rl.measureTextEx(font, text, @as(f32, self.size), 0);
-        const v = rl.Vector2.init(@floatFromInt(rl.measureText(text, @as(i32, self.size))), @as(f32, self.size));
+    pub fn measureText(self: Font, text: [:0]const u8, size: ?i8) rl.Vector2 {
+        const s = if (size) |s| s else self.size;
+        if (self.custom) |font| return rl.measureTextEx(font, text, @as(f32, s), 0);
+        const v = rl.Vector2.init(@floatFromInt(rl.measureText(text, @as(i32, s))), @as(f32, s));
         return v;
     }
 };
