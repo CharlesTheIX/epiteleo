@@ -1,22 +1,28 @@
 const std = @import("std");
 const rl = @import("raylib");
-const Click = @import("./click.zig").Click;
-const Cursor = @import("./cursor.zig").Cursor;
+pub const Click = @import("./click.zig").Click;
+pub const Cursor = @import("./cursor.zig").Cursor;
 
 pub const Mouse = struct {
+    pos: rl.Vector2,
+    scroll: rl.Vector2,
     cursor: Cursor = .Default,
-    active_clicks: std.AutoHashMap(Click, void),
-    click_press_order: std.AutoHashMap(Click, u64),
+    next_click_press_order: u64,
+    active_clicks: std.AutoHashMap(Click, u64),
 
     pub fn init(allocator: std.mem.Allocator) Mouse {
-        const active_clicks = std.AutoHashMap(Click, void).init(allocator);
-        const click_press_order = std.AutoHashMap(Click, u64).init(allocator);
-        return Mouse{ .active_clicks = active_clicks, .click_press_order = click_press_order };
+        const active_clicks = std.AutoHashMap(Click, u64).init(allocator);
+        return Mouse{
+            .next_click_press_order = 0,
+            .pos = rl.getMousePosition(),
+            .scroll = rl.getMouseWheelMoveV(),
+            .active_clicks = active_clicks,
+        };
     }
 
     pub fn deinit(self: *Mouse) void {
         self.active_clicks.deinit();
-        self.click_press_order.deinit();
+        self.next_click_press_order = 0;
     }
 
     pub fn getActiveClicksInclude(self: Mouse, clicks: []const Click, filter: enum { And, Or }) bool {
@@ -37,33 +43,33 @@ pub const Mouse = struct {
     }
 
     pub fn getClickPressOrderIndex(self: Mouse, click: Click) ?u64 {
-        return self.click_press_order.get(click);
+        return self.active_clicks.get(click);
     }
 
     pub fn getMostRecentlyPressedClick(self: Mouse) ?Click {
         var most_recent_time: u64 = 0;
         var most_recent_click: ?Click = null;
-        const it = self.click_press_order.iterator();
+        var it = self.active_clicks.iterator();
         while (it.next()) |entry| {
-            if (entry.value > most_recent_time) {
-                most_recent_click = entry.key;
-                most_recent_time = entry.value;
+            if (entry.value_ptr.* > most_recent_time) {
+                most_recent_click = entry.key_ptr.*;
+                most_recent_time = entry.value_ptr.*;
             }
         }
         return most_recent_click;
     }
 
     pub fn update(self: *Mouse) void {
+        self.pos = rl.getMousePosition();
+        self.scroll = rl.getMouseWheelMoveV();
         for (Click.array()) |click| {
             const is_down = rl.isMouseButtonDown(click.toRL());
-            const was_down = self.active_clicks.get(click) != null;
             if (is_down) {
-                _ = self.active_clicks.put(click, {}) catch {};
-                if (!was_down) _ = self.click_press_order.put(click, self.click_press_order.count() + 1) catch {};
-            } else {
-                _ = self.active_clicks.remove(click);
-                _ = self.click_press_order.remove(click);
-            }
+                if (self.active_clicks.get(click) == null) {
+                    self.next_click_press_order += 1;
+                    _ = self.active_clicks.put(click, self.next_click_press_order) catch {};
+                }
+            } else _ = self.active_clicks.remove(click);
         }
     }
 };

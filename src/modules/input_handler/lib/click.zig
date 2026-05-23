@@ -25,4 +25,12 @@ pub const Click = enum {
             .Middle => rl.MouseButton.middle,
         };
     }
+
+    pub fn toString(self: Click) []const u8 {
+        return switch (self) {
+            .Left => "Left",
+            .Right => "Right",
+            .Middle => "Middle",
+        };
+    }
 };

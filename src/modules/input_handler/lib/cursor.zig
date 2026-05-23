@@ -61,4 +61,20 @@ pub const Cursor = enum {
             .PointingHand => .pointing_hand,
         };
     }
+
+    pub fn toString(self: Cursor) []const u8 {
+        return switch (self) {
+            .Arrow => "Arrow",
+            .Ibeam => "I-beam",
+            .Default => "Default",
+            .ResizeEW => "Resize EW",
+            .ResizeNS => "Resize NS",
+            .Crosshair => "Crosshair",
+            .ResizeALL => "Resize All",
+            .ResizeNWSE => "Resize NW-SE",
+            .ResizeNESW => "Resize NE-SW",
+            .NotAllowed => "Not Allowed",
+            .PointingHand => "Pointing Hand",
+        };
+    }
 };
