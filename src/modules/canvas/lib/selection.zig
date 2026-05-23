@@ -1,9 +1,12 @@
 const rl = @import("raylib");
 const UI = @import("../../ui/root.zig").UI;
+const ih = @import("../../input_handler/root.zig");
 const Camera = @import("../../camera/root.zig").Camera;
-const InputHandler = @import("../../input_handler/root.zig").InputHandler;
 const rotateVector = @import("../../../lib/utils.zig").rotateVector;
 const translateWindowVectorToCanvasVector = @import("./utils.zig").translateWindowVectorToCanvasVector;
+
+const Key = ih.Key;
+const InputHandler = ih.InputHandler;
 
 pub const Selection = struct {
     end: ?rl.Vector2 = null,
@@ -45,6 +48,7 @@ pub const Selection = struct {
     }
 
     pub fn update(self: *Selection, input_handler: *InputHandler, camera: *Camera) void {
+        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) return self.reset();
         if (input_handler.mouse.active_clicks.get(.Left) != null) {
             if (self.start == null) {
                 self.start = input_handler.mouse.pos;

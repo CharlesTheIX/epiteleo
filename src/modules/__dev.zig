@@ -6,8 +6,8 @@ const ih = @import("./input_handler/root.zig");
 const Camera = @import("./camera/root.zig").Camera;
 const Canvas = @import("./canvas/root.zig").Canvas;
 const drawAppInfo = @import("../lib/utils.zig").drawInfo;
-const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
 const drawCameraInfo = @import("./camera//lib/utils.zig").drawInfo;
+const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
 const drawInputHandlerInfo = @import("./input_handler/lib/utils.zig").drawInfo;
 
 const Key = ih.Key;
@@ -36,6 +36,7 @@ pub const Dev = struct {
             switch (module) {
                 .__App => return drawAppInfo(&app.state, &app.ui, allocator),
                 .__Camera => return drawCameraInfo(&app.camera, &app.ui, allocator),
+                .__InputHandler => return drawInputHandlerInfo(&app.input_handler, &app.ui, allocator),
                 .__Canvas => return drawCanvasInfo(
                     &app.canvas,
                     &app.ui,
@@ -43,13 +44,12 @@ pub const Dev = struct {
                     &app.input_handler,
                     &app.camera,
                 ),
-                .__InputHandler => return drawInputHandlerInfo(&app.input_handler, &app.ui, allocator),
             }
         }
     }
 
     pub fn update(self: *Dev, app: *App) void {
-        if (self.input_timer.is_active) return self.input_timer.update(rl.getFrameTime());
+        if (self.input_timer.is_active) return self.input_timer.update();
         if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Zero }, .And)) {
             self.show_module = null;
             return;
@@ -89,6 +89,16 @@ pub const Dev = struct {
 
         if (self.show_module) |module| {
             switch (module) {
+                .__App => {
+                    if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
+                        self.input_timer.is_active = true;
+                        switch (app.state) {
+                            .Intro => app.setState(.Loading),
+                            .Loading => app.loading_screen.loading = false,
+                            else => return,
+                        }
+                    }
+                },
                 .__Camera => {
                     if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
@@ -99,7 +109,7 @@ pub const Dev = struct {
                         }
                     }
                 },
-                .__App, .__Canvas, .__InputHandler => return,
+                .__Canvas, .__InputHandler => return,
             }
         }
     }

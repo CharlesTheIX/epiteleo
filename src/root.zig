@@ -6,6 +6,7 @@ const AppState = @import("./lib/utils.zig").AppState;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
 const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
+const LoadingScreen = @import("./modules/screens/loading_screen.zig").LoadingScreen;
 
 pub const App = struct {
     __dev: ?Dev = Dev.init(),
@@ -15,6 +16,7 @@ pub const App = struct {
     state: AppState = .Intro,
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
+    loading_screen: LoadingScreen,
 
     pub fn init(allocator: std.mem.Allocator) App {
         return App{
@@ -22,6 +24,7 @@ pub const App = struct {
             .camera = Camera.init(),
             .canvas = Canvas.init(),
             .allocator = allocator,
+            .loading_screen = LoadingScreen.init(),
             .input_handler = InputHandler.init(allocator),
         };
     }
@@ -38,7 +41,13 @@ pub const App = struct {
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
         rl.beginMode2D(self.camera.camera);
-        self.canvas.draw(&self.ui);
+        self.loading_screen.draw();
+        switch (self.state) {
+            .Intro => {
+                self.canvas.draw(&self.ui);
+            },
+            else => {},
+        }
         rl.endMode2D();
         if (self.__dev) |*dev| dev.draw(self, self.allocator);
     }
@@ -55,16 +64,12 @@ pub const App = struct {
     fn load(self: *App) void {
         self.ui.load();
         self.input_handler.load();
-        self.camera.load(rl.Vector2.init(
+        const screen_size = rl.Vector2.init(
             @as(f32, @floatFromInt(rl.getScreenWidth())),
             @as(f32, @floatFromInt(rl.getScreenHeight())),
-        ).scale(0.5));
-        self.canvas.rect = rl.Rectangle.init(
-            0,
-            0,
-            @as(f32, @floatFromInt(rl.getScreenWidth())) * 2,
-            @as(f32, @floatFromInt(rl.getScreenHeight())) * 2,
         );
+        self.camera.load(rl.Vector2.init(screen_size.x, screen_size.y).scale(0.5));
+        self.canvas.rect = rl.Rectangle.init(0, 0, screen_size.x, screen_size.y);
     }
 
     pub fn run(self: *App) void {
@@ -73,17 +78,45 @@ pub const App = struct {
         rl.initWindow(960, 540, "Epiteleo");
         defer rl.closeWindow();
         self.load();
+        rl.setWindowOpacity(1.0);
+        const icon_image = rl.loadImage("src/assets/window_icon.png") catch null;
+        if (icon_image) |icon| {
+            rl.setWindowIcon(icon);
+            defer rl.unloadImage(icon);
+        }
         while (!rl.windowShouldClose()) {
             self.update();
             self.draw();
         }
     }
 
+    pub fn setState(self: *App, state: AppState) void {
+        if (self.loading_screen.loading) return;
+        if (state == .Loading) {
+            self.camera.state = .Fixed;
+            self.loading_screen.loading = true;
+            self.loading_screen.fade_timer.is_active = true;
+            self.loading_screen.completion_state = self.state;
+            self.state = .Loading;
+            return;
+        }
+
+        self.state = state;
+        self.camera.state = .Free;
+    }
+
     fn update(self: *App) void {
         self.handleResize();
         self.input_handler.update();
         self.camera.update(&self.input_handler, null);
-        self.canvas.update(&self.input_handler, &self.camera);
+        self.loading_screen.update(self);
+
+        switch (self.state) {
+            .Intro => {
+                self.canvas.update(&self.input_handler, &self.camera);
+            },
+            else => {},
+        }
         if (self.__dev) |*dev| dev.update(self);
     }
 };

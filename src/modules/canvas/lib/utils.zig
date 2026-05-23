@@ -54,6 +54,46 @@ pub fn drawInfo(canvas: *Canvas, ui: *const UI, allocator: std.mem.Allocator, in
     ui.drawText(mouse_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
+
+    // Selection state
+    const selection_title = "Selection | Start:";
+    const selection_title_width = ui.font.measureText(selection_title, 16);
+    ui.drawText(selection_title, padding, 16, rl.Color.white);
+    if (canvas.selection.start) |start| {
+        const selection_start_string = std.fmt.allocPrint(allocator, "({d}, {d})", .{ start.x, start.y }) catch "";
+        padding.x += selection_title_width.x + 8;
+        ui.drawText(selection_start_string, padding, 16, rl.Color.white);
+    }
+    padding.x = 16;
+    padding.y += 16;
+
+    // Selection End
+    const selection_end_title = "Selection | End:";
+    const selection_end_title_width = ui.font.measureText(selection_end_title, 16);
+    ui.drawText(selection_end_title, padding, 16, rl.Color.white);
+    if (canvas.selection.end) |end| {
+        const selection_end_string = std.fmt.allocPrint(allocator, "({d}, {d})", .{ end.x, end.y }) catch "";
+        padding.x += selection_end_title_width.x + 8;
+        ui.drawText(selection_end_string, padding, 16, rl.Color.white);
+    }
+    padding.x = 16;
+    padding.y += 16;
+
+    // Selection Rect
+    const selection_rect_title = "Selection | Rect:";
+    const selection_rect_title_width = ui.font.measureText(selection_rect_title, 16);
+    ui.drawText(selection_rect_title, padding, 16, rl.Color.white);
+    if (canvas.selection.rect) |rect| {
+        const selection_rect_string = std.fmt.allocPrint(
+            allocator,
+            "({d}, {d}, {d}, {d})",
+            .{ rect.x, rect.y, rect.width, rect.height },
+        ) catch "";
+        padding.x += selection_rect_title_width.x + 8;
+        ui.drawText(selection_rect_string, padding, 16, rl.Color.white);
+    }
+    padding.x = 16;
+    padding.y += 16;
 }
 
 pub fn translateWindowVectorToCanvasVector(v: rl.Vector2, camera: *const Camera) rl.Vector2 {
