@@ -1,12 +1,14 @@
 const std = @import("std");
 const rl = @import("raylib");
-const UI = @import("../ui/root.zig").UI;
-const Key = @import("./lib/keyboard.zig").Key;
-const Mouse = @import("./lib/mouse.zig").Mouse;
-const Click = @import("./lib/mouse.zig").Click;
-const Keyboard = @import("./lib/keyboard.zig").Keyboard;
+const ih = @import("../root.zig");
+const UI = @import("../../ui/root.zig").UI;
 
-pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, allocator: std.mem.Allocator) void {
+const Key = ih.Key;
+const Mouse = ih.Mouse;
+const Click = ih.Click;
+const InputHandler = ih.InputHandler;
+
+pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: std.mem.Allocator) void {
     // Set initial padding and spacing
     var padding = rl.Vector2.init(16, 16);
 
@@ -37,7 +39,7 @@ pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, a
     while (true) {
         var next_key: ?Key = null;
         var next_order: ?u64 = null;
-        var active_keys = keyboard.active_keys.iterator();
+        var active_keys = input_handler.keyboard.active_keys.iterator();
         while (active_keys.next()) |entry| {
             const order = entry.value_ptr.*;
             if (order <= last_order) continue;
@@ -63,7 +65,7 @@ pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, a
     const most_recent_key_title_width = ui.font.measureText(most_recent_key_title, 16);
     ui.drawText(most_recent_key_title, padding, 16, rl.Color.white);
     padding.x += most_recent_key_title_width.x + 8;
-    const most_recent_key_string = if (keyboard.getMostRecentlyPressedKey()) |key| key.toString() else "None";
+    const most_recent_key_string = if (input_handler.keyboard.getMostRecentlyPressedKey()) |key| key.toString() else "None";
     ui.drawText(most_recent_key_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
@@ -81,7 +83,7 @@ pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, a
     while (true) {
         var next_click: ?Click = null;
         var next_order: ?u64 = null;
-        var active_clicks = mouse.active_clicks.iterator();
+        var active_clicks = input_handler.mouse.active_clicks.iterator();
         while (active_clicks.next()) |entry| {
             const order = entry.value_ptr.*;
             if (order <= last_order) continue;
@@ -106,7 +108,7 @@ pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, a
     const most_recent_click_title = "Mouse | Most Recent Click:";
     const most_recent_click_title_width = ui.font.measureText(most_recent_click_title, 16);
     ui.drawText(most_recent_click_title, padding, 16, rl.Color.white);
-    const most_recent_click_string = if (mouse.getMostRecentlyPressedClick()) |click| click.toString() else "None";
+    const most_recent_click_string = if (input_handler.mouse.getMostRecentlyPressedClick()) |click| click.toString() else "None";
     padding.x += most_recent_click_title_width.x + 8;
     ui.drawText(most_recent_click_string, padding, 16, rl.Color.white);
     padding.x = 16;
@@ -116,7 +118,7 @@ pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, a
     const cursor_title = "Mouse | Cursor:";
     const cursor_title_width = ui.font.measureText(cursor_title, 16);
     ui.drawText(cursor_title, padding, 16, rl.Color.white);
-    const cursor_string = mouse.cursor.toString();
+    const cursor_string = input_handler.mouse.cursor.toString();
     padding.x += cursor_title_width.x + 8;
     ui.drawText(cursor_string, padding, 16, rl.Color.white);
     padding.x = 16;
@@ -129,24 +131,24 @@ pub fn drawInfo(keyboard: *const Keyboard, mouse: *const Mouse, ui: *const UI, a
     const mouse_scroll_string = std.fmt.allocPrint(
         allocator,
         "({d}, {d})",
-        .{ mouse.scroll.x, mouse.scroll.y },
+        .{ input_handler.mouse.scroll.x, input_handler.mouse.scroll.y },
     ) catch "Error formatting mouse scroll";
     padding.x += mouse_scroll_title_width.x + 8;
     ui.drawText(mouse_scroll_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
-    // Mouse Window Position
-    const mouse_window_pos_title = "Mouse | Window Position:";
-    const mouse_window_pos_title_width = ui.font.measureText(mouse_window_pos_title, 16);
-    ui.drawText(mouse_window_pos_title, padding, 16, rl.Color.white);
-    const mouse_window_pos_string = std.fmt.allocPrint(
+    // Mouse Position
+    const mouse_pos_title = "Mouse | Position:";
+    const mouse_pos_title_width = ui.font.measureText(mouse_pos_title, 16);
+    ui.drawText(mouse_pos_title, padding, 16, rl.Color.white);
+    const mouse_pos_string = std.fmt.allocPrint(
         allocator,
         "({d}, {d})",
-        .{ mouse.pos.x, mouse.pos.y },
+        .{ input_handler.mouse.pos.x, input_handler.mouse.pos.y },
     ) catch "Error formatting mouse position";
-    padding.x += mouse_window_pos_title_width.x + 8;
-    ui.drawText(mouse_window_pos_string, padding, 16, rl.Color.white);
+    padding.x += mouse_pos_title_width.x + 8;
+    ui.drawText(mouse_pos_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 }

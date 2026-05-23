@@ -5,7 +5,6 @@ pub const Key = @import("lib/keyboard.zig").Key;
 pub const Click = @import("lib/mouse.zig").Click;
 pub const Mouse = @import("lib/mouse.zig").Mouse;
 pub const Keyboard = @import("lib/keyboard.zig").Keyboard;
-const drawInfo = @import("./utils.zig").drawInfo;
 
 pub const InputHandler = struct {
     mouse: Mouse,
@@ -29,13 +28,5 @@ pub const InputHandler = struct {
     pub fn update(self: *InputHandler) void {
         self.mouse.update();
         self.keyboard.update();
-    }
-
-    // ********************************************************************************************
-    // DEV ITEMS
-    // ********************************************************************************************
-
-    pub fn __DEV_DRAW__(self: InputHandler, ui: *const UI, allocator: std.mem.Allocator) void {
-        drawInfo(&self.keyboard, &self.mouse, ui, allocator);
     }
 };

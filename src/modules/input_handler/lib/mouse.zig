@@ -29,13 +29,13 @@ pub const Mouse = struct {
         switch (filter) {
             .And => {
                 for (clicks) |click| {
-                    if (!self.active_clicks.get(click)) return false;
+                    if (self.active_clicks.get(click) == null) return false;
                 }
                 return true;
             },
             .Or => {
                 for (clicks) |click| {
-                    if (self.active_clicks.get(click)) return true;
+                    if (self.active_clicks.get(click) != null) return true;
                 }
                 return false;
             },

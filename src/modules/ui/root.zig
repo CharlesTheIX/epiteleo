@@ -17,6 +17,39 @@ pub const UI = struct {
         rl.drawCircleV(center, radius, color);
     }
 
+    pub fn drawGrid(self: UI, rect: rl.Rectangle, gap: i8, color: ?rl.Color) void {
+        const clr = if (color) |c| c else rl.Color.black.alpha(0.8);
+        const cols = @divFloor(@as(i32, @intFromFloat(rect.width)), gap);
+        const rows = @divFloor(@as(i32, @intFromFloat(rect.height)), gap);
+        for (0..@as(usize, @intCast(cols)) + 1) |col| {
+            const x = @as(f32, @floatFromInt(@as(i32, @intCast(col)) * gap));
+            const from = rl.Vector2{ .x = x, .y = 0 };
+            const to = rl.Vector2{ .x = x, .y = rect.height };
+            self.drawLine(from, to, clr);
+        }
+        for (0..@as(usize, @intCast(rows)) + 1) |row| {
+            const y = @as(f32, @floatFromInt(@as(i32, @intCast(row)) * gap));
+            const from = rl.Vector2{ .x = 0, .y = y };
+            const to = rl.Vector2{ .x = rect.width, .y = y };
+            self.drawLine(from, to, clr);
+        }
+        var from = rl.Vector2{ .x = 0, .y = rect.height };
+        var to = rl.Vector2{ .x = rect.width, .y = rect.height };
+        self.drawLine(from, to, clr);
+        from = rl.Vector2{ .x = rect.width, .y = 0 };
+        to = rl.Vector2{ .x = rect.width, .y = rect.height };
+        self.drawLine(from, to, clr);
+    }
+
+    pub fn drawLine(self: UI, from: rl.Vector2, to: rl.Vector2, color: rl.Color) void {
+        _ = self; // Avoid unused parameter warning
+        const to_x = @as(i32, @intFromFloat(to.x));
+        const to_y = @as(i32, @intFromFloat(to.y));
+        const from_x = @as(i32, @intFromFloat(from.x));
+        const from_y = @as(i32, @intFromFloat(from.y));
+        rl.drawLine(from_x, from_y, to_x, to_y, color);
+    }
+
     pub fn drawRect(self: UI, rect: rl.Rectangle, color: rl.Color) void {
         _ = self; // Avoid unused parameter warning
         rl.drawRectangleRec(rect, color);
