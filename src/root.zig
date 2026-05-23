@@ -2,11 +2,13 @@ const std = @import("std");
 const rl = @import("raylib");
 const Dev = @import("./modules/__dev.zig").Dev;
 const UI = @import("./modules/ui/root.zig").UI;
+const AppState = @import("./utils.zig").AppState;
 const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
 
 pub const App = struct {
     __dev: ?Dev = Dev.init(),
     ui: UI,
+    state: AppState = .Intro,
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
 
@@ -19,13 +21,13 @@ pub const App = struct {
     pub fn deinit(self: *App) void {
         self.ui.deinit();
         self.input_handler.deinit();
-        if (self.__dev) |dev| dev.deinit();
+        if (self.__dev) |*dev| dev.deinit();
     }
 
-    fn draw(self: App) void {
+    fn draw(self: *App) void {
         rl.beginDrawing();
         rl.clearBackground(rl.Color.white);
-        if (self.__dev) |dev| dev.draw(&self, self.allocator);
+        if (self.__dev) |*dev| dev.draw(&self, self.allocator);
         rl.endDrawing();
     }
 
@@ -63,6 +65,6 @@ pub const App = struct {
     fn update(self: *App) void {
         self.handleResize();
         self.input_handler.update();
-        if (self.__dev) |dev| dev.update(&self.input_handler);
+        if (self.__dev) |*dev| dev.update(&self.input_handler);
     }
 };
