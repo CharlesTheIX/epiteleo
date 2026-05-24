@@ -9,6 +9,8 @@ const AppState = @import("../../lib/utils.zig").AppState;
 pub const LoadingScreen = struct {
     loading: bool = false,
     showing: bool = false,
+    job_done: std.atomic.Value(bool) = std.atomic.Value(bool).init(false),
+    completion_pending: bool = false,
     resources: Resources = .{},
     fade_in_timer: Timer = .init(0.5),
     fade_out_timer: Timer = .init(0.5),
@@ -33,14 +35,9 @@ pub const LoadingScreen = struct {
             pos.x -= 32;
             pos.y -= 32;
             if (self.fade_in_timer.is_active) {
-                std.debug.print("fade_in\n", .{});
                 alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
-                self.fade_in_timer.update();
             } else if (self.fade_out_timer.is_active) {
-                std.debug.print("fade_out\n", .{});
-                alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
                 alpha = self.fade_out_timer.value_ms / self.fade_out_timer.initial_value_ms;
-                self.fade_out_timer.update();
             }
             tint = rl.Color.white.alpha(alpha);
             self.resources.sprite.draw(&pos, tint);
@@ -53,49 +50,57 @@ pub const LoadingScreen = struct {
     pub fn update(self: *LoadingScreen, app: *App) void {
         if (!self.showing) return;
         self.resources.sprite.update();
-        if (self.loading) return;
-        if (self.resources.texture != null) {
-            if (self.fade_in_timer.is_active or self.fade_out_timer.is_active) return;
+        if (self.loading and self.job_done.load(.acquire)) {
+            self.loading = false;
+            self.completion_pending = true;
         }
-        self.showing = false;
-        return app.setState(self.completion_state);
+
+        if (self.fade_in_timer.is_active) {
+            self.fade_in_timer.update();
+            if (!self.fade_in_timer.is_active and self.completion_pending) {
+                self.fade_out_timer.is_active = true;
+            }
+            return;
+        }
+
+        if (self.completion_pending and !self.fade_out_timer.is_active) {
+            self.fade_out_timer.is_active = true;
+        }
+
+        if (self.fade_out_timer.is_active) {
+            self.fade_out_timer.update();
+            if (self.fade_out_timer.is_active) return;
+        }
+
+        if (self.completion_pending) {
+            self.completion_pending = false;
+            self.showing = false;
+            app.setState(self.completion_state);
+        }
     }
 
-    pub fn placeholder(self: *LoadingScreen, job_ctx: *JobCtx, ui: *UI) !void {
+    pub fn load(self: *LoadingScreen, duration_ns: u64, completion_state: AppState) !void {
         self.loading = true;
         self.showing = true;
+        self.completion_pending = false;
+        self.job_done.store(false, .release);
+        self.completion_state = completion_state;
         self.fade_in_timer.is_active = true;
-        // var job_done = std.atomic.Value(bool).init(false);
-        // const cpus = std.Thread.getCpuCount() catch |err| {
-        //     return self.Err.handle(err, "Failed to get CPU count\n\n", true, true);
-        // };
-        // const cpu_id = std.Thread.getCurrentId();
-        // const job_ctx = JobCtx{
-        //     .name = "job",
-        //     .done = &job_done,
-        //     .duration_ns = std.time.ns_per_s * 5,
-        // };
-        const loading_ctx = LoadingCtx{ .job_done = job_ctx.done };
+        self.fade_out_timer.is_active = false;
+        self.fade_in_timer.value_ms = self.fade_in_timer.initial_value_ms;
+        self.fade_out_timer.value_ms = self.fade_out_timer.initial_value_ms;
+
+        const job_ctx = JobCtx{
+            .duration_ns = duration_ns,
+            .done = &self.job_done,
+        };
         var job_thread = std.Thread.spawn(.{}, doJob, .{job_ctx}) catch return;
-        var loading_thread = std.Thread.spawn(.{}, __test, .{ self, ui, loading_ctx }) catch return;
         job_thread.detach();
-        loading_thread.join();
     }
 
-    fn __test(self: *LoadingScreen, ui: *UI, ctx: LoadingCtx) void {
-        var i: usize = 0;
-        while (true) {
-            if (ctx.job_done.load(.acquire)) break;
-            i += 1;
-            std.Thread.sleep(90 * std.time.ns_per_ms);
-            self.update(self);
-            self.draw(ui);
-        }
-        self.loading = false;
-    }
-
-    fn doJob(ctx: *JobCtx) void {
-        std.Thread.sleep(ctx.duration_ns);
+    fn doJob(ctx: JobCtx) void {
+        const duration_s: f64 = @as(f64, @floatFromInt(ctx.duration_ns)) / @as(f64, @floatFromInt(std.time.ns_per_s));
+        rl.waitTime(duration_s);
         ctx.done.store(true, .release);
     }
 };
@@ -122,11 +127,6 @@ const Resources = struct {
 };
 
 pub const JobCtx = struct {
-    name: []const u8,
     duration_ns: u64,
     done: *std.atomic.Value(bool),
-};
-
-const LoadingCtx = struct {
-    job_done: *std.atomic.Value(bool),
 };

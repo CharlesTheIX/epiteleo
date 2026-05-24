@@ -5,7 +5,6 @@ const Timer = @import("./timer.zig").Timer;
 const ih = @import("./input_handler/root.zig");
 const Camera = @import("./camera/root.zig").Camera;
 const Canvas = @import("./canvas/root.zig").Canvas;
-const JobCtx = @import("./screens/loading_screen.zig").JobCtx;
 const drawAppInfo = @import("../lib/utils.zig").drawInfo;
 const drawCameraInfo = @import("./camera//lib/utils.zig").drawInfo;
 const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
@@ -35,7 +34,7 @@ pub const Dev = struct {
     pub fn draw(self: Dev, app: *App, allocator: std.mem.Allocator) void {
         if (self.show_module) |module| {
             switch (module) {
-                .__App => return drawAppInfo(&app.state, &app.ui, allocator),
+                .__App => return drawAppInfo(app, allocator),
                 .__Camera => return drawCameraInfo(&app.camera, &app.ui, allocator),
                 .__InputHandler => return drawInputHandlerInfo(&app.input_handler, &app.ui, allocator),
                 .__Canvas => return drawCanvasInfo(
@@ -94,14 +93,7 @@ pub const Dev = struct {
                     if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
                         if (!app.loading_screen.loading) {
-                            var job_done = std.atomic.Value(bool).init(false);
-                            var job_ctx: JobCtx = .{
-                                .name = "job",
-                                .done = &job_done,
-                                .duration_ns = std.time.ns_per_s * 5,
-                            };
-                            app.loading_screen.completion_state = .Intro;
-                            app.loading_screen.placeholder(&job_ctx, &app.ui) catch {};
+                            app.loading_screen.load(std.time.ns_per_s * 5, .Intro) catch {};
                         }
                     }
                 },

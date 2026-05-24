@@ -77,7 +77,7 @@ pub const App = struct {
         );
         self.camera.load(rl.Vector2.init(screen_size.x, screen_size.y).scale(0.5));
         self.canvas.rect = rl.Rectangle.init(0, 0, screen_size.x, screen_size.y);
-        self.loading_screen.loading = true;
+        // self.loading_screen.loading = true;
     }
 
     pub fn run(self: *App) void {
