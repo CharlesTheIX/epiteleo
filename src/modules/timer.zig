@@ -2,7 +2,6 @@ const rl = @import("raylib");
 
 pub const Timer = struct {
     value_ms: f32,
-    count: i32 = 0,
     initial_value_ms: f32,
     is_active: bool = false,
 
@@ -14,7 +13,6 @@ pub const Timer = struct {
         if (!self.is_active) return;
         self.value_ms -= rl.getFrameTime();
         if (self.value_ms <= 0) {
-            self.count += 1;
             self.is_active = false;
             self.value_ms = self.initial_value_ms;
         }

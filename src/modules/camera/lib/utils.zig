@@ -25,7 +25,10 @@ pub fn drawInfo(camera: *Camera, ui: *const UI, allocator: std.mem.Allocator) vo
 
     // Note Text
     ui.drawText("Press .Zero (0) to cycle through camera states", padding, 16, rl.Color.white);
-    padding.y += ui.font.size;
+    padding.y += 16;
+    ui.drawText("Press .Nine (9) to toggle snap to canvas", padding, 16, rl.Color.white);
+    padding.y += 16;
+
     padding.y += 16; // Extra spacing after note
 
     // Camera State
@@ -35,6 +38,16 @@ pub fn drawInfo(camera: *Camera, ui: *const UI, allocator: std.mem.Allocator) vo
     const state_string = camera.state.toString();
     padding.x += state_title_width.x + 8;
     ui.drawText(state_string, padding, 16, rl.Color.white);
+    padding.x = 16;
+    padding.y += 16;
+
+    // Snaps to Canvas
+    const snap_to_canvas_title = "Camera | Snaps to Canvas:";
+    const snap_to_canvas_title_width = ui.font.measureText(snap_to_canvas_title, 16);
+    ui.drawText(snap_to_canvas_title, padding, 16, rl.Color.white);
+    const snap_to_canvas_string = if (camera.snap_to_canvas) "True" else "False";
+    padding.x += snap_to_canvas_title_width.x + 8;
+    ui.drawText(snap_to_canvas_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 

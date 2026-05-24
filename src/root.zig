@@ -95,9 +95,10 @@ pub const App = struct {
         if (state == .Loading) {
             self.camera.state = .Fixed;
             self.loading_screen.loading = true;
-            self.loading_screen.fade_timer.is_active = true;
             self.loading_screen.completion_state = self.state;
-            self.state = .Loading;
+            self.loading_screen.fade_in_timer.is_active = true;
+            self.loading_screen.fade_out_timer.is_active = false;
+            self.state = state;
             return;
         }
 
@@ -108,7 +109,7 @@ pub const App = struct {
     fn update(self: *App) void {
         self.handleResize();
         self.input_handler.update();
-        self.camera.update(&self.input_handler, null);
+        self.camera.update(&self.input_handler, null, &self.canvas.rect);
         self.loading_screen.update(self);
 
         switch (self.state) {

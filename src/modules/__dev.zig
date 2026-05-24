@@ -94,7 +94,10 @@ pub const Dev = struct {
                         self.input_timer.is_active = true;
                         switch (app.state) {
                             .Intro => app.setState(.Loading),
-                            .Loading => app.loading_screen.loading = false,
+                            .Loading => {
+                                app.loading_screen.loading = false;
+                                app.loading_screen.fade_out_timer.is_active = true;
+                            },
                             else => return,
                         }
                     }
@@ -107,6 +110,12 @@ pub const Dev = struct {
                             .Follow => app.camera.state = .Free,
                             .Fixed => app.camera.state = .Follow,
                         }
+                    }
+                    if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Nine}, .And)) {
+                        self.input_timer.is_active = true;
+                        if (app.camera.snap_to_canvas) {
+                            app.camera.snap_to_canvas = false;
+                        } else app.camera.snap_to_canvas = true;
                     }
                 },
                 .__Canvas, .__InputHandler => return,
