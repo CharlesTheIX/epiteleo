@@ -1,0 +1,11 @@
+# Sprite Date
+
+dimensions:32,32
+hitbox:8,14,16,12 
+
+# state:fps=int;max_frames=int;max_v=int;cool_down=int;
+idle:fps=6;max_frames=4
+walk:fps=12;max_frames=6;max_v=1
+run:fps=24;max_frames=6;max_v=3
+hurt:fps=8;max_frames=4
+dying:fps=12;max_frames=6

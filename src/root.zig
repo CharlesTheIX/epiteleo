@@ -11,15 +11,17 @@ const LoadingScreen = @import("./modules/screens/loading_screen.zig").LoadingScr
 pub const App = struct {
     __dev: ?Dev = Dev.init(),
     ui: UI,
+    io: *std.Io,
     camera: Camera,
     canvas: Canvas,
-    state: AppState = .Intro,
+    state: AppState = .Loading,
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
     loading_screen: LoadingScreen,
 
-    pub fn init(allocator: std.mem.Allocator) App {
+    pub fn init(allocator: std.mem.Allocator, io: *std.Io) App {
         return App{
+            .io = io,
             .ui = UI.init(),
             .camera = Camera.init(),
             .canvas = Canvas.init(),
@@ -33,6 +35,7 @@ pub const App = struct {
         self.ui.deinit();
         self.camera.deinit();
         self.input_handler.deinit();
+        self.loading_screen.deinit();
         if (self.__dev) |*dev| dev.deinit();
     }
 
@@ -40,15 +43,15 @@ pub const App = struct {
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
-        rl.beginMode2D(self.camera.camera);
-        self.loading_screen.draw();
         switch (self.state) {
             .Intro => {
+                rl.beginMode2D(self.camera.camera);
                 self.canvas.draw(&self.ui);
+                rl.endMode2D();
             },
+            .Loading => self.loading_screen.draw(&self.ui),
             else => {},
         }
-        rl.endMode2D();
         if (self.__dev) |*dev| dev.draw(self, self.allocator);
     }
 
@@ -64,12 +67,14 @@ pub const App = struct {
     fn load(self: *App) void {
         self.ui.load();
         self.input_handler.load();
+        self.loading_screen.resources.load(self.io);
         const screen_size = rl.Vector2.init(
             @as(f32, @floatFromInt(rl.getScreenWidth())),
             @as(f32, @floatFromInt(rl.getScreenHeight())),
         );
         self.camera.load(rl.Vector2.init(screen_size.x, screen_size.y).scale(0.5));
         self.canvas.rect = rl.Rectangle.init(0, 0, screen_size.x, screen_size.y);
+        self.loading_screen.loading = true;
     }
 
     pub fn run(self: *App) void {
@@ -78,12 +83,12 @@ pub const App = struct {
         rl.initWindow(960, 540, "Epiteleo");
         defer rl.closeWindow();
         self.load();
-        rl.setWindowOpacity(1.0);
-        const icon_image = rl.loadImage("src/assets/window_icon.png") catch null;
-        if (icon_image) |icon| {
-            rl.setWindowIcon(icon);
-            defer rl.unloadImage(icon);
-        }
+        // rl.setWindowOpacity(1.0);
+        // const icon_image = rl.loadImage("src/assets/window_icon.png") catch null;
+        // if (icon_image) |icon| {
+        //     rl.setWindowIcon(icon);
+        //     defer rl.unloadImage(icon);
+        // }
         while (!rl.windowShouldClose()) {
             self.update();
             self.draw();
@@ -92,30 +97,30 @@ pub const App = struct {
 
     pub fn setState(self: *App, state: AppState) void {
         if (self.loading_screen.loading) return;
-        if (state == .Loading) {
-            self.camera.state = .Fixed;
-            self.loading_screen.loading = true;
-            self.loading_screen.completion_state = self.state;
-            self.loading_screen.fade_in_timer.is_active = true;
-            self.loading_screen.fade_out_timer.is_active = false;
-            self.state = state;
-            return;
+        switch (state) {
+            .Loading => {
+                self.camera.state = .Fixed;
+                self.loading_screen.loading = true;
+                self.loading_screen.completion_state = self.state;
+                self.loading_screen.fade_in_timer.is_active = true;
+                self.loading_screen.fade_out_timer.is_active = false;
+                self.state = state;
+                return;
+            },
+            else => {
+                self.state = state;
+                self.camera.state = .Free;
+            },
         }
-
-        self.state = state;
-        self.camera.state = .Free;
     }
 
     fn update(self: *App) void {
         self.handleResize();
         self.input_handler.update();
         self.camera.update(&self.input_handler, null, &self.canvas.rect);
-        self.loading_screen.update(self);
-
         switch (self.state) {
-            .Intro => {
-                self.canvas.update(&self.input_handler, &self.camera);
-            },
+            .Loading => self.loading_screen.update(self),
+            .Intro => self.canvas.update(&self.input_handler, &self.camera),
             else => {},
         }
         if (self.__dev) |*dev| dev.update(self);
