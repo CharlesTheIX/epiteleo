@@ -5,6 +5,7 @@ const Timer = @import("./timer.zig").Timer;
 const ih = @import("./input_handler/root.zig");
 const Camera = @import("./camera/root.zig").Camera;
 const Canvas = @import("./canvas/root.zig").Canvas;
+const JobCtx = @import("./screens/loading_screen.zig").JobCtx;
 const drawAppInfo = @import("../lib/utils.zig").drawInfo;
 const drawCameraInfo = @import("./camera//lib/utils.zig").drawInfo;
 const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
@@ -92,13 +93,15 @@ pub const Dev = struct {
                 .__App => {
                     if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
-                        switch (app.state) {
-                            .Intro => app.setState(.Loading),
-                            .Loading => {
-                                app.loading_screen.loading = false;
-                                app.loading_screen.fade_out_timer.is_active = true;
-                            },
-                            else => return,
+                        if (!app.loading_screen.loading) {
+                            var job_done = std.atomic.Value(bool).init(false);
+                            var job_ctx: JobCtx = .{
+                                .name = "job",
+                                .done = &job_done,
+                                .duration_ns = std.time.ns_per_s * 5,
+                            };
+                            app.loading_screen.completion_state = .Intro;
+                            app.loading_screen.placeholder(&job_ctx, &app.ui) catch {};
                         }
                     }
                 },

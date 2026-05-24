@@ -4,14 +4,14 @@ const UI = @import("../modules/ui/root.zig").UI;
 
 pub const AppState = enum {
     Intro,
-    Loading,
+    // Loading,
     Playing,
     Settings,
 
     pub fn toString(self: AppState) []const u8 {
         return switch (self) {
             .Intro => "Intro",
-            .Loading => "Loading",
+            // .Loading => "Loading",
             .Playing => "Playing",
             .Settings => "Settings",
         };
