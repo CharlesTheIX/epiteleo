@@ -1,20 +1,22 @@
 const std = @import("std");
 const rl = @import("raylib");
-const UI = @import("../ui/root.zig").UI;
-const App = @import("../../root.zig").App;
-const Timer = @import("../timer.zig").Timer;
-const Sprite = @import("../sprite/root.zig").Sprite;
-const AppState = @import("../../lib/utils.zig").AppState;
+const UI = @import("../../ui/root.zig").UI;
+const App = @import("../../../root.zig").App;
+const JobCtx = @import("./utils.zig").JobCtx;
+const Timer = @import("../../timer.zig").Timer;
+const Resources = @import("./resources.zig").Resources;
+const doJob = @import("./utils.zig").doJob;
+const AppState = @import("../../../lib/utils.zig").AppState;
 
 pub const LoadingScreen = struct {
     loading: bool = false,
     showing: bool = false,
-    job_done: std.atomic.Value(bool) = std.atomic.Value(bool).init(false),
-    completion_pending: bool = false,
     resources: Resources = .{},
+    completion_pending: bool = false,
     fade_in_timer: Timer = .init(0.5),
     fade_out_timer: Timer = .init(0.5),
     completion_state: AppState = .Intro,
+    job_done: std.atomic.Value(bool) = std.atomic.Value(bool).init(false),
 
     pub fn init() LoadingScreen {
         return .{};
@@ -36,9 +38,7 @@ pub const LoadingScreen = struct {
             pos.y -= 32;
             if (self.fade_in_timer.is_active) {
                 alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
-            } else if (self.fade_out_timer.is_active) {
-                alpha = self.fade_out_timer.value_ms / self.fade_out_timer.initial_value_ms;
-            }
+            } else if (self.fade_out_timer.is_active) alpha = self.fade_out_timer.value_ms / self.fade_out_timer.initial_value_ms;
             tint = rl.Color.white.alpha(alpha);
             self.resources.sprite.draw(&pos, tint);
         }
@@ -57,24 +57,19 @@ pub const LoadingScreen = struct {
 
         if (self.fade_in_timer.is_active) {
             self.fade_in_timer.update();
-            if (!self.fade_in_timer.is_active and self.completion_pending) {
-                self.fade_out_timer.is_active = true;
-            }
+            if (!self.fade_in_timer.is_active and self.completion_pending) self.fade_out_timer.is_active = true;
             return;
         }
 
-        if (self.completion_pending and !self.fade_out_timer.is_active) {
-            self.fade_out_timer.is_active = true;
-        }
-
+        if (self.completion_pending and !self.fade_out_timer.is_active) self.fade_out_timer.is_active = true;
         if (self.fade_out_timer.is_active) {
             self.fade_out_timer.update();
             if (self.fade_out_timer.is_active) return;
         }
 
         if (self.completion_pending) {
-            self.completion_pending = false;
             self.showing = false;
+            self.completion_pending = false;
             app.setState(self.completion_state);
         }
     }
@@ -83,50 +78,18 @@ pub const LoadingScreen = struct {
         self.loading = true;
         self.showing = true;
         self.completion_pending = false;
-        self.job_done.store(false, .release);
-        self.completion_state = completion_state;
         self.fade_in_timer.is_active = true;
         self.fade_out_timer.is_active = false;
+        self.completion_state = completion_state;
+        self.job_done.store(false, .release);
         self.fade_in_timer.value_ms = self.fade_in_timer.initial_value_ms;
         self.fade_out_timer.value_ms = self.fade_out_timer.initial_value_ms;
 
         const job_ctx = JobCtx{
-            .duration_ns = duration_ns,
+            .duration_ns = duration_ns, //here
             .done = &self.job_done,
         };
         var job_thread = std.Thread.spawn(.{}, doJob, .{job_ctx}) catch return;
         job_thread.detach();
     }
-
-    fn doJob(ctx: JobCtx) void {
-        const duration_s: f64 = @as(f64, @floatFromInt(ctx.duration_ns)) / @as(f64, @floatFromInt(std.time.ns_per_s));
-        rl.waitTime(duration_s);
-        ctx.done.store(true, .release);
-    }
-};
-
-const Resources = struct {
-    texture: ?rl.Texture2D = null,
-    sprite: Sprite = .init(.AnimalBoar, .Right, .Walk),
-
-    pub fn deinit(self: *Resources) void {
-        self.sprite.deinit();
-        if (self.texture) |texture| {
-            rl.unloadTexture(texture);
-            self.texture = null;
-        }
-    }
-
-    pub fn load(self: *Resources, io: *std.Io) void {
-        const img = rl.loadImage("src/assets/screens/loading_screen.png") catch return;
-        defer rl.unloadImage(img);
-        const texture = rl.loadTextureFromImage(img) catch return;
-        self.texture = texture;
-        if (self.texture) |*txt| self.sprite.load(txt, io);
-    }
-};
-
-pub const JobCtx = struct {
-    duration_ns: u64,
-    done: *std.atomic.Value(bool),
 };

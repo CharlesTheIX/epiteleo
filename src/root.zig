@@ -6,7 +6,7 @@ const AppState = @import("./lib/utils.zig").AppState;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
 const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
-const LoadingScreen = @import("./modules/screens/loading_screen.zig").LoadingScreen;
+const LoadingScreen = @import("./modules/screens/loading_screen/root.zig").LoadingScreen;
 
 pub const App = struct {
     ui: UI,
