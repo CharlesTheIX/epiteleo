@@ -18,7 +18,6 @@ pub const Data = struct {
     attack: ?StateOptions = null,
     direction: Direction = .Down,
 
-    /// METHODS
     pub fn fpsFromState(self: Data, state: State) ?f32 {
         return switch (state) {
             .Dead => null,
@@ -51,7 +50,6 @@ pub const Data = struct {
             const key = std.mem.trim(u8, line_split.first(), " \t\r");
             if (line_split.next()) |value| {
                 const parsed_value = std.mem.trim(u8, value, " \t\r");
-                // update the size and hitbox types
                 if (std.mem.eql(u8, key, "hitbox") and self.hitbox == null) self.loadHitbox(parsed_value);
                 if (std.mem.eql(u8, key, "dimensions") and self.size == null) self.loadSize(parsed_value);
                 if (std.mem.eql(u8, key, "run") and self.run == null) self.run = StateOptions.load(parsed_value);

@@ -22,7 +22,7 @@ pub const InputHandler = struct {
     }
 
     pub fn load(self: *InputHandler) void {
-        _ = self; // Avoid unused parameter warning
+        _ = self;
     }
 
     pub fn update(self: *InputHandler) void {

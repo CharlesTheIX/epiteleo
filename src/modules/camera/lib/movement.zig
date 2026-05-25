@@ -44,7 +44,6 @@ pub const Movement = struct {
             }
         } else self.mouse_pan_active = false;
 
-        // Smoothly interpolate camera target towards target_position
         const diff = self.target_position.subtract(camera.target);
         camera.target = camera.target.add(diff.scale(self.lerp_speed));
     }

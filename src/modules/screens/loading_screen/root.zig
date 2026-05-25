@@ -1,12 +1,17 @@
 const std = @import("std");
 const rl = @import("raylib");
+const utils = @import("./utils.zig");
 const UI = @import("../../ui/root.zig").UI;
 const App = @import("../../../root.zig").App;
-const JobCtx = @import("./utils.zig").JobCtx;
 const Timer = @import("../../timer.zig").Timer;
 const Resources = @import("./resources.zig").Resources;
-const doJob = @import("./utils.zig").doJob;
 const AppState = @import("../../../lib/utils.zig").AppState;
+
+const JobCtx = utils.JobCtx;
+const doJob = utils.doJob;
+pub const LoadRequest = utils.LoadRequest;
+const statusToInt = utils.statusToInt;
+const statusFromInt = utils.statusFromInt;
 
 pub const LoadingScreen = struct {
     loading: bool = false,
@@ -16,7 +21,7 @@ pub const LoadingScreen = struct {
     fade_in_timer: Timer = .init(0.5),
     fade_out_timer: Timer = .init(0.5),
     completion_state: AppState = .Intro,
-    job_done: std.atomic.Value(bool) = std.atomic.Value(bool).init(false),
+    job_status: std.atomic.Value(u8) = std.atomic.Value(u8).init(statusToInt(.Idle)),
 
     pub fn init() LoadingScreen {
         return .{};
@@ -50,9 +55,19 @@ pub const LoadingScreen = struct {
     pub fn update(self: *LoadingScreen, app: *App) void {
         if (!self.showing) return;
         self.resources.sprite.update();
-        if (self.loading and self.job_done.load(.acquire)) {
-            self.loading = false;
-            self.completion_pending = true;
+        if (self.loading) {
+            const status = statusFromInt(self.job_status.load(.acquire));
+            switch (status) {
+                .Success => {
+                    self.loading = false;
+                    self.completion_pending = true;
+                },
+                .Failed => {
+                    self.loading = false;
+                    self.completion_pending = true;
+                },
+                else => {},
+            }
         }
 
         if (self.fade_in_timer.is_active) {
@@ -70,26 +85,22 @@ pub const LoadingScreen = struct {
         if (self.completion_pending) {
             self.showing = false;
             self.completion_pending = false;
-            app.setState(self.completion_state);
+            app.setState(self.completion_state, null);
         }
     }
 
-    pub fn load(self: *LoadingScreen, duration_ns: u64, completion_state: AppState) !void {
+    pub fn load(self: *LoadingScreen, load_request: LoadRequest, completion_state: AppState) !void {
         self.loading = true;
         self.showing = true;
         self.completion_pending = false;
         self.fade_in_timer.is_active = true;
         self.fade_out_timer.is_active = false;
         self.completion_state = completion_state;
-        self.job_done.store(false, .release);
+        self.job_status.store(statusToInt(.Idle), .release);
         self.fade_in_timer.value_ms = self.fade_in_timer.initial_value_ms;
         self.fade_out_timer.value_ms = self.fade_out_timer.initial_value_ms;
-
-        const job_ctx = JobCtx{
-            .duration_ns = duration_ns, //here
-            .done = &self.job_done,
-        };
-        var job_thread = std.Thread.spawn(.{}, doJob, .{job_ctx}) catch return;
-        job_thread.detach();
+        const ctx = JobCtx{ .request = load_request, .status = &self.job_status };
+        var thread = std.Thread.spawn(.{}, doJob, .{ctx}) catch return;
+        thread.detach();
     }
 };

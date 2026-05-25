@@ -13,7 +13,7 @@ pub const UI = struct {
     }
 
     pub fn drawCircle(self: UI, center: rl.Vector2, radius: f32, color: rl.Color) void {
-        _ = self; // Avoid unused parameter warning
+        _ = self;
         rl.drawCircleV(center, radius, color);
     }
 
@@ -42,7 +42,7 @@ pub const UI = struct {
     }
 
     pub fn drawLine(self: UI, from: rl.Vector2, to: rl.Vector2, color: rl.Color) void {
-        _ = self; // Avoid unused parameter warning
+        _ = self;
         const to_x = @as(i32, @intFromFloat(to.x));
         const to_y = @as(i32, @intFromFloat(to.y));
         const from_x = @as(i32, @intFromFloat(from.x));
@@ -51,13 +51,13 @@ pub const UI = struct {
     }
 
     pub fn drawRect(self: UI, rect: rl.Rectangle, color: rl.Color) void {
-        _ = self; // Avoid unused parameter warning
+        _ = self;
         rl.drawRectangleRec(rect, color);
     }
 
     pub fn drawText(self: UI, text: []const u8, pos: rl.Vector2, font_size: ?i32, color: ?rl.Color) void {
         var buffer: [1024]u8 = undefined;
-        if (text.len + 1 > buffer.len) return; // Avoid overflow
+        if (text.len + 1 > buffer.len) return;
         const size = if (font_size) |s| s else @as(i32, self.font.size);
         const clr = if (color) |c| c else rl.Color.black;
         @memcpy(buffer[0..text.len], text);
@@ -70,7 +70,7 @@ pub const UI = struct {
     }
 
     pub fn drawTexture(self: UI, texture: rl.Texture2D, src_rect: rl.Rectangle, pos: rl.Vector2, color: ?rl.Color) void {
-        _ = self; // Avoid unused parameter warning
+        _ = self;
         const clr = if (color) |c| c else rl.Color.white;
         rl.drawTextureRec(texture, src_rect, pos, clr);
     }

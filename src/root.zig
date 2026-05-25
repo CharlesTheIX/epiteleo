@@ -5,16 +5,19 @@ const UI = @import("./modules/ui/root.zig").UI;
 const AppState = @import("./lib/utils.zig").AppState;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
+const ls = @import("./modules/screens/loading_screen/root.zig");
 const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
-const LoadingScreen = @import("./modules/screens/loading_screen/root.zig").LoadingScreen;
+
+const LoadRequest = ls.LoadRequest;
+const LoadingScreen = ls.LoadingScreen;
 
 pub const App = struct {
     ui: UI,
     io: *std.Io,
     camera: Camera,
     canvas: Canvas,
+    state: AppState = .Init,
     __dev: ?Dev = Dev.init(),
-    state: AppState = .Intro,
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
     loading_screen: LoadingScreen,
@@ -43,18 +46,17 @@ pub const App = struct {
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
-        if (self.loading_screen.showing) {
-            self.loading_screen.draw(&self.ui);
-        } else {
-            switch (self.state) {
-                .Intro => {
-                    rl.beginMode2D(self.camera.camera);
-                    self.canvas.draw(&self.ui);
-                    rl.endMode2D();
-                },
-                else => {},
-            }
+        if (self.loading_screen.showing) return self.loading_screen.draw(&self.ui);
+        switch (self.state) {
+            .Init => return,
+            .Intro => {
+                rl.beginMode2D(self.camera.camera);
+                self.canvas.draw(&self.ui);
+                rl.endMode2D();
+            },
+            else => {},
         }
+
         if (self.__dev) |*dev| dev.draw(self, self.allocator);
     }
 
@@ -77,7 +79,6 @@ pub const App = struct {
         );
         self.camera.load(rl.Vector2.init(screen_size.x, screen_size.y).scale(0.5));
         self.canvas.rect = rl.Rectangle.init(0, 0, screen_size.x, screen_size.y);
-        // self.loading_screen.loading = true;
     }
 
     pub fn run(self: *App) void {
@@ -92,27 +93,27 @@ pub const App = struct {
         }
     }
 
-    pub fn setState(self: *App, state: AppState) void {
+    pub fn setState(self: *App, state: AppState, load_request: ?LoadRequest) void {
         if (self.loading_screen.loading) return;
+        if (load_request) |request| return self.loading_screen.load(request, state) catch return;
+        self.state = state;
         switch (state) {
-            else => {
-                self.state = state;
-                self.camera.state = .Free;
-            },
+            // TODO: update the intro - this is here for testing -CIX
+            .Intro => self.camera.state = .Free,
+            .Playing => self.camera.state = .Follow,
+            else => self.camera.state = .Fixed,
         }
     }
 
     fn update(self: *App) void {
         self.handleResize();
+        if (self.loading_screen.showing) return self.loading_screen.update(self);
         self.input_handler.update();
-        if (self.loading_screen.showing) {
-            self.loading_screen.update(self);
-        } else {
-            self.camera.update(&self.input_handler, null, &self.canvas.rect);
-            switch (self.state) {
-                .Intro => self.canvas.update(&self.input_handler, &self.camera),
-                else => {},
-            }
+        self.camera.update(&self.input_handler, null, &self.canvas.rect);
+        switch (self.state) {
+            .Init => return self.setState(.Intro, .{ .SleepNs = std.time.ns_per_s * 5 }),
+            .Intro => self.canvas.update(&self.input_handler, &self.camera),
+            else => {},
         }
         if (self.__dev) |*dev| dev.update(self);
     }
