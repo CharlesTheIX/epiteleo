@@ -7,6 +7,7 @@ const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
 const ls = @import("./modules/screens/loading_screen/root.zig");
 const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
+const IntroScreen = @import("./modules/screens/intro_screen/root.zig").IntroScreen;
 
 const LoadRequest = ls.LoadRequest;
 const LoadingScreen = ls.LoadingScreen;
@@ -21,6 +22,7 @@ pub const App = struct {
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
     loading_screen: LoadingScreen,
+    intro_screen: ?IntroScreen = null,
 
     pub fn init(allocator: std.mem.Allocator, io: *std.Io) App {
         return App{
@@ -49,7 +51,8 @@ pub const App = struct {
         if (self.loading_screen.showing) return self.loading_screen.draw(&self.ui);
         switch (self.state) {
             .Init => return,
-            .Intro => {
+            .Intro => if (self.intro_screen) |*intro| intro.draw(&self.ui),
+            .Playing => {
                 rl.beginMode2D(self.camera.camera);
                 self.canvas.draw(&self.ui);
                 rl.endMode2D();
@@ -98,9 +101,9 @@ pub const App = struct {
         if (load_request) |request| return self.loading_screen.load(request, state) catch return;
         self.state = state;
         switch (state) {
-            // TODO: update the intro - this is here for testing -CIX
-            .Intro => self.camera.state = .Free,
-            .Playing => self.camera.state = .Follow,
+            .Intro => self.camera.state = .Fixed,
+            // TODO: update the playing - this is here for testing -CIX
+            .Playing => self.camera.state = .Free,
             else => self.camera.state = .Fixed,
         }
     }
@@ -111,8 +114,16 @@ pub const App = struct {
         self.input_handler.update();
         self.camera.update(&self.input_handler, null, &self.canvas.rect);
         switch (self.state) {
-            .Init => return self.setState(.Intro, .{ .SleepNs = std.time.ns_per_s * 5 }),
-            .Intro => self.canvas.update(&self.input_handler, &self.camera),
+            .Init => {
+                self.intro_screen = IntroScreen.init();
+                if (self.intro_screen) |*intro| intro.load();
+                return self.setState(.Intro, .{ .SleepNs = std.time.ns_per_s * 5 });
+            },
+            .Intro => {
+                if (self.intro_screen) |*intro| return intro.update();
+                return self.setState(.Init, null);
+            },
+            .Playing => self.canvas.update(&self.input_handler, &self.camera),
             else => {},
         }
         if (self.__dev) |*dev| dev.update(self);
