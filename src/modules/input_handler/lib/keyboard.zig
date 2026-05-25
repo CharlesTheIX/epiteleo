@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+
 pub const Key = @import("./key.zig").Key;
 
 pub const Keyboard = struct {

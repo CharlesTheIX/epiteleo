@@ -1,10 +1,10 @@
 const std = @import("std");
 const rl = @import("raylib");
 const ih = @import("../../input_handler/root.zig");
-const invertScroll = @import("../../../lib/utils.zig").invertScroll;
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
+const invertScroll = @import("../../../lib/utils.zig").invertScroll;
 
 pub const Zoom = struct {
     min: f32 = 1.0,

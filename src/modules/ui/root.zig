@@ -1,4 +1,5 @@
 const rl = @import("raylib");
+
 const Font = @import("./lib/font.zig").Font;
 
 pub const UI = struct {
@@ -73,6 +74,22 @@ pub const UI = struct {
         _ = self;
         const clr = if (color) |c| c else rl.Color.white;
         rl.drawTextureRec(texture, src_rect, pos, clr);
+    }
+
+    pub fn defaultRect(self: *UI) rl.Rectangle {
+        _ = self;
+        const rect_w = 960;
+        const rect_h = 540;
+        const window_w = rl.getScreenWidth();
+        const window_h = rl.getScreenHeight();
+        const rect_c = rl.Vector2.init(@as(f32, rect_w), @as(f32, rect_h)).scale(0.5);
+        const window_c = rl.Vector2.init(@as(f32, @floatFromInt(window_w)), @as(f32, @floatFromInt(window_h))).scale(0.5);
+        return rl.Rectangle{
+            .width = @as(f32, rect_w),
+            .height = @as(f32, rect_h),
+            .x = window_c.x - rect_c.x,
+            .y = window_c.y - rect_c.y,
+        };
     }
 
     pub fn load(self: *UI) void {

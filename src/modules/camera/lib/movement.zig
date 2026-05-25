@@ -1,11 +1,12 @@
 const rl = @import("raylib");
 const ih = @import("../../input_handler/root.zig");
-const invertScroll = @import("../../../lib/utils.zig").invertScroll;
-const rotateVector = @import("../../../lib/utils.zig").rotateVector;
+const core_utils = @import("../../../lib/utils.zig");
 
 const Key = ih.Key;
 const Click = ih.Click;
 const InputHandler = ih.InputHandler;
+const invertScroll = core_utils.invertScroll;
+const rotateVector = core_utils.rotateVector;
 
 pub const Movement = struct {
     lerp_speed: f32 = 0.1,
@@ -52,10 +53,10 @@ pub const Movement = struct {
         var movement = rl.Vector2.zero();
         var speed = self.movement_speed;
         if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) speed *= 4;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{.W}, .And)) movement.y -= 1;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{.S}, .And)) movement.y += 1;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{.A}, .And)) movement.x -= 1;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{.D}, .And)) movement.x += 1;
+        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .W, .Up }, .Or)) movement.y -= 1;
+        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .S, .Down }, .Or)) movement.y += 1;
+        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .A, .Left }, .Or)) movement.x -= 1;
+        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .D, .Right }, .Or)) movement.x += 1;
         if (movement.x == 0 and movement.y == 0) return;
         movement = rotateVector(movement, -camera.rotation);
         movement = movement.scale(speed * self.lerp_speed / camera.zoom);

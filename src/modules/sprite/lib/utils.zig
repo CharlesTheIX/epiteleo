@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl: type = @import("raylib");
+
 const Key = @import("../../input_handler/root.zig").Key;
 
 pub const Direction = enum {

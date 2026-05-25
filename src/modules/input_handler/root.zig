@@ -1,10 +1,13 @@
 const std = @import("std");
 const rl = @import("raylib");
+const m = @import("lib/mouse.zig");
+const kb = @import("./lib//keyboard.zig");
+
+pub const Key = kb.Key;
+pub const Click = m.Click;
+pub const Mouse = m.Mouse;
+pub const Keyboard = kb.Keyboard;
 const UI = @import("../ui/root.zig").UI;
-pub const Key = @import("lib/keyboard.zig").Key;
-pub const Click = @import("lib/mouse.zig").Click;
-pub const Mouse = @import("lib/mouse.zig").Mouse;
-pub const Keyboard = @import("lib/keyboard.zig").Keyboard;
 
 pub const InputHandler = struct {
     mouse: Mouse,

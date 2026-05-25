@@ -1,9 +1,9 @@
 const rl = @import("raylib");
 const ih = @import("../../input_handler/root.zig");
-const invertScroll = @import("../../../lib/utils.zig").invertScroll;
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
+const invertScroll = @import("../../../lib/utils.zig").invertScroll;
 
 pub const Rotation = struct {
     speed: f32 = 5.0,

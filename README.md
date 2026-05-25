@@ -1,5 +1,10 @@
 # EPITELEO
 
+## Default Window Size
+
+- width: `960`
+- height: `540`
+
 ## Camera Movement
 
 The camera has two modes: `Free` and `Follow`.

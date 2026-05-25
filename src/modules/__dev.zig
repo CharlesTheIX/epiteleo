@@ -1,5 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
+
+const Key = ih.Key;
+const InputHandler = ih.InputHandler;
 const App = @import("../root.zig").App;
 const Timer = @import("./timer.zig").Timer;
 const ih = @import("./input_handler/root.zig");
@@ -10,9 +13,6 @@ const drawAppInfo = @import("../lib/utils.zig").drawInfo;
 const drawCameraInfo = @import("./camera/lib/utils.zig").drawInfo;
 const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
 const drawInputHandlerInfo = @import("./input_handler/lib/utils.zig").drawInfo;
-
-const Key = ih.Key;
-const InputHandler = ih.InputHandler;
 const Module = enum {
     __App,
     __Camera,
@@ -94,7 +94,10 @@ pub const Dev = struct {
                     if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
                         if (!app.loading_screen.loading) {
-                            app.loading_screen.load(LoadRequest{ .SleepNs = std.time.ns_per_s * 5 }, .Intro) catch {};
+                            app.loading_screen.load(
+                                LoadRequest{ .SleepNs = std.time.ns_per_s * 5 },
+                                app.state,
+                            ) catch {};
                         }
                     }
                 },

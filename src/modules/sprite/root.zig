@@ -1,12 +1,12 @@
 const std = @import("std");
 const rl = @import("raylib");
 const utils = @import("./lib/utils.zig");
-const Data = @import("./lib/data.zig").Data;
-const Animation = @import("./lib/animation.zig").Animation;
 
 const State = utils.State;
 const Direction = utils.Direction;
 const SpriteType = utils.SpriteType;
+const Data = @import("./lib/data.zig").Data;
+const Animation = @import("./lib/animation.zig").Animation;
 const getRectCentre = utils.getRectCentre;
 
 pub const Sprite = struct {

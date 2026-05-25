@@ -1,12 +1,12 @@
 const std = @import("std");
 const rl = @import("raylib");
 const ih = @import("../root.zig");
-const UI = @import("../../ui/root.zig").UI;
 
 const Key = ih.Key;
 const Mouse = ih.Mouse;
 const Click = ih.Click;
 const InputHandler = ih.InputHandler;
+const UI = @import("../../ui/root.zig").UI;
 
 pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: std.mem.Allocator) void {
     // Set initial padding and spacing

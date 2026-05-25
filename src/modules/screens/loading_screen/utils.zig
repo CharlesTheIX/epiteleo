@@ -9,6 +9,10 @@ pub fn doJob(ctx: JobCtx) void {
             rl.waitTime(duration_s);
             ctx.status.store(statusToInt(.Success), .release);
         },
+        .Task => |task| {
+            if (!task.run_on_main_thread) task.run(task.ctx);
+            ctx.status.store(statusToInt(.Success), .release);
+        },
     }
 }
 
@@ -19,6 +23,7 @@ pub const JobCtx = struct {
 
 pub const LoadRequest = union(enum) {
     SleepNs: u64,
+    Task: LoadTask,
 };
 
 pub const LoadStatus = enum(u8) {
@@ -26,6 +31,12 @@ pub const LoadStatus = enum(u8) {
     Running,
     Success,
     Failed,
+};
+
+pub const LoadTask = struct {
+    ctx: *anyopaque,
+    run_on_main_thread: bool = false,
+    run: *const fn (ctx: *anyopaque) void,
 };
 
 pub fn statusToInt(status: LoadStatus) u8 {

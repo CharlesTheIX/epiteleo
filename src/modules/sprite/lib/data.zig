@@ -1,11 +1,11 @@
 const std = @import("std");
 const rl: type = @import("raylib");
 const utils = @import("./utils.zig");
-const StateOptions = @import("./state_options.zig").StateOptions;
 
 const State = utils.State;
 const Direction = utils.Direction;
 const SpriteType = utils.SpriteType;
+const StateOptions = @import("./state_options.zig").StateOptions;
 
 pub const Data = struct {
     size: ?[2]u32 = null,

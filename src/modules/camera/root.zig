@@ -1,14 +1,14 @@
 const std = @import("std");
 const rl = @import("raylib");
+const core_utils = @import("../../lib/utils.zig");
+
 const Zoom = @import("./lib/zoom.zig").Zoom;
-const utils = @import("../../lib/utils.zig");
 const State = @import("./lib/utils.zig").State;
 const Movement = @import("./lib/movement.zig").Movement;
 const Rotation = @import("./lib/rotation.zig").Rotation;
+const invertScroll = core_utils.invertScroll;
+const rotateVector = core_utils.rotateVector;
 const InputHandler = @import("../input_handler/root.zig").InputHandler;
-
-const invertScroll = utils.invertScroll;
-const rotateVector = utils.rotateVector;
 
 pub const Camera = struct {
     zoom: Zoom,
@@ -16,7 +16,7 @@ pub const Camera = struct {
     rotation: Rotation,
     camera: rl.Camera2D,
     state: State = .Fixed,
-    snap_to_canvas: bool = false,
+    snap_to_canvas: bool = true,
 
     pub fn init() Camera {
         const zoom = Zoom.init();

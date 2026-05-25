@@ -1,28 +1,35 @@
 const std = @import("std");
 const rl = @import("raylib");
+const ih = @import("./modules/input_handler/root.zig");
+const ls = @import("./modules/screens/loading_screen/root.zig");
+const intro = @import("./modules/screens/intro_screen/root.zig");
+
+const LoadRequest = ls.LoadRequest;
+const InputHandler = ih.InputHandler;
+const IntroScreen = intro.IntroScreen;
+const LoadingScreen = ls.LoadingScreen;
 const Dev = @import("./modules/__dev.zig").Dev;
 const UI = @import("./modules/ui/root.zig").UI;
 const AppState = @import("./lib/utils.zig").AppState;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
-const ls = @import("./modules/screens/loading_screen/root.zig");
-const InputHandler = @import("./modules/input_handler/root.zig").InputHandler;
-const IntroScreen = @import("./modules/screens/intro_screen/root.zig").IntroScreen;
-
-const LoadRequest = ls.LoadRequest;
-const LoadingScreen = ls.LoadingScreen;
+const loadIntroScreenTask = intro.loadIntroScreenTask;
+const PlayerScreen = @import("./modules/screens/player_screen/root.zig").PlayerScreen;
 
 pub const App = struct {
     ui: UI,
     io: *std.Io,
     camera: Camera,
     canvas: Canvas,
+    shut_down: bool = false,
     state: AppState = .Init,
     __dev: ?Dev = Dev.init(),
+    // __dev: ?Dev = null,
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
     loading_screen: LoadingScreen,
-    intro_screen: ?IntroScreen = null,
+    player_screen: ?PlayerScreen = null,
+    intro_screen: ?IntroScreen = IntroScreen.init(),
 
     pub fn init(allocator: std.mem.Allocator, io: *std.Io) App {
         return App{
@@ -42,25 +49,27 @@ pub const App = struct {
         self.input_handler.deinit();
         self.loading_screen.deinit();
         if (self.__dev) |*dev| dev.deinit();
+        if (self.intro_screen) |*i| i.deinit();
     }
 
     fn draw(self: *App) void {
+        if (self.shut_down) return;
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
         if (self.loading_screen.showing) return self.loading_screen.draw(&self.ui);
         switch (self.state) {
             .Init => return,
-            .Intro => if (self.intro_screen) |*intro| intro.draw(&self.ui),
+            .Intro => if (self.intro_screen) |*i| i.draw(&self.ui, self.allocator),
             .Playing => {
                 rl.beginMode2D(self.camera.camera);
-                self.canvas.draw(&self.ui);
+                if (self.player_screen) |*p| p.draw(&self.ui);
                 rl.endMode2D();
             },
             else => {},
         }
-
-        if (self.__dev) |*dev| dev.draw(self, self.allocator);
+        // if (self.__dev != null) self.canvas.draw(&self.ui);
+        // if (self.__dev) |*dev| dev.draw(self, self.allocator);
     }
 
     fn handleResize(self: *App) void {
@@ -70,6 +79,7 @@ pub const App = struct {
         if (self.canvas.rect.x == new_width and self.canvas.rect.y == new_height) return;
         const new_offset = rl.Vector2.init(new_width, new_height).scale(0.5);
         self.camera.resize(new_offset);
+        self.canvas.rect = rl.Rectangle.init(0, 0, new_width, new_height);
     }
 
     fn load(self: *App) void {
@@ -86,11 +96,13 @@ pub const App = struct {
 
     pub fn run(self: *App) void {
         rl.setTargetFPS(60);
-        rl.setConfigFlags(rl.ConfigFlags{ .window_resizable = true, .vsync_hint = true });
+        var config_flags = rl.ConfigFlags{ .vsync_hint = true };
+        if (self.__dev != null) config_flags.window_resizable = true;
+        rl.setConfigFlags(config_flags);
         rl.initWindow(960, 540, "Epiteleo");
         defer rl.closeWindow();
         self.load();
-        while (!rl.windowShouldClose()) {
+        while (!rl.windowShouldClose() and !self.shut_down) {
             self.update();
             self.draw();
         }
@@ -102,28 +114,41 @@ pub const App = struct {
         self.state = state;
         switch (state) {
             .Intro => self.camera.state = .Fixed,
-            // TODO: update the playing - this is here for testing -CIX
+            // TODO: update the playing - this is here for testing - CIX
             .Playing => self.camera.state = .Free,
             else => self.camera.state = .Fixed,
         }
     }
 
     fn update(self: *App) void {
+        if (self.shut_down) return;
         self.handleResize();
         if (self.loading_screen.showing) return self.loading_screen.update(self);
         self.input_handler.update();
         self.camera.update(&self.input_handler, null, &self.canvas.rect);
         switch (self.state) {
             .Init => {
-                self.intro_screen = IntroScreen.init();
-                if (self.intro_screen) |*intro| intro.load();
-                return self.setState(.Intro, .{ .SleepNs = std.time.ns_per_s * 5 });
+                if (self.intro_screen) |*i| {
+                    const load_request: LoadRequest = .{ .Task = .{
+                        .ctx = @ptrCast(i),
+                        .run_on_main_thread = true,
+                        .run = loadIntroScreenTask,
+                    } };
+                    return self.setState(.Intro, load_request);
+                }
+                return std.debug.panic("Failed to initialize the application\n", .{});
             },
             .Intro => {
-                if (self.intro_screen) |*intro| return intro.update();
-                return self.setState(.Init, null);
+                if (self.intro_screen) |*i| {
+                    i.update(self);
+                } else return self.setState(.Init, null);
             },
-            .Playing => self.canvas.update(&self.input_handler, &self.camera),
+            .Playing => {
+                if (self.player_screen) |*p| {
+                    p.update();
+                    self.canvas.update(&self.input_handler, &self.camera);
+                }
+            },
             else => {},
         }
         if (self.__dev) |*dev| dev.update(self);
