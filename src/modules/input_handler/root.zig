@@ -24,10 +24,6 @@ pub const InputHandler = struct {
         self.keyboard.deinit();
     }
 
-    pub fn load(self: *InputHandler) void {
-        _ = self;
-    }
-
     pub fn update(self: *InputHandler) void {
         self.mouse.update();
         self.keyboard.update();

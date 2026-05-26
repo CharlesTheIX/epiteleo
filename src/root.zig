@@ -86,13 +86,12 @@ pub const App = struct {
     fn load(self: *App) void {
         self.ui.load();
         self.settings.load();
-        self.input_handler.load();
         self.loader.resources.load(self.io);
         const screen_size = rl.Vector2.init(
             @as(f32, @floatFromInt(rl.getScreenWidth())),
             @as(f32, @floatFromInt(rl.getScreenHeight())),
         );
-        self.camera.load(rl.Vector2.init(screen_size.x, screen_size.y).scale(0.5));
+        self.camera.load(screen_size.scale(0.5));
         self.canvas.rect = rl.Rectangle.init(0, 0, screen_size.x, screen_size.y);
     }
 

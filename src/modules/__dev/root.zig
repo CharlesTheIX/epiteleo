@@ -17,6 +17,7 @@ const Module = enum {
     __App,
     __Camera,
     __Canvas,
+    __Settings,
     __InputHandler,
 };
 
@@ -35,6 +36,7 @@ pub const Dev = struct {
     pub fn draw(self: Dev, app: *App) void {
         if (self.show_module) |module| {
             switch (module) {
+                .__Settings => return, // TODO: draw settings info
                 .__App => return drawAppInfo(app),
                 .__Camera => return drawCameraInfo(app),
                 .__Canvas => return drawCanvasInfo(app),
@@ -82,6 +84,14 @@ pub const Dev = struct {
             return;
         }
 
+        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Five }, .And)) {
+            self.input_timer.is_active = true;
+            if (self.show_module == null or self.show_module != .__Settings) {
+                self.show_module = .__Settings;
+            } else self.show_module = null;
+            return;
+        }
+
         if (self.show_module) |module| {
             switch (module) {
                 .__App => {
@@ -111,7 +121,7 @@ pub const Dev = struct {
                         } else app.camera.snap_to_canvas = true;
                     }
                 },
-                .__Canvas, .__InputHandler => return,
+                .__Canvas, .__InputHandler, .__Settings => return,
             }
         }
     }
