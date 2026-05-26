@@ -10,10 +10,10 @@ const InputHandler = ih.InputHandler;
 const PlayerScreen = ps.PlayerScreen;
 const UI = @import("../../ui/root.zig").UI;
 const App = @import("../../../root.zig").App;
-const Timer = @import("../../timer.zig").Timer;
-const Resources = @import("./resources.zig").Resources;
-const LoadRequest = @import("../../loader/utils.zig").LoadRequest;
+const Timer = @import("../../timer/root.zig").Timer;
+const Resources = @import("./lib/resources.zig").Resources;
 const loadSettingsTask = ss.loadSettingsTask;
+const LoadRequest = @import("../../loader/lib/utils.zig").LoadRequest;
 const loadPlayerScreenTask = ps.loadPlayerScreenTask;
 
 pub const IntroScreen = struct {

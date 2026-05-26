@@ -8,8 +8,8 @@ const Loader = loader.Loader;
 const IntroScreen = is.IntroScreen;
 const InputHandler = ih.InputHandler;
 const LoadRequest = loader.LoadRequest;
-const Dev = @import("./modules/__dev.zig").Dev;
 const UI = @import("./modules/ui/root.zig").UI;
+const Dev = @import("./modules/__dev/root.zig").Dev;
 const AppState = @import("./lib/utils.zig").AppState;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
@@ -20,11 +20,11 @@ const PlayerScreen = @import("./modules/screens/player_screen/root.zig").PlayerS
 pub const App = struct {
     io: *std.Io,
     ui: UI = .init(),
+    shut_down: bool = false,
+    state: AppState = .Init,
     camera: Camera = .init(),
     canvas: Canvas = .init(),
     loader: Loader = .init(),
-    shut_down: bool = false,
-    state: AppState = .Init,
     __dev: ?Dev = Dev.init(),
     input_handler: InputHandler,
     allocator: std.mem.Allocator,
@@ -70,7 +70,7 @@ pub const App = struct {
                 rl.endMode2D();
             },
         }
-        if (self.__dev) |*dev| dev.draw(self, self.allocator);
+        if (self.__dev) |*dev| dev.draw(self);
     }
 
     fn handleResize(self: *App) void {

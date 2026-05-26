@@ -2,8 +2,8 @@ const std = @import("std");
 const rl = @import("raylib");
 
 const UI = @import("../../ui/root.zig").UI;
-const Timer = @import("../../timer.zig").Timer;
-const Resources = @import("./resources.zig").Resources;
+const Timer = @import("../../timer/root.zig").Timer;
+const Resources = @import("./lib/resources.zig").Resources;
 
 pub const PlayerScreen = struct {
     resources: Resources = .{},

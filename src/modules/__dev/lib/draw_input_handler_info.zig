@@ -1,19 +1,14 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ih = @import("../root.zig");
+const ih = @import("../../input_handler/root.zig");
 
 const Key = ih.Key;
-const Mouse = ih.Mouse;
 const Click = ih.Click;
-const InputHandler = ih.InputHandler;
-const UI = @import("../../ui/root.zig").UI;
+const App = @import("../../../root.zig").App;
 
-pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: std.mem.Allocator) void {
-    // Set initial padding and spacing
+pub fn drawInputHandlerInfo(app: *App) void {
     var padding = rl.Vector2.init(16, 16);
-
-    // Background
-    ui.drawRect(
+    app.ui.drawRect(
         rl.Rectangle.init(
             0,
             0,
@@ -24,22 +19,22 @@ pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: st
     );
 
     // Intro Text
-    ui.drawText("Input Handler Info:", padding, null, rl.Color.white);
-    padding.y += ui.font.size;
+    app.ui.drawText("Input Handler Info:", padding, null, rl.Color.white);
+    padding.y += app.ui.font.size;
     padding.y += 16; // Extra spacing after title
 
     // Keyboard Active Keys
     const active_keys_title = "Keyboard | Active Keys:";
-    const active_keys_title_width = ui.font.measureText(active_keys_title, 16);
-    ui.drawText(active_keys_title, padding, 16, rl.Color.white);
+    const active_keys_title_width = app.ui.font.measureText(active_keys_title, 16);
+    app.ui.drawText(active_keys_title, padding, 16, rl.Color.white);
     var first = true;
     var active_keys_string: std.ArrayList(u8) = .empty;
-    defer active_keys_string.deinit(allocator);
+    defer active_keys_string.deinit(app.allocator);
     var last_order: u64 = 0;
     while (true) {
         var next_key: ?Key = null;
         var next_order: ?u64 = null;
-        var active_keys = input_handler.keyboard.active_keys.iterator();
+        var active_keys = app.input_handler.keyboard.active_keys.iterator();
         while (active_keys.next()) |entry| {
             const order = entry.value_ptr.*;
             if (order <= last_order) continue;
@@ -49,24 +44,24 @@ pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: st
             }
         }
         const key = next_key orelse break;
-        if (!first) active_keys_string.appendSlice(allocator, ", ") catch continue;
-        active_keys_string.appendSlice(allocator, key.toString()) catch continue;
+        if (!first) active_keys_string.appendSlice(app.allocator, ", ") catch continue;
+        active_keys_string.appendSlice(app.allocator, key.toString()) catch continue;
         first = false;
         last_order = next_order.?;
     }
     padding.x += active_keys_title_width.x + 8;
     const active_keys_text = if (active_keys_string.items.len == 0) "None" else active_keys_string.items;
-    ui.drawText(active_keys_text, padding, 16, rl.Color.white);
+    app.ui.drawText(active_keys_text, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
     // Keyboard Most Recent Key
     const most_recent_key_title = "Keyboard | Most Recent Key:";
-    const most_recent_key_title_width = ui.font.measureText(most_recent_key_title, 16);
-    ui.drawText(most_recent_key_title, padding, 16, rl.Color.white);
+    const most_recent_key_title_width = app.ui.font.measureText(most_recent_key_title, 16);
+    app.ui.drawText(most_recent_key_title, padding, 16, rl.Color.white);
     padding.x += most_recent_key_title_width.x + 8;
-    const most_recent_key_string = if (input_handler.keyboard.getMostRecentlyPressedKey()) |key| key.toString() else "None";
-    ui.drawText(most_recent_key_string, padding, 16, rl.Color.white);
+    const most_recent_key_string = if (app.input_handler.keyboard.getMostRecentlyPressedKey()) |key| key.toString() else "None";
+    app.ui.drawText(most_recent_key_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
@@ -74,16 +69,16 @@ pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: st
 
     // Mouse Active Clicks
     const active_clicks_title = "Mouse | Active Clicks:";
-    const active_clicks_title_width = ui.font.measureText(active_clicks_title, 16);
-    ui.drawText(active_clicks_title, padding, 16, rl.Color.white);
+    const active_clicks_title_width = app.ui.font.measureText(active_clicks_title, 16);
+    app.ui.drawText(active_clicks_title, padding, 16, rl.Color.white);
     first = true;
     var active_clicks_string: std.ArrayList(u8) = .empty;
-    defer active_clicks_string.deinit(allocator);
+    defer active_clicks_string.deinit(app.allocator);
     last_order = 0;
     while (true) {
         var next_click: ?Click = null;
         var next_order: ?u64 = null;
-        var active_clicks = input_handler.mouse.active_clicks.iterator();
+        var active_clicks = app.input_handler.mouse.active_clicks.iterator();
         while (active_clicks.next()) |entry| {
             const order = entry.value_ptr.*;
             if (order <= last_order) continue;
@@ -93,62 +88,62 @@ pub fn drawInfo(input_handler: *const InputHandler, ui: *const UI, allocator: st
             }
         }
         const click = next_click orelse break;
-        if (!first) active_clicks_string.appendSlice(allocator, ", ") catch continue;
-        active_clicks_string.appendSlice(allocator, click.toString()) catch continue;
+        if (!first) active_clicks_string.appendSlice(app.allocator, ", ") catch continue;
+        active_clicks_string.appendSlice(app.allocator, click.toString()) catch continue;
         first = false;
         last_order = next_order.?;
     }
     padding.x += active_clicks_title_width.x + 8;
     const active_clicks_text = if (active_clicks_string.items.len == 0) "None" else active_clicks_string.items;
-    ui.drawText(active_clicks_text, padding, 16, rl.Color.white);
+    app.ui.drawText(active_clicks_text, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
     // Mouse Most Recent Click
     const most_recent_click_title = "Mouse | Most Recent Click:";
-    const most_recent_click_title_width = ui.font.measureText(most_recent_click_title, 16);
-    ui.drawText(most_recent_click_title, padding, 16, rl.Color.white);
-    const most_recent_click_string = if (input_handler.mouse.getMostRecentlyPressedClick()) |click| click.toString() else "None";
+    const most_recent_click_title_width = app.ui.font.measureText(most_recent_click_title, 16);
+    app.ui.drawText(most_recent_click_title, padding, 16, rl.Color.white);
+    const most_recent_click_string = if (app.input_handler.mouse.getMostRecentlyPressedClick()) |click| click.toString() else "None";
     padding.x += most_recent_click_title_width.x + 8;
-    ui.drawText(most_recent_click_string, padding, 16, rl.Color.white);
+    app.ui.drawText(most_recent_click_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
     // Mouse Cursor
     const cursor_title = "Mouse | Cursor:";
-    const cursor_title_width = ui.font.measureText(cursor_title, 16);
-    ui.drawText(cursor_title, padding, 16, rl.Color.white);
-    const cursor_string = input_handler.mouse.cursor.toString();
+    const cursor_title_width = app.ui.font.measureText(cursor_title, 16);
+    app.ui.drawText(cursor_title, padding, 16, rl.Color.white);
+    const cursor_string = app.input_handler.mouse.cursor.toString();
     padding.x += cursor_title_width.x + 8;
-    ui.drawText(cursor_string, padding, 16, rl.Color.white);
+    app.ui.drawText(cursor_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
     // Mouse Scroll
     const mouse_scroll_title = "Mouse | Scroll:";
-    const mouse_scroll_title_width = ui.font.measureText(mouse_scroll_title, 16);
-    ui.drawText(mouse_scroll_title, padding, 16, rl.Color.white);
+    const mouse_scroll_title_width = app.ui.font.measureText(mouse_scroll_title, 16);
+    app.ui.drawText(mouse_scroll_title, padding, 16, rl.Color.white);
     const mouse_scroll_string = std.fmt.allocPrint(
-        allocator,
+        app.allocator,
         "({d}, {d})",
-        .{ input_handler.mouse.scroll.x, input_handler.mouse.scroll.y },
+        .{ app.input_handler.mouse.scroll.x, app.input_handler.mouse.scroll.y },
     ) catch "Error formatting mouse scroll";
     padding.x += mouse_scroll_title_width.x + 8;
-    ui.drawText(mouse_scroll_string, padding, 16, rl.Color.white);
+    app.ui.drawText(mouse_scroll_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 
     // Mouse Position
     const mouse_pos_title = "Mouse | Position:";
-    const mouse_pos_title_width = ui.font.measureText(mouse_pos_title, 16);
-    ui.drawText(mouse_pos_title, padding, 16, rl.Color.white);
+    const mouse_pos_title_width = app.ui.font.measureText(mouse_pos_title, 16);
+    app.ui.drawText(mouse_pos_title, padding, 16, rl.Color.white);
     const mouse_pos_string = std.fmt.allocPrint(
-        allocator,
+        app.allocator,
         "({d}, {d})",
-        .{ input_handler.mouse.pos.x, input_handler.mouse.pos.y },
+        .{ app.input_handler.mouse.pos.x, app.input_handler.mouse.pos.y },
     ) catch "Error formatting mouse position";
     padding.x += mouse_pos_title_width.x + 8;
-    ui.drawText(mouse_pos_string, padding, 16, rl.Color.white);
+    app.ui.drawText(mouse_pos_string, padding, 16, rl.Color.white);
     padding.x = 16;
     padding.y += 16;
 }

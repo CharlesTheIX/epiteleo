@@ -1,7 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 
-const Sprite = @import("../sprite/root.zig").Sprite;
+const Sprite = @import("../../sprite/root.zig").Sprite;
 
 pub const Resources = struct {
     texture: ?rl.Texture2D = null,

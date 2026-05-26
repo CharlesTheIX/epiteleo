@@ -1,17 +1,17 @@
 const std = @import("std");
 const rl = @import("raylib");
-const utils = @import("./utils.zig");
+const utils = @import("./lib/utils.zig");
 
 const JobCtx = utils.JobCtx;
 const doJob = utils.doJob;
 const UI = @import("../ui/root.zig").UI;
 pub const LoadRequest = utils.LoadRequest;
 const App = @import("../../root.zig").App;
-const Timer = @import("../timer.zig").Timer;
+const Timer = @import("../timer/root.zig").Timer;
 const statusToInt = utils.statusToInt;
-const Resources = @import("./resources.zig").Resources;
 const statusFromInt = utils.statusFromInt;
 const AppState = @import("../../lib/utils.zig").AppState;
+const Resources = @import("./lib/resources.zig").Resources;
 
 pub const Loader = struct {
     loading: bool = false,

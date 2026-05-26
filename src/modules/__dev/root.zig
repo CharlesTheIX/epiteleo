@@ -3,16 +3,16 @@ const rl = @import("raylib");
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
-const App = @import("../root.zig").App;
-const Timer = @import("./timer.zig").Timer;
-const ih = @import("./input_handler/root.zig");
-const Camera = @import("./camera/root.zig").Camera;
-const Canvas = @import("./canvas/root.zig").Canvas;
-const LoadRequest = @import("./loader/utils.zig").LoadRequest;
-const drawAppInfo = @import("../lib/utils.zig").drawInfo;
-const drawCameraInfo = @import("./camera/lib/utils.zig").drawInfo;
-const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
-const drawInputHandlerInfo = @import("./input_handler/lib/utils.zig").drawInfo;
+const App = @import("../../root.zig").App;
+const ih = @import("../input_handler/root.zig");
+const Timer = @import("../timer/root.zig").Timer;
+const Camera = @import("../camera/root.zig").Camera;
+const Canvas = @import("../canvas/root.zig").Canvas;
+const LoadRequest = @import("../loader/lib/utils.zig").LoadRequest;
+const drawAppInfo = @import("./lib/draw_app_info.zig").drawAppInfo;
+const drawCameraInfo = @import("./lib/draw_camera_info.zig").drawCameraInfo;
+const drawCanvasInfo = @import("./lib/draw_canvas_info.zig").drawCanvasInfo;
+const drawInputHandlerInfo = @import("./lib/draw_input_handler_info.zig").drawInputHandlerInfo;
 const Module = enum {
     __App,
     __Camera,
@@ -32,19 +32,13 @@ pub const Dev = struct {
         self.show_module = null;
     }
 
-    pub fn draw(self: Dev, app: *App, allocator: std.mem.Allocator) void {
+    pub fn draw(self: Dev, app: *App) void {
         if (self.show_module) |module| {
             switch (module) {
-                .__App => return drawAppInfo(app, allocator),
-                .__Camera => return drawCameraInfo(&app.camera, &app.ui, allocator),
-                .__InputHandler => return drawInputHandlerInfo(&app.input_handler, &app.ui, allocator),
-                .__Canvas => return drawCanvasInfo(
-                    &app.canvas,
-                    &app.ui,
-                    allocator,
-                    &app.input_handler,
-                    &app.camera,
-                ),
+                .__App => return drawAppInfo(app),
+                .__Camera => return drawCameraInfo(app),
+                .__Canvas => return drawCanvasInfo(app),
+                .__InputHandler => return drawInputHandlerInfo(app),
             }
         }
     }

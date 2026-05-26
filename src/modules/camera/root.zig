@@ -3,7 +3,6 @@ const rl = @import("raylib");
 const core_utils = @import("../../lib/utils.zig");
 
 const Zoom = @import("./lib/zoom.zig").Zoom;
-const State = @import("./lib/utils.zig").State;
 const Movement = @import("./lib/movement.zig").Movement;
 const Rotation = @import("./lib/rotation.zig").Rotation;
 const invertScroll = core_utils.invertScroll;
@@ -120,5 +119,19 @@ pub const Camera = struct {
             },
             .Fixed => return,
         }
+    }
+};
+
+pub const State = enum {
+    Free,
+    Fixed,
+    Follow,
+
+    pub fn toString(self: State) []const u8 {
+        return switch (self) {
+            .Free => "Free",
+            .Fixed => "Fixed",
+            .Follow => "Follow",
+        };
     }
 };
