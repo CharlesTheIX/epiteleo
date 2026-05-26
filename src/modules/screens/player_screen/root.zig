@@ -35,13 +35,14 @@ pub const PlayerScreen = struct {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
     }
 
-    pub fn load(self: *PlayerScreen) void {
+    pub fn load(self: *PlayerScreen, io: *std.Io) void {
+        _ = io;
         self.resources.load();
         self.fade_in_timer.is_active = true;
     }
 };
 
-pub fn loadPlayerScreenTask(ctx: *anyopaque) void {
+pub fn loadPlayerScreenTask(ctx: *anyopaque, io: *std.Io) void {
     const screen: *PlayerScreen = @ptrCast(@alignCast(ctx));
-    screen.load();
+    screen.load(io);
 }

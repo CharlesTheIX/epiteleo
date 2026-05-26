@@ -4,16 +4,16 @@ const utils = @import("./utils.zig");
 
 const JobCtx = utils.JobCtx;
 const doJob = utils.doJob;
+const UI = @import("../ui/root.zig").UI;
 pub const LoadRequest = utils.LoadRequest;
-const UI = @import("../../ui/root.zig").UI;
-const App = @import("../../../root.zig").App;
-const Timer = @import("../../timer.zig").Timer;
+const App = @import("../../root.zig").App;
+const Timer = @import("../timer.zig").Timer;
 const statusToInt = utils.statusToInt;
 const Resources = @import("./resources.zig").Resources;
 const statusFromInt = utils.statusFromInt;
-const AppState = @import("../../../lib/utils.zig").AppState;
+const AppState = @import("../../lib/utils.zig").AppState;
 
-pub const LoadingScreen = struct {
+pub const Loader = struct {
     loading: bool = false,
     showing: bool = false,
     resources: Resources = .{},
@@ -24,15 +24,15 @@ pub const LoadingScreen = struct {
     active_request: ?LoadRequest = null,
     job_status: std.atomic.Value(u8) = std.atomic.Value(u8).init(statusToInt(.Idle)),
 
-    pub fn init() LoadingScreen {
+    pub fn init() Loader {
         return .{};
     }
 
-    pub fn deinit(self: *LoadingScreen) void {
+    pub fn deinit(self: *Loader) void {
         self.resources.deinit();
     }
 
-    pub fn draw(self: *LoadingScreen, ui: *UI) void {
+    pub fn drawLoadingScreen(self: *Loader, ui: *UI) void {
         if (!self.showing) return;
         var alpha: f32 = 1.0;
         var tint = rl.Color.white;
@@ -54,17 +54,7 @@ pub const LoadingScreen = struct {
         ui.drawText(loading_txt, pos, ui.font.size, tint);
     }
 
-    fn finalizeLoadRequest(self: *LoadingScreen) void {
-        if (self.active_request) |request| {
-            switch (request) {
-                .SleepNs => {},
-                .Task => |task| if (task.run_on_main_thread) task.run(task.ctx),
-            }
-        }
-        self.active_request = null;
-    }
-
-    pub fn load(self: *LoadingScreen, load_request: LoadRequest, completion_state: AppState) !void {
+    pub fn load(self: *Loader, load_request: LoadRequest, completion_state: AppState) !void {
         self.loading = true;
         self.showing = true;
         self.completion_pending = false;
@@ -80,7 +70,7 @@ pub const LoadingScreen = struct {
         thread.detach();
     }
 
-    pub fn update(self: *LoadingScreen, app: *App) void {
+    pub fn update(self: *Loader, app: *App) void {
         if (!self.showing) return;
         self.resources.sprite.update();
         if (self.loading) {
@@ -88,8 +78,14 @@ pub const LoadingScreen = struct {
             switch (status) {
                 .Success => {
                     self.loading = false;
-                    self.finalizeLoadRequest();
                     self.completion_pending = true;
+                    if (self.active_request) |request| {
+                        switch (request) {
+                            .SleepNs => {},
+                            .Task => |task| if (task.run_on_main_thread) task.run(task.ctx, task.io),
+                        }
+                    }
+                    self.active_request = null;
                 },
                 .Failed => {
                     self.loading = false;

@@ -10,7 +10,7 @@ pub fn doJob(ctx: JobCtx) void {
             ctx.status.store(statusToInt(.Success), .release);
         },
         .Task => |task| {
-            if (!task.run_on_main_thread) task.run(task.ctx);
+            if (!task.run_on_main_thread) task.run(task.ctx, task.io);
             ctx.status.store(statusToInt(.Success), .release);
         },
     }
@@ -34,9 +34,10 @@ pub const LoadStatus = enum(u8) {
 };
 
 pub const LoadTask = struct {
+    io: *std.Io,
     ctx: *anyopaque,
     run_on_main_thread: bool = false,
-    run: *const fn (ctx: *anyopaque) void,
+    run: *const fn (ctx: *anyopaque, io: *std.Io) void,
 };
 
 pub fn statusToInt(status: LoadStatus) u8 {

@@ -8,7 +8,7 @@ const Timer = @import("./timer.zig").Timer;
 const ih = @import("./input_handler/root.zig");
 const Camera = @import("./camera/root.zig").Camera;
 const Canvas = @import("./canvas/root.zig").Canvas;
-const LoadRequest = @import("./screens/loading_screen/utils.zig").LoadRequest;
+const LoadRequest = @import("./loader/utils.zig").LoadRequest;
 const drawAppInfo = @import("../lib/utils.zig").drawInfo;
 const drawCameraInfo = @import("./camera/lib/utils.zig").drawInfo;
 const drawCanvasInfo = @import("./canvas/lib/utils.zig").drawInfo;
@@ -93,8 +93,8 @@ pub const Dev = struct {
                 .__App => {
                     if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
-                        if (!app.loading_screen.loading) {
-                            app.loading_screen.load(
+                        if (!app.loader.loading) {
+                            app.loader.load(
                                 LoadRequest{ .SleepNs = std.time.ns_per_s * 5 },
                                 app.state,
                             ) catch {};

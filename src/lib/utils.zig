@@ -53,7 +53,7 @@ pub fn drawInfo(app: *const App, allocator: std.mem.Allocator) void {
     const is_loading_title = "App | Is Loading:";
     const is_loading_title_width = app.ui.font.measureText(is_loading_title, 16);
     app.ui.drawText(is_loading_title, padding, 16, rl.Color.white);
-    const is_loading_string = if (app.loading_screen.loading) "True" else "False";
+    const is_loading_string = if (app.loader.loading) "True" else "False";
     padding.x += is_loading_title_width.x + 8;
     app.ui.drawText(is_loading_string, padding, 16, rl.Color.white);
     padding.x = 16;

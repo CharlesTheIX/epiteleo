@@ -1,24 +1,30 @@
 const std = @import("std");
 const rl = @import("raylib");
+const ss = @import("../../settings/root.zig");
 const ps = @import("../player_screen/root.zig");
 const ih = @import("../../input_handler/root.zig");
 
 const Key = ih.Key;
+const Settings = ss.Settings;
 const InputHandler = ih.InputHandler;
 const PlayerScreen = ps.PlayerScreen;
 const UI = @import("../../ui/root.zig").UI;
 const App = @import("../../../root.zig").App;
 const Timer = @import("../../timer.zig").Timer;
 const Resources = @import("./resources.zig").Resources;
+const LoadRequest = @import("../../loader/utils.zig").LoadRequest;
+const loadSettingsTask = ss.loadSettingsTask;
 const loadPlayerScreenTask = ps.loadPlayerScreenTask;
-const LoadRequest = @import("../loading_screen/utils.zig").LoadRequest;
 
 pub const IntroScreen = struct {
     option_index: u2 = 0,
     resources: Resources = .{},
+    has_save_data: bool = false,
     input_timer: Timer = .init(0.3),
     fade_in_timer: Timer = .init(0.5),
+    has_save_data_option_index: u2 = 0,
     options: [3][]const u8 = .{ "Stat Game", "Settings", "Exit" },
+    has_save_data_options: [2][]const u8 = .{ "Continue", "New Game" },
 
     pub fn init() IntroScreen {
         return .{};
@@ -38,15 +44,25 @@ pub const IntroScreen = struct {
             rl.drawTextureV(texture, rl.Vector2.init(template.x, template.y), tint);
         }
         var pos = rl.Vector2.init(template.x + 16, template.y + 16);
-        for (self.options, 0..) |option, i| {
-            var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
-            if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
-            ui.drawText(option_txt, pos, ui.font.size, tint);
-            pos.y += ui.font.size + 8;
+        if (self.has_save_data) {
+            for (self.has_save_data_options, 0..) |option, i| {
+                var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
+                if (i == self.has_save_data_option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
+                ui.drawText(option_txt, pos, ui.font.size, tint);
+                pos.y += ui.font.size + 8;
+            }
+        } else {
+            for (self.options, 0..) |option, i| {
+                var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
+                if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
+                ui.drawText(option_txt, pos, ui.font.size, tint);
+                pos.y += ui.font.size + 8;
+            }
         }
     }
 
-    pub fn load(self: *IntroScreen) void {
+    pub fn load(self: *IntroScreen, io: *std.Io) void {
+        _ = io;
         self.resources.load();
         self.fade_in_timer.is_active = true;
     }
@@ -69,29 +85,48 @@ pub const IntroScreen = struct {
             self.input_timer.is_active = true;
             switch (self.option_index) {
                 0 => {
-                    defer self.deinit();
-                    defer app.intro_screen = null;
-                    self.input_timer.is_active = true;
-                    if (app.player_screen == null) app.player_screen = PlayerScreen.init();
-                    if (app.player_screen) |*p| {
-                        const load_request: LoadRequest = .{ .Task = .{
-                            .ctx = @ptrCast(p),
-                            .run_on_main_thread = true,
-                            .run = loadPlayerScreenTask,
-                        } };
-                        return app.setState(.Playing, load_request);
+                    self.option_index = 0;
+                    self.has_save_data_option_index = 0;
+                    if (!self.has_save_data) {
+                        defer app.intro_screen = null;
+                        defer self.deinit();
+                        self.input_timer.is_active = true;
+                        if (app.player_screen == null) app.player_screen = PlayerScreen.init();
+                        if (app.player_screen) |*p| {
+                            const load_request: LoadRequest = .{ .Task = .{
+                                .io = app.io,
+                                .ctx = @ptrCast(p),
+                                .run_on_main_thread = true,
+                                .run = loadPlayerScreenTask,
+                            } };
+                            return app.setState(.Playing, load_request);
+                        }
+                        return std.debug.panic("Failed to initialize the player screen\n", .{});
                     }
-                    return std.debug.panic("Failed to initialize the player screen\n", .{});
                 },
-                1 => {},
-                2 => app.shut_down = true,
-                else => {},
+                1 => {
+                    defer app.intro_screen = null;
+                    defer self.deinit();
+                    self.input_timer.is_active = true;
+                    const load_request: LoadRequest = .{ .Task = .{
+                        .io = app.io,
+                        .run_on_main_thread = true,
+                        .ctx = @ptrCast(&app.settings),
+                        .run = loadSettingsTask,
+                    } };
+                    return app.setState(.Settings, load_request);
+                },
+                2 => {
+                    app.shut_down = true;
+                    return;
+                },
+                else => return,
             }
         }
     }
 };
 
-pub fn loadIntroScreenTask(ctx: *anyopaque) void {
+pub fn loadIntroScreenTask(ctx: *anyopaque, io: *std.Io) void {
     const screen: *IntroScreen = @ptrCast(@alignCast(ctx));
-    screen.load();
+    screen.load(io);
 }
