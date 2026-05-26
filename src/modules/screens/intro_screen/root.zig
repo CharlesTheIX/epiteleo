@@ -38,7 +38,7 @@ pub const IntroScreen = struct {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const template = ui.defaultRect();
-        ui.drawRect(template, rl.Color.maroon.alpha(alpha));
+        ui.drawRect(template, rl.Color.black.alpha(alpha));
         const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture) |texture| {
             rl.drawTextureV(texture, rl.Vector2.init(template.x, template.y), tint);
@@ -59,12 +59,6 @@ pub const IntroScreen = struct {
                 pos.y += ui.font.size + 8;
             }
         }
-    }
-
-    pub fn load(self: *IntroScreen, io: *std.Io) void {
-        _ = io;
-        self.resources.load();
-        self.fade_in_timer.is_active = true;
     }
 
     pub fn update(self: *IntroScreen, app: *App) void {
@@ -127,6 +121,8 @@ pub const IntroScreen = struct {
 };
 
 pub fn loadIntroScreenTask(ctx: *anyopaque, io: *std.Io) void {
+    _ = io;
     const screen: *IntroScreen = @ptrCast(@alignCast(ctx));
-    screen.load(io);
+    screen.resources.load();
+    screen.fade_in_timer.is_active = true;
 }

@@ -22,7 +22,7 @@ pub const PlayerScreen = struct {
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         ui.drawRect(
             rl.Rectangle.init(0, 0, @as(f32, @floatFromInt(rl.getScreenWidth())), @as(f32, @floatFromInt(rl.getScreenHeight()))),
-            rl.Color.green.alpha(alpha),
+            rl.Color.black.alpha(alpha),
         );
         const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture != null) {}
@@ -34,15 +34,11 @@ pub const PlayerScreen = struct {
     pub fn update(self: *PlayerScreen) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
     }
-
-    pub fn load(self: *PlayerScreen, io: *std.Io) void {
-        _ = io;
-        self.resources.load();
-        self.fade_in_timer.is_active = true;
-    }
 };
 
 pub fn loadPlayerScreenTask(ctx: *anyopaque, io: *std.Io) void {
     const screen: *PlayerScreen = @ptrCast(@alignCast(ctx));
-    screen.load(io);
+    _ = io;
+    screen.resources.load();
+    screen.fade_in_timer.is_active = true;
 }

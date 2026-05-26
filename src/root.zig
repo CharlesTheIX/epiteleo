@@ -20,25 +20,21 @@ const PlayerScreen = @import("./modules/screens/player_screen/root.zig").PlayerS
 pub const App = struct {
     io: *std.Io,
     ui: UI = .init(),
+    __dev: ?Dev = .init(),
     shut_down: bool = false,
     state: AppState = .Init,
     camera: Camera = .init(),
     canvas: Canvas = .init(),
     loader: Loader = .init(),
-    __dev: ?Dev = Dev.init(),
     input_handler: InputHandler,
-    allocator: std.mem.Allocator,
+    settings: Settings = .init(),
     prev_state: AppState = .Init,
+    allocator: std.mem.Allocator,
     player_screen: ?PlayerScreen = null,
-    settings: Settings = Settings.init(),
-    intro_screen: ?IntroScreen = IntroScreen.init(),
+    intro_screen: ?IntroScreen = .init(),
 
     pub fn init(allocator: std.mem.Allocator, io: *std.Io) App {
-        return App{
-            .io = io,
-            .allocator = allocator,
-            .input_handler = .init(allocator),
-        };
+        return App{ .io = io, .allocator = allocator, .input_handler = .init(allocator) };
     }
 
     pub fn deinit(self: *App) void {
@@ -60,6 +56,7 @@ pub const App = struct {
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
         if (self.loader.showing) return self.loader.drawLoadingScreen(&self.ui);
+
         switch (self.state) {
             .Init => return,
             .Intro => if (self.intro_screen) |*i| i.draw(&self.ui, self.allocator),
@@ -75,30 +72,26 @@ pub const App = struct {
 
     fn handleResize(self: *App) void {
         if (!rl.isWindowResized()) return;
-        const new_width = @as(f32, @floatFromInt(rl.getScreenWidth()));
-        const new_height = @as(f32, @floatFromInt(rl.getScreenHeight()));
-        if (self.canvas.rect.x == new_width and self.canvas.rect.y == new_height) return;
-        const new_offset = rl.Vector2.init(new_width, new_height).scale(0.5);
-        self.camera.resize(new_offset);
-        self.canvas.rect = rl.Rectangle.init(0, 0, new_width, new_height);
+        const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
+        const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
+        self.camera.resize(rl.Vector2.init(screen_w, screen_h).scale(0.5));
+        self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
     }
 
     fn load(self: *App) void {
         self.ui.load();
-        self.settings.load();
+        self.settings.load(self.io);
         self.loader.resources.load(self.io);
-        const screen_size = rl.Vector2.init(
-            @as(f32, @floatFromInt(rl.getScreenWidth())),
-            @as(f32, @floatFromInt(rl.getScreenHeight())),
-        );
-        self.camera.load(screen_size.scale(0.5));
-        self.canvas.rect = rl.Rectangle.init(0, 0, screen_size.x, screen_size.y);
+        const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
+        const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
+        self.camera.load(rl.Vector2.init(screen_w, screen_h).scale(0.5));
+        self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
     }
 
     pub fn run(self: *App) void {
-        rl.setTargetFPS(60);
         var config_flags = rl.ConfigFlags{ .vsync_hint = true };
         if (self.__dev != null) config_flags.window_resizable = true;
+        rl.setTargetFPS(60);
         rl.setConfigFlags(config_flags);
         rl.initWindow(960, 540, "Epiteleo");
         defer rl.closeWindow();
@@ -115,8 +108,6 @@ pub const App = struct {
         self.prev_state = self.state;
         self.state = state;
         switch (state) {
-            .Intro => self.camera.state = .Fixed,
-            .Settings => self.camera.state = .Fixed,
             // TODO: update the playing - this is here for testing - CIX
             .Playing => self.camera.state = .Free,
             else => self.camera.state = .Fixed,
@@ -132,9 +123,9 @@ pub const App = struct {
         self.canvas.update(&self.input_handler, &self.camera);
         if (self.__dev) |*dev| dev.update(self);
         switch (self.state) {
+            .Settings => return self.settings.update(self),
             .Playing => if (self.player_screen) |*p| return p.update(),
             .Intro => if (self.intro_screen) |*i| return i.update(self),
-            .Settings => return self.settings.update(self),
             .Init => {
                 if (self.intro_screen) |*i| {
                     const load_request: LoadRequest = .{ .Task = .{
