@@ -61,3 +61,8 @@ pub const Data = struct {
         };
     }
 };
+
+pub fn saveDataOnThread(ctx: *anyopaque, io: *std.Io) void {
+    const module: *Data = @ptrCast(@alignCast(ctx));
+    module.save(io);
+}

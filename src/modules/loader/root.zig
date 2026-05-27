@@ -21,7 +21,7 @@ pub const Loader = struct {
     fade_in_timer: Timer = .init(0.5),
     fade_out_timer: Timer = .init(0.5),
     active_request: ?JobRequest = null,
-    completion_state: AppState = .Intro,
+    completion_state: ?AppState = null,
     job_status: std.atomic.Value(u8) = std.atomic.Value(u8).init(JobStatus.toInt(.Idle)),
 
     pub fn init() Loader {
@@ -54,17 +54,17 @@ pub const Loader = struct {
         ui.drawText(loading_txt, pos, ui.font.size, tint);
     }
 
-    pub fn load(self: *Loader, job_request: JobRequest, completion_state: AppState) !void {
+    pub fn load(self: *Loader, job_request: JobRequest, completion_state: ?AppState) !void {
         self.loading = true;
         self.showing = true;
         self.completion_pending = false;
         self.active_request = job_request;
         self.fade_in_timer.is_active = true;
         self.fade_out_timer.is_active = false;
-        self.completion_state = completion_state;
-        self.job_status.store(JobStatus.toInt(.Idle), .release);
         self.fade_in_timer.value_ms = self.fade_in_timer.initial_value_ms;
+        if (completion_state) |state| self.completion_state = state;
         self.fade_out_timer.value_ms = self.fade_out_timer.initial_value_ms;
+        self.job_status.store(JobStatus.toInt(.Idle), .release);
         const ctx = JobCtx{ .request = job_request, .status = &self.job_status };
         var thread = std.Thread.spawn(.{}, doJob, .{ctx}) catch return;
         thread.detach();
@@ -111,7 +111,7 @@ pub const Loader = struct {
         if (self.completion_pending) {
             self.showing = false;
             self.completion_pending = false;
-            app.setState(self.completion_state, null);
+            if (self.completion_state) |state| app.setState(state, null);
         }
     }
 };

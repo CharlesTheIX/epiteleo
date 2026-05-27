@@ -1,18 +1,20 @@
 const std = @import("std");
 const rl = @import("raylib");
+const d = @import("./lib/data.zig");
 const is = @import("../intro/root.zig");
 const ih = @import("../input_handler/root.zig");
 
 const Key = ih.Key;
+const Data = d.Data;
 const Intro = is.Intro;
 const InputHandler = ih.InputHandler;
 const UI = @import("../ui/root.zig").UI;
 const App = @import("../../root.zig").App;
-const Data = @import("./lib/data.zig").Data;
 const Timer = @import("../timer/root.zig").Timer;
 const JobRequest = @import("../../utils.zig").JobRequest;
 const Resources = @import("./lib/resources.zig").Resources;
 const loadIntroTask = is.loadIntroTask;
+const saveDataOnThread = d.saveDataOnThread;
 
 pub const Settings = struct {
     data: Data = .{},
