@@ -19,8 +19,8 @@ const NewGame = @import("./modules/new_game/root.zig").NewGame;
 const Settings = @import("./modules/settings/root.zig").Settings;
 
 pub const App = struct {
+    ui: UI,
     io: *std.Io,
-    ui: UI = .init(),
     game: ?Game = null,
     state: State = .Init,
     __dev: ?Dev = .init(),
@@ -35,8 +35,13 @@ pub const App = struct {
     settings: Settings = .init(),
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, io: *std.Io) App {
-        return App{ .io = io, .allocator = allocator, .input_handler = .init(allocator) };
+    pub fn init(allocator: std.mem.Allocator, io: *std.Io, writer: *std.Io.Writer) App {
+        return App{
+            .io = io,
+            .allocator = allocator,
+            .input_handler = .init(allocator),
+            .ui = UI.init(writer, allocator),
+        };
     }
 
     pub fn deinit(self: *App) void {

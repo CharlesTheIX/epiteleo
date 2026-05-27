@@ -1,3 +1,4 @@
+const std = @import("std");
 const rl = @import("raylib");
 
 const Font = @import("./lib/font.zig").Font;
@@ -5,9 +6,11 @@ pub const TextInput = @import("./lib/text_input.zig").TextInput;
 
 pub const UI = struct {
     font: Font = .{},
+    writer: *std.Io.Writer,
+    allocator: std.mem.Allocator,
 
-    pub fn init() UI {
-        return UI{};
+    pub fn init(writer: *std.Io.Writer, allocator: std.mem.Allocator) UI {
+        return .{ .writer = writer, .allocator = allocator };
     }
 
     pub fn deinit(self: *UI) void {
