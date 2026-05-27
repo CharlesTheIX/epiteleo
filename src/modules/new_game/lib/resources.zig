@@ -12,6 +12,10 @@ pub const Resources = struct {
     }
 
     pub fn load(self: *Resources) void {
+        if (self.texture) |texture| {
+            rl.unloadTexture(texture);
+            self.texture = null;
+        }
         const img = rl.loadImage("assets/screens/player_screen.png") catch return;
         defer rl.unloadImage(img);
         const texture = rl.loadTextureFromImage(img) catch return;

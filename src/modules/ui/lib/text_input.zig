@@ -11,6 +11,12 @@ pub const TextInput = struct {
     buffer: [256]u8 = undefined,
     padding: rl.Rectangle = .init(0, 0, 0, 0),
 
+    fn rebindWriter(self: *TextInput) void {
+        const end = self.writer.end;
+        self.writer = std.Io.Writer.fixed(&self.buffer);
+        self.writer.end = @min(end, self.buffer.len - 1);
+    }
+
     pub fn init(ui: *UI, rect: rl.Rectangle, content: ?[]const u8, padding: ?rl.Rectangle) TextInput {
         var text_input: TextInput = undefined;
         text_input.ui = ui;
@@ -32,11 +38,11 @@ pub const TextInput = struct {
     }
 
     pub fn deinit(self: *TextInput) void {
+        self.rebindWriter();
         self.writer.end = 0;
         self.focused = false;
         self.buffer = undefined;
         self.cursor_position = 0;
-        self.writer.flush();
     }
 
     pub fn focus(self: *TextInput) void {
@@ -48,15 +54,18 @@ pub const TextInput = struct {
     }
 
     pub fn getText(self: *TextInput) []const u8 {
+        self.rebindWriter();
         return self.buffer[0..self.writer.end];
     }
 
     pub fn clear(self: *TextInput) void {
+        self.rebindWriter();
         self.cursor_position = 0;
         self.writer.end = 0;
     }
 
     fn writtenLen(self: *TextInput) usize {
+        self.rebindWriter();
         return self.writer.end;
     }
 
@@ -78,6 +87,7 @@ pub const TextInput = struct {
     }
 
     pub fn draw(self: *TextInput) void {
+        self.rebindWriter();
         const text = self.getText();
         var border_color = rl.Color.gray.alpha(0.5);
         if (self.focused) border_color = rl.Color.blue.alpha(0.8);
@@ -114,6 +124,7 @@ pub const TextInput = struct {
     }
 
     pub fn update(self: *TextInput) void {
+        self.rebindWriter();
         if (!self.focused) return;
         var char_code = rl.getCharPressed();
         while (char_code > 0) : (char_code = rl.getCharPressed()) {
