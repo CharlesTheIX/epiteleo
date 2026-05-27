@@ -10,7 +10,6 @@ const Resources = @import("./lib/resources.zig").Resources;
 pub const NewGame = struct {
     text_input: TextInput,
     resources: Resources = .{},
-    input_timer: Timer = .init(0.1),
     fade_in_timer: Timer = .init(0.5),
 
     pub fn init(ui: *UI) NewGame {
@@ -23,7 +22,7 @@ pub const NewGame = struct {
             padding.y + ui.font.size + padding.height,
         );
         var text_input = ui.textInput(text_input_rect, null, padding);
-        text_input.focused = true;
+        text_input.focus();
         return .{ .text_input = text_input };
     }
 
@@ -45,9 +44,8 @@ pub const NewGame = struct {
 
     pub fn update(self: *NewGame) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
-        if (self.input_timer.is_active) return self.input_timer.update();
-        if (rl.isKeyPressed(rl.KeyboardKey.enter)) return std.debug.print("Start game with name: {s}\n", .{self.text_input.asStr()});
         self.text_input.update();
+        if (rl.isKeyPressed(rl.KeyboardKey.enter)) return std.debug.print("Start game with name: {s}\n", .{self.text_input.getText()});
     }
 };
 
