@@ -49,7 +49,6 @@ pub const App = struct {
         if (self.intro) |*i| i.deinit();
         if (self.__dev) |*dev| dev.deinit();
         if (self.new_game) |*ng| ng.deinit();
-        self.allocator.destroy(self);
         self.io.close();
     }
 
@@ -63,11 +62,12 @@ pub const App = struct {
         switch (self.state) {
             .Init => return,
             .NewGame => if (self.new_game) |*ng| ng.draw(&self.ui),
-            .Settings => self.settings.drawSettingsScreen(&self.ui, self.allocator),
+            .Settings => self.settings.drawSettingsScreen(&self.ui),
             .Intro => if (self.intro) |*i| i.drawIntroScreen(&self.ui, self.allocator),
             .Game => {
                 rl.beginMode2D(self.camera.camera);
                 if (self.game) |*g| g.draw(&self.ui);
+                self.canvas.draw(&self.ui);
                 rl.endMode2D();
             },
         }
@@ -121,11 +121,11 @@ pub const App = struct {
     fn update(self: *App) void {
         if (self.shut_down) return;
         self.handleResize();
-        if (self.loader.showing) return self.loader.update(self);
         self.input_handler.update();
         self.camera.update(&self.input_handler, null, &self.canvas.rect);
         self.canvas.update(&self.input_handler, &self.camera);
         if (self.__dev) |*dev| dev.update(self);
+        if (self.loader.showing) return self.loader.update(self);
         switch (self.state) {
             .Game => if (self.game) |*g| return g.update(),
             .Settings => return self.settings.update(self),

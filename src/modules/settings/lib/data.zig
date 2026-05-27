@@ -39,6 +39,9 @@ pub const Data = struct {
 
     pub fn save(self: *Data, io: *std.Io) void {
         const cwd = std.Io.Dir.cwd();
+        cwd.createDirPath(io.*, ".data") catch {
+            return std.debug.print("Error: Failed to save settings data - create directory\n", .{});
+        };
         const file = cwd.createFile(io.*, self.path, .{}) catch {
             return std.debug.print("Error: Failed to save settings data - create file\n", .{});
         };

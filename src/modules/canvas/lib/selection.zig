@@ -1,13 +1,10 @@
 const rl = @import("raylib");
-const utils = @import("../../../utils.zig");
 const ih = @import("../../input_handler/root.zig");
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
 const UI = @import("../../ui/root.zig").UI;
 const Camera = @import("../../camera/root.zig").Camera;
-const rotateVector = utils.rotateVector;
-const windowVectorToCameraVector = utils.windowVectorToCameraVector;
 
 pub const Selection = struct {
     end: ?rl.Vector2 = null,
@@ -27,22 +24,23 @@ pub const Selection = struct {
     pub fn getRect(self: *Selection, camera: *Camera) ?rl.Rectangle {
         if (self.start) |start| {
             if (self.end) |end| {
-                const rect = rl.Rectangle.init(
-                    @min(start.x, end.x),
-                    @min(start.y, end.y),
-                    @abs(end.x - start.x),
-                    @abs(end.y - start.y),
-                );
-                const top_left = windowVectorToCameraVector(rl.Vector2{ .x = rect.x, .y = rect.y }, camera);
-                const bottom_right = windowVectorToCameraVector(rl.Vector2{
-                    .x = rect.x + rect.width,
-                    .y = rect.y + rect.height,
-                }, camera);
+                const min_x = @min(start.x, end.x);
+                const max_x = @max(start.x, end.x);
+                const min_y = @min(start.y, end.y);
+                const max_y = @max(start.y, end.y);
+                const top_left = rl.getScreenToWorld2D(rl.Vector2{ .x = min_x, .y = min_y }, camera.camera);
+                const top_right = rl.getScreenToWorld2D(rl.Vector2{ .x = max_x, .y = min_y }, camera.camera);
+                const bottom_right = rl.getScreenToWorld2D(rl.Vector2{ .x = max_x, .y = max_y }, camera.camera);
+                const bottom_left = rl.getScreenToWorld2D(rl.Vector2{ .x = min_x, .y = max_y }, camera.camera);
+                const world_min_x = @min(@min(top_left.x, top_right.x), @min(bottom_right.x, bottom_left.x));
+                const world_max_x = @max(@max(top_left.x, top_right.x), @max(bottom_right.x, bottom_left.x));
+                const world_min_y = @min(@min(top_left.y, top_right.y), @min(bottom_right.y, bottom_left.y));
+                const world_max_y = @max(@max(top_left.y, top_right.y), @max(bottom_right.y, bottom_left.y));
                 return rl.Rectangle{
-                    .x = @min(top_left.x, bottom_right.x),
-                    .y = @min(top_left.y, bottom_right.y),
-                    .width = @abs(bottom_right.x - top_left.x),
-                    .height = @abs(bottom_right.y - top_left.y),
+                    .x = world_min_x,
+                    .y = world_min_y,
+                    .width = world_max_x - world_min_x,
+                    .height = world_max_y - world_min_y,
                 };
             } else return null;
         } else return null;

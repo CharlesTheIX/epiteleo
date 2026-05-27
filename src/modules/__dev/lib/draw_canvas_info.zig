@@ -1,7 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
 const App = @import("../../../root.zig").App;
-const windowVectorToCameraVector = @import("../../../utils.zig").windowVectorToCameraVector;
 
 pub fn drawCanvasInfo(app: *App) void {
     var padding = rl.Vector2.init(16, 16);
@@ -37,7 +36,7 @@ pub fn drawCanvasInfo(app: *App) void {
     // Mouse Canvas Position
     const mouse_title = "Mouse | Canvas Position:";
     const mouse_title_width = app.ui.font.measureText(mouse_title, 16);
-    const mouse_canvas_pos = windowVectorToCameraVector(app.input_handler.mouse.pos, &app.camera);
+    const mouse_canvas_pos = rl.getScreenToWorld2D(app.input_handler.mouse.pos, app.camera.camera);
     app.ui.drawText(mouse_title, padding, 16, rl.Color.white);
     const mouse_string = std.fmt.allocPrint(
         app.allocator,

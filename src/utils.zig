@@ -1,6 +1,5 @@
 const std = @import("std");
 const rl = @import("raylib");
-const Camera = @import("./modules/camera/root.zig").Camera;
 
 pub fn doJob(ctx: JobCtx) void {
     ctx.status.store(JobStatus.toInt(.Running), .release);
@@ -58,11 +57,4 @@ pub fn rotateVector(v: rl.Vector2, angle_degrees: f32) rl.Vector2 {
     const cos_a = @cos(angle_radians);
     const sin_a = @sin(angle_radians);
     return .{ .x = v.x * cos_a - v.y * sin_a, .y = v.x * sin_a + v.y * cos_a };
-}
-
-pub fn windowVectorToCameraVector(v: rl.Vector2, camera: *const Camera) rl.Vector2 {
-    var pos = v.subtract(camera.camera.offset);
-    pos = rotateVector(pos, -camera.camera.rotation);
-    pos = pos.scale(1.0 / camera.camera.zoom);
-    return pos.add(camera.camera.target);
 }

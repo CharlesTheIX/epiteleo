@@ -47,7 +47,7 @@ pub const Settings = struct {
         return std.debug.panic("Failed to initialize the intro\n", .{});
     }
 
-    pub fn drawSettingsScreen(self: *Settings, ui: *UI, allocator: std.mem.Allocator) void {
+    pub fn drawSettingsScreen(self: *Settings, ui: *UI) void {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const tint = rl.Color.white.alpha(alpha);
@@ -56,21 +56,28 @@ pub const Settings = struct {
         ui.drawRect(rect, rl.Color.black.alpha(alpha));
         // if (self.resources.texture) |texture| rl.drawTextureV(texture, rl.Vector2.init(rect.x, rect.y), tint);
         for (self.options, 0..) |option, i| {
+            var option_buf: [128]u8 = undefined;
             const active = i == self.option_index;
             switch (i) {
                 0 => {
-                    var option_txt = std.fmt.allocPrint(allocator, "{s}: {d}", .{ option, self.data.volume }) catch "";
-                    if (active) option_txt = std.fmt.allocPrint(allocator, "> {s}: {d}", .{ option, self.data.volume }) catch "";
+                    const option_txt = if (active)
+                        std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.data.volume }) catch continue
+                    else
+                        std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.data.volume }) catch continue;
                     ui.drawText(option_txt, pos, ui.font.size, tint);
                 },
                 1 => {
-                    var option_txt = std.fmt.allocPrint(allocator, "{s}: {d}", .{ option, self.data.difficulty }) catch "";
-                    if (active) option_txt = std.fmt.allocPrint(allocator, "> {s}: {d}", .{ option, self.data.difficulty }) catch "";
+                    const option_txt = if (active)
+                        std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.data.difficulty }) catch continue
+                    else
+                        std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.data.difficulty }) catch continue;
                     ui.drawText(option_txt, pos, ui.font.size, tint);
                 },
                 else => {
-                    var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
-                    if (active) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
+                    const option_txt = if (active)
+                        std.fmt.bufPrint(&option_buf, "> {s}", .{option}) catch continue
+                    else
+                        std.fmt.bufPrint(&option_buf, "{s}", .{option}) catch continue;
                     ui.drawText(option_txt, pos, ui.font.size, tint);
                 },
             }

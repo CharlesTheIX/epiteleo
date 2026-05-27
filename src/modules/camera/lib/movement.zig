@@ -65,9 +65,9 @@ pub const Movement = struct {
 
     fn updateFromScroll(self: *Movement, camera: *rl.Camera2D, input_handler: *InputHandler) void {
         if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) return;
-        var movement = input_handler.mouse.scroll.scale(self.movement_speed * self.lerp_speed / camera.zoom);
+        var movement = invertScroll(&input_handler.mouse.scroll);
         movement = rotateVector(movement, -camera.rotation);
-        movement = invertScroll(&input_handler.mouse.scroll);
+        movement = movement.scale(self.movement_speed * self.lerp_speed / camera.zoom);
         self.target_position = self.target_position.add(movement);
     }
 };
