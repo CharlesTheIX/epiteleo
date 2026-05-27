@@ -11,7 +11,7 @@ pub const Font = struct {
 
     pub fn load(self: *Font) void {
         self.size = 32;
-        self.custom = rl.loadFontEx("src/assets/fonts/JetBrains.ttf", @as(i32, self.size), null) catch null;
+        self.custom = rl.loadFontEx("assets/fonts/JetBrains.ttf", @as(i32, self.size), null) catch null;
         if (self.custom == null) return;
         self.loaded = true;
     }

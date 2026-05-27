@@ -12,7 +12,7 @@ pub const Resources = struct {
     }
 
     pub fn load(self: *Resources) void {
-        const img = rl.loadImage("src/assets/screens/player_screen.png") catch return;
+        const img = rl.loadImage("assets/screens/player_screen.png") catch return;
         defer rl.unloadImage(img);
         const texture = rl.loadTextureFromImage(img) catch return;
         self.texture = texture;

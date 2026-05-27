@@ -73,7 +73,7 @@ pub const SpriteType = enum {
 
     pub fn dataPath(self: SpriteType) []const u8 {
         return switch (self) {
-            .AnimalBoar => "src/assets/sprites/animals/boar/data.z",
+            .AnimalBoar => "assets/sprites/animals/boar/data.z",
         };
     }
 };
