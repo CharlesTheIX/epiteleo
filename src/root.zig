@@ -18,24 +18,6 @@ const loadIntroTask = is.loadIntroTask;
 const NewGame = @import("./modules/new_game/root.zig").NewGame;
 const Settings = @import("./modules/settings/root.zig").Settings;
 
-pub const State = enum {
-    Init,
-    Game,
-    Intro,
-    NewGame,
-    Settings,
-
-    pub fn toString(self: State) []const u8 {
-        return switch (self) {
-            .Game => "Game",
-            .Init => "Init",
-            .Intro => "Intro",
-            .NewGame => "New Game",
-            .Settings => "Settings",
-        };
-    }
-};
-
 pub const App = struct {
     io: *std.Io,
     ui: UI = .init(),
@@ -162,5 +144,23 @@ pub const App = struct {
                 return std.debug.panic("Failed to initialize the application\n", .{});
             },
         }
+    }
+};
+
+pub const State = enum {
+    Init,
+    Game,
+    Intro,
+    NewGame,
+    Settings,
+
+    pub fn toString(self: State) []const u8 {
+        return switch (self) {
+            .Game => "Game",
+            .Init => "Init",
+            .Intro => "Intro",
+            .NewGame => "New Game",
+            .Settings => "Settings",
+        };
     }
 };

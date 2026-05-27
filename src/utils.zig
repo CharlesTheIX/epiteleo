@@ -21,15 +21,9 @@ pub fn invertScroll(scroll: *rl.Vector2) rl.Vector2 {
     return rl.Vector2{ .x = scroll.x * -1, .y = scroll.y * -1 };
 }
 
-pub const JobCtx = struct {
-    request: JobRequest,
-    status: *std.atomic.Value(u8),
-};
+pub const JobCtx = struct { request: JobRequest, status: *std.atomic.Value(u8) };
 
-pub const JobRequest = union(enum) {
-    SleepNs: u64,
-    Task: JobTask,
-};
+pub const JobRequest = union(enum) { SleepNs: u64, Task: JobTask };
 
 pub const JobStatus = enum(u8) {
     Idle,
