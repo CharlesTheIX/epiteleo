@@ -79,7 +79,7 @@ pub const Start = struct {
                     1 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.new_game == null) app.new_game = NewGame.init();
+                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui);
                         if (app.new_game) |*_ng| {
                             const job_request: JobRequest = .{ .Task = .{
                                 .io = app.io,
@@ -101,7 +101,7 @@ pub const Start = struct {
                     0 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.new_game == null) app.new_game = NewGame.init();
+                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui);
                         if (app.new_game) |*_ng| {
                             const job_request: JobRequest = .{ .Task = .{
                                 .io = app.io,

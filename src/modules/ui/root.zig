@@ -1,6 +1,7 @@
 const rl = @import("raylib");
 
 const Font = @import("./lib/font.zig").Font;
+pub const TextInput = @import("./lib/text_input.zig").TextInput;
 
 pub const UI = struct {
     font: Font = .{},
@@ -94,5 +95,9 @@ pub const UI = struct {
 
     pub fn load(self: *UI) void {
         self.font.load();
+    }
+
+    pub fn textInput(self: *UI, rect: rl.Rectangle, content: ?[]const u8, padding: ?rl.Rectangle) TextInput {
+        return TextInput.init(self, rect, content, padding);
     }
 };
