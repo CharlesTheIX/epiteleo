@@ -3,7 +3,7 @@ const ih = @import("../../input_handler/root.zig");
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
-const invertScroll = @import("../../../lib/utils.zig").invertScroll;
+const invertScroll = @import("../../../utils.zig").invertScroll;
 
 pub const Rotation = struct {
     speed: f32 = 5.0,

@@ -1,37 +1,57 @@
 const std = @import("std");
 const rl = @import("raylib");
-const loader = @import("./modules/loader/root.zig");
+const gm = @import("./modules/game/root.zig");
+const is = @import("./modules/intro/root.zig");
+const l = @import("./modules/loader/root.zig");
 const ih = @import("./modules/input_handler/root.zig");
-const is = @import("./modules/screens/intro_screen/root.zig");
 
-const Loader = loader.Loader;
-const IntroScreen = is.IntroScreen;
+const Game = gm.Game;
+const Intro = is.Intro;
+const Loader = l.Loader;
 const InputHandler = ih.InputHandler;
-const LoadRequest = loader.LoadRequest;
 const UI = @import("./modules/ui/root.zig").UI;
+const JobRequest = @import("utils.zig").JobRequest;
 const Dev = @import("./modules/__dev/root.zig").Dev;
-const AppState = @import("./lib/utils.zig").AppState;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
+const loadIntroTask = is.loadIntroTask;
+const NewGame = @import("./modules/new_game/root.zig").NewGame;
 const Settings = @import("./modules/settings/root.zig").Settings;
-const loadIntroScreenTask = is.loadIntroScreenTask;
-const PlayerScreen = @import("./modules/screens/player_screen/root.zig").PlayerScreen;
+
+pub const State = enum {
+    Init,
+    Game,
+    Intro,
+    NewGame,
+    Settings,
+
+    pub fn toString(self: State) []const u8 {
+        return switch (self) {
+            .Game => "Game",
+            .Init => "Init",
+            .Intro => "Intro",
+            .NewGame => "New Game",
+            .Settings => "Settings",
+        };
+    }
+};
 
 pub const App = struct {
     io: *std.Io,
     ui: UI = .init(),
+    game: ?Game = null,
+    state: State = .Init,
     __dev: ?Dev = .init(),
+    intro: ?Intro = .init(),
     shut_down: bool = false,
-    state: AppState = .Init,
     camera: Camera = .init(),
     canvas: Canvas = .init(),
     loader: Loader = .init(),
+    prev_state: State = .Init,
+    new_game: ?NewGame = null,
     input_handler: InputHandler,
     settings: Settings = .init(),
-    prev_state: AppState = .Init,
     allocator: std.mem.Allocator,
-    player_screen: ?PlayerScreen = null,
-    intro_screen: ?IntroScreen = .init(),
 
     pub fn init(allocator: std.mem.Allocator, io: *std.Io) App {
         return App{ .io = io, .allocator = allocator, .input_handler = .init(allocator) };
@@ -43,9 +63,10 @@ pub const App = struct {
         self.loader.deinit();
         self.settings.deinit();
         self.input_handler.deinit();
+        if (self.game) |*g| g.deinit();
+        if (self.intro) |*i| i.deinit();
         if (self.__dev) |*dev| dev.deinit();
-        if (self.intro_screen) |*i| i.deinit();
-        if (self.player_screen) |*p| p.deinit();
+        if (self.new_game) |*ng| ng.deinit();
         self.allocator.destroy(self);
         self.io.close();
     }
@@ -59,11 +80,12 @@ pub const App = struct {
 
         switch (self.state) {
             .Init => return,
-            .Intro => if (self.intro_screen) |*i| i.draw(&self.ui, self.allocator),
+            .NewGame => if (self.new_game) |*ng| ng.draw(&self.ui),
             .Settings => self.settings.drawSettingsScreen(&self.ui, self.allocator),
-            .Playing => {
+            .Intro => if (self.intro) |*i| i.drawIntroScreen(&self.ui, self.allocator),
+            .Game => {
                 rl.beginMode2D(self.camera.camera);
-                if (self.player_screen) |*p| p.draw(&self.ui);
+                if (self.game) |*g| g.draw(&self.ui);
                 rl.endMode2D();
             },
         }
@@ -102,14 +124,14 @@ pub const App = struct {
         }
     }
 
-    pub fn setState(self: *App, state: AppState, load_request: ?LoadRequest) void {
+    pub fn setState(self: *App, state: State, job_request: ?JobRequest) void {
         if (self.loader.loading) return;
-        if (load_request) |request| return self.loader.load(request, state) catch return;
+        if (job_request) |request| return self.loader.load(request, state) catch return;
         self.prev_state = self.state;
         self.state = state;
         switch (state) {
-            // TODO: update the playing - this is here for testing - CIX
-            .Playing => self.camera.state = .Free,
+            // TODO: update the game - this is here for testing - CIX
+            .Game => self.camera.state = .Free,
             else => self.camera.state = .Fixed,
         }
     }
@@ -123,18 +145,19 @@ pub const App = struct {
         self.canvas.update(&self.input_handler, &self.camera);
         if (self.__dev) |*dev| dev.update(self);
         switch (self.state) {
+            .Game => if (self.game) |*g| return g.update(),
             .Settings => return self.settings.update(self),
-            .Playing => if (self.player_screen) |*p| return p.update(),
-            .Intro => if (self.intro_screen) |*i| return i.update(self),
+            .Intro => if (self.intro) |*i| return i.update(self),
+            .NewGame => if (self.new_game) |*ng| return ng.update(),
             .Init => {
-                if (self.intro_screen) |*i| {
-                    const load_request: LoadRequest = .{ .Task = .{
+                if (self.intro) |*i| {
+                    const job_request: JobRequest = .{ .Task = .{
                         .io = self.io,
                         .ctx = @ptrCast(i),
                         .run_on_main_thread = true,
-                        .run = loadIntroScreenTask,
+                        .run = loadIntroTask,
                     } };
-                    return self.setState(.Intro, load_request);
+                    return self.setState(.Intro, job_request);
                 }
                 return std.debug.panic("Failed to initialize the application\n", .{});
             },

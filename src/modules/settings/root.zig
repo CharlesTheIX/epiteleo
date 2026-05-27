@@ -1,18 +1,18 @@
 const std = @import("std");
 const rl = @import("raylib");
+const is = @import("../intro/root.zig");
 const ih = @import("../input_handler/root.zig");
-const is = @import("../screens/intro_screen/root.zig");
 
 const Key = ih.Key;
-const IntroScreen = is.IntroScreen;
+const Intro = is.Intro;
 const InputHandler = ih.InputHandler;
 const UI = @import("../ui/root.zig").UI;
 const App = @import("../../root.zig").App;
 const Data = @import("./lib/data.zig").Data;
 const Timer = @import("../timer/root.zig").Timer;
+const JobRequest = @import("../../utils.zig").JobRequest;
 const Resources = @import("./lib/resources.zig").Resources;
-const LoadRequest = @import("../loader/lib/utils.zig").LoadRequest;
-const loadIntroScreenTask = is.loadIntroScreenTask;
+const loadIntroTask = is.loadIntroTask;
 
 pub const Settings = struct {
     data: Data = .{},
@@ -30,6 +30,23 @@ pub const Settings = struct {
         self.resources.deinit();
     }
 
+    fn back(self: *Settings, app: *App) void {
+        defer self.deinit();
+        self.option_index = 0;
+        self.data.save(app.io);
+        if (app.intro == null) app.intro = Intro.init();
+        if (app.intro) |*p| {
+            const job_request: JobRequest = .{ .Task = .{
+                .io = app.io,
+                .ctx = @ptrCast(p),
+                .run_on_main_thread = true,
+                .run = loadIntroTask,
+            } };
+            return app.setState(app.prev_state, job_request);
+        }
+        return std.debug.panic("Failed to initialize the intro\n", .{});
+    }
+
     pub fn drawSettingsScreen(self: *Settings, ui: *UI, allocator: std.mem.Allocator) void {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
@@ -37,10 +54,7 @@ pub const Settings = struct {
         const rect = ui.defaultRect();
         var pos = rl.Vector2.init(rect.x + 16, rect.y + 16);
         ui.drawRect(rect, rl.Color.black.alpha(alpha));
-        if (self.resources.texture) |texture| rl.drawTextureV(texture, rl.Vector2.init(rect.x, rect.y), tint);
-        const title = "Settings";
-        ui.drawText(title, pos, ui.font.size, tint);
-        pos.y += ui.font.size + ui.font.size + 8;
+        // if (self.resources.texture) |texture| rl.drawTextureV(texture, rl.Vector2.init(rect.x, rect.y), tint);
         for (self.options, 0..) |option, i| {
             const active = i == self.option_index;
             switch (i) {
@@ -118,28 +132,11 @@ pub const Settings = struct {
         }
         return self.handleVerticalInput(app);
     }
-
-    fn back(self: *Settings, app: *App) void {
-        defer self.deinit();
-        self.option_index = 0;
-        self.data.save(app.io);
-        if (app.intro_screen == null) app.intro_screen = IntroScreen.init();
-        if (app.intro_screen) |*p| {
-            const load_request: LoadRequest = .{ .Task = .{
-                .io = app.io,
-                .ctx = @ptrCast(p),
-                .run_on_main_thread = true,
-                .run = loadIntroScreenTask,
-            } };
-            return app.setState(app.prev_state, load_request);
-        }
-        return std.debug.panic("Failed to initialize the intro screen\n", .{});
-    }
 };
 
 pub fn loadSettingsTask(ctx: *anyopaque, io: *std.Io) void {
     _ = io;
-    const screen: *Settings = @ptrCast(@alignCast(ctx));
-    screen.resources.load();
-    screen.fade_in_timer.is_active = true;
+    const module: *Settings = @ptrCast(@alignCast(ctx));
+    module.resources.load();
+    module.fade_in_timer.is_active = true;
 }

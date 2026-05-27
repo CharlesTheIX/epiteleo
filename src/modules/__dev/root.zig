@@ -1,14 +1,14 @@
 const std = @import("std");
 const rl = @import("raylib");
+const ih = @import("../input_handler/root.zig");
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
 const App = @import("../../root.zig").App;
-const ih = @import("../input_handler/root.zig");
 const Timer = @import("../timer/root.zig").Timer;
 const Camera = @import("../camera/root.zig").Camera;
 const Canvas = @import("../canvas/root.zig").Canvas;
-const LoadRequest = @import("../loader/lib/utils.zig").LoadRequest;
+const JobRequest = @import("../../utils.zig").JobRequest;
 const drawAppInfo = @import("./lib/draw_app_info.zig").drawAppInfo;
 const drawCameraInfo = @import("./lib/draw_camera_info.zig").drawCameraInfo;
 const drawCanvasInfo = @import("./lib/draw_canvas_info.zig").drawCanvasInfo;
@@ -99,7 +99,7 @@ pub const Dev = struct {
                         self.input_timer.is_active = true;
                         if (!app.loader.loading) {
                             app.loader.load(
-                                LoadRequest{ .SleepNs = std.time.ns_per_s * 5 },
+                                JobRequest{ .SleepNs = std.time.ns_per_s * 5 },
                                 app.state,
                             ) catch {};
                         }

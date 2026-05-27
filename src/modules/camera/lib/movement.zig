@@ -1,12 +1,12 @@
 const rl = @import("raylib");
+const utils = @import("../../../utils.zig");
 const ih = @import("../../input_handler/root.zig");
-const core_utils = @import("../../../lib/utils.zig");
 
 const Key = ih.Key;
 const Click = ih.Click;
 const InputHandler = ih.InputHandler;
-const invertScroll = core_utils.invertScroll;
-const rotateVector = core_utils.rotateVector;
+const invertScroll = utils.invertScroll;
+const rotateVector = utils.rotateVector;
 
 pub const Movement = struct {
     lerp_speed: f32 = 0.1,

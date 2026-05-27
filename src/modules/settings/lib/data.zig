@@ -3,7 +3,7 @@ const std = @import("std");
 pub const Data = struct {
     volume: u8 = 50,
     difficulty: u8 = 1,
-    path: *const [20:0]u8 = "src/.data/settings.z",
+    path: *const [16:0]u8 = ".data/settings.z",
 
     pub fn load(self: *Data, io: *std.Io) void {
         const cwd = std.Io.Dir.cwd();
@@ -35,7 +35,6 @@ pub const Data = struct {
                 }
             }
         }
-        return;
     }
 
     pub fn save(self: *Data, io: *std.Io) void {

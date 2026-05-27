@@ -1,16 +1,16 @@
 const std = @import("std");
 const rl = @import("raylib");
-const utils = @import("./lib/utils.zig");
+const a = @import("../../root.zig");
+const utils = @import("../../utils.zig");
 
+const App = a.App;
+const AppState = a.State;
 const JobCtx = utils.JobCtx;
+const JobStatus = utils.JobStatus;
+const JobRequest = utils.JobRequest;
 const doJob = utils.doJob;
 const UI = @import("../ui/root.zig").UI;
-pub const LoadRequest = utils.LoadRequest;
-const App = @import("../../root.zig").App;
 const Timer = @import("../timer/root.zig").Timer;
-const statusToInt = utils.statusToInt;
-const statusFromInt = utils.statusFromInt;
-const AppState = @import("../../lib/utils.zig").AppState;
 const Resources = @import("./lib/resources.zig").Resources;
 
 pub const Loader = struct {
@@ -20,9 +20,9 @@ pub const Loader = struct {
     completion_pending: bool = false,
     fade_in_timer: Timer = .init(0.5),
     fade_out_timer: Timer = .init(0.5),
+    active_request: ?JobRequest = null,
     completion_state: AppState = .Intro,
-    active_request: ?LoadRequest = null,
-    job_status: std.atomic.Value(u8) = std.atomic.Value(u8).init(statusToInt(.Idle)),
+    job_status: std.atomic.Value(u8) = std.atomic.Value(u8).init(JobStatus.toInt(.Idle)),
 
     pub fn init() Loader {
         return .{};
@@ -54,18 +54,18 @@ pub const Loader = struct {
         ui.drawText(loading_txt, pos, ui.font.size, tint);
     }
 
-    pub fn load(self: *Loader, load_request: LoadRequest, completion_state: AppState) !void {
+    pub fn load(self: *Loader, job_request: JobRequest, completion_state: AppState) !void {
         self.loading = true;
         self.showing = true;
         self.completion_pending = false;
-        self.active_request = load_request;
+        self.active_request = job_request;
         self.fade_in_timer.is_active = true;
         self.fade_out_timer.is_active = false;
         self.completion_state = completion_state;
-        self.job_status.store(statusToInt(.Idle), .release);
+        self.job_status.store(JobStatus.toInt(.Idle), .release);
         self.fade_in_timer.value_ms = self.fade_in_timer.initial_value_ms;
         self.fade_out_timer.value_ms = self.fade_out_timer.initial_value_ms;
-        const ctx = JobCtx{ .request = load_request, .status = &self.job_status };
+        const ctx = JobCtx{ .request = job_request, .status = &self.job_status };
         var thread = std.Thread.spawn(.{}, doJob, .{ctx}) catch return;
         thread.detach();
     }
@@ -74,7 +74,7 @@ pub const Loader = struct {
         if (!self.showing) return;
         self.resources.sprite.update();
         if (self.loading) {
-            const status = statusFromInt(self.job_status.load(.acquire));
+            const status = JobStatus.fromInt(self.job_status.load(.acquire));
             switch (status) {
                 .Success => {
                     self.loading = false;

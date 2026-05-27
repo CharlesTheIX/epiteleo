@@ -1,12 +1,13 @@
 const rl = @import("raylib");
+const utils = @import("../../../utils.zig");
 const ih = @import("../../input_handler/root.zig");
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
 const UI = @import("../../ui/root.zig").UI;
 const Camera = @import("../../camera/root.zig").Camera;
-const rotateVector = @import("../../../lib/utils.zig").rotateVector;
-const translateWindowVectorToCanvasVector = @import("./utils.zig").translateWindowVectorToCanvasVector;
+const rotateVector = utils.rotateVector;
+const windowVectorToCameraVector = utils.windowVectorToCameraVector;
 
 pub const Selection = struct {
     end: ?rl.Vector2 = null,
@@ -32,8 +33,8 @@ pub const Selection = struct {
                     @abs(end.x - start.x),
                     @abs(end.y - start.y),
                 );
-                const top_left = translateWindowVectorToCanvasVector(rl.Vector2{ .x = rect.x, .y = rect.y }, camera);
-                const bottom_right = translateWindowVectorToCanvasVector(rl.Vector2{
+                const top_left = windowVectorToCameraVector(rl.Vector2{ .x = rect.x, .y = rect.y }, camera);
+                const bottom_right = windowVectorToCameraVector(rl.Vector2{
                     .x = rect.x + rect.width,
                     .y = rect.y + rect.height,
                 }, camera);
