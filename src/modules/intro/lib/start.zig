@@ -1,11 +1,11 @@
 const std = @import("std");
 const rl = @import("raylib");
 const gm = @import("../../game/root.zig");
+const _ui = @import("../../../_ui/root.zig");
 const ng = @import("../../new_game/root.zig");
 
 const Game = gm.Game;
 const NewGame = ng.NewGame;
-const UI = @import("../../ui/root.zig").UI;
 const Intro = @import("../root.zig").Intro;
 const App = @import("../../../root.zig").App;
 const Timer = @import("../../timer/root.zig").Timer;
@@ -20,26 +20,27 @@ pub const Start = struct {
     no_save_options: [2][]const u8 = .{ "New Game", "Back" },
     has_save_options: [3][]const u8 = .{ "Continue", "New Game", "Back" },
 
-    pub fn draw(self: *Start, intro: *Intro, ui: *UI, allocator: std.mem.Allocator) void {
+    pub fn draw(self: *Start, intro: *Intro, font: *_ui.Font, allocator: std.mem.Allocator) void {
         var alpha: f32 = 1.0;
+        const spacing: f32 = 16;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
-        const template = ui.defaultRect();
-        ui.drawRect(template, rl.Color.black.alpha(alpha));
+        const template = _ui.initScreenRect();
+        _ui.drawRect(.{ .rect = template, .color = rl.Color.black.alpha(alpha) });
         const tint = rl.Color.white.alpha(alpha);
-        var pos = rl.Vector2.init(template.x + 16, template.y + 16);
+        var pos = rl.Vector2.init(template.x + spacing, template.y + spacing);
         if (intro.has_save_data) {
             for (self.has_save_options, 0..) |option, i| {
                 var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
                 if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
-                ui.drawText(option_txt, pos, ui.font.size, tint);
-                pos.y += ui.font.size + 8;
+                _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
+                pos.y += font.size + @as(f32, @divFloor(spacing, 2));
             }
         } else {
             for (self.no_save_options, 0..) |option, i| {
                 var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
                 if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
-                ui.drawText(option_txt, pos, ui.font.size, tint);
-                pos.y += ui.font.size + 8;
+                _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
+                pos.y += font.size + @as(f32, @divFloor(spacing, 2));
             }
         }
     }
@@ -79,7 +80,7 @@ pub const Start = struct {
                     1 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui);
+                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui.font);
                         if (app.new_game) |*_ng| {
                             const job_request: JobRequest = .{ .Task = .{
                                 .io = app.io,
@@ -101,7 +102,7 @@ pub const Start = struct {
                     0 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui);
+                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui.font);
                         if (app.new_game) |*_ng| {
                             const job_request: JobRequest = .{ .Task = .{
                                 .io = app.io,

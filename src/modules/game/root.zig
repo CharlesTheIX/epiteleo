@@ -1,7 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-
-const UI = @import("../ui/root.zig").UI;
+const _ui = @import("../../_ui/root.zig");
 const Timer = @import("../timer/root.zig").Timer;
 const Resources = @import("./lib/resources.zig").Resources;
 
@@ -17,12 +16,12 @@ pub const Game = struct {
         self.resources.deinit();
     }
 
-    pub fn draw(self: *Game, ui: *UI) void {
+    pub fn draw(self: *Game) void {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
-        ui.drawRect(rl.Rectangle.init(0, 0, screen_w, screen_h), rl.Color.maroon.alpha(alpha));
+        _ui.drawRect(.{ .rect = .init(0, 0, screen_w, screen_h), .color = rl.Color.maroon.alpha(alpha) });
         // const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture != null) {}
     }

@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const gm = @import("../game/root.zig");
+const _ui = @import("../../_ui/root.zig");
 const ss = @import("../settings/root.zig");
 const ih = @import("../input_handler/root.zig");
 
@@ -9,7 +10,6 @@ const Game = gm.Game;
 const Settings = ss.Settings;
 const State = enum { Init, Start };
 const InputHandler = ih.InputHandler;
-const UI = @import("../ui/root.zig").UI;
 const App = @import("../../root.zig").App;
 const Init = @import("./lib/init.zig").Init;
 const Start = @import("./lib/start.zig").Start;
@@ -37,18 +37,18 @@ pub const Intro = struct {
         self.resources.deinit();
     }
 
-    pub fn drawIntroScreen(self: *Intro, ui: *UI, allocator: std.mem.Allocator) void {
+    pub fn drawIntroScreen(self: *Intro, font: *_ui.Font, allocator: std.mem.Allocator) void {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
-        const template = ui.defaultRect();
-        ui.drawRect(template, rl.Color.black.alpha(alpha));
+        const template = _ui.initScreenRect();
+        _ui.drawRect(.{ .rect = template, .color = rl.Color.black.alpha(alpha) });
         // const tint = rl.Color.white.alpha(alpha);
         // if (self.resources.texture) |texture| {
         //     rl.drawTextureV(texture, rl.Vector2.init(template.x, template.y), tint);
         // }
         switch (self.state) {
-            .Init => return self._init.draw(ui, allocator),
-            .Start => return self._start.draw(self, ui, allocator),
+            .Init => return self._init.draw(font, allocator),
+            .Start => return self._start.draw(self, font, allocator),
         }
     }
 

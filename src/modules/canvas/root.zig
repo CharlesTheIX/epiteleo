@@ -1,11 +1,10 @@
 const rl = @import("raylib");
-const ih = @import("../input_handler/root.zig");
-
-const Key = ih.Key;
-const InputHandler = ih.InputHandler;
-const UI = @import("../ui/root.zig").UI;
+const _ui = @import("../../_ui/root.zig");
+const _ih = @import("../input_handler/root.zig");
 const Camera = @import("../camera/root.zig").Camera;
 const Selection = @import("./lib/selection.zig").Selection;
+const Key = _ih.Key;
+const InputHandler = _ih.InputHandler;
 
 pub const Canvas = struct {
     selection: Selection = .{},
@@ -19,10 +18,10 @@ pub const Canvas = struct {
         _ = self;
     }
 
-    pub fn draw(self: *Canvas, ui: *UI) void {
-        ui.drawRect(self.rect, rl.Color.orange.alpha(0.5));
-        ui.drawGrid(self.rect, 8, rl.Color.black.alpha(0.8));
-        self.selection.draw(ui);
+    pub fn draw(self: *Canvas) void {
+        _ui.drawRect(.{ .rect = self.rect, .color = rl.Color.orange.alpha(0.5) });
+        _ui.drawGrid(.{ .rect = self.rect, .gap = 8, .color = rl.Color.gray.alpha(0.5) });
+        self.selection.draw();
     }
 
     pub fn load(self: *Canvas, rect: rl.Rectangle) void {

@@ -2,7 +2,7 @@ const rl = @import("raylib");
 
 pub const Font = struct {
     size: i8 = 32,
-    loaded: bool = false,
+    loaded: bool = true,
     custom: ?rl.Font = null,
 
     pub fn deinit(self: *Font) void {
@@ -10,16 +10,16 @@ pub const Font = struct {
     }
 
     pub fn load(self: *Font) void {
-        self.size = 32;
+        self.loaded = false;
         self.custom = rl.loadFontEx("assets/fonts/JetBrains.ttf", @as(i32, self.size), null) catch null;
         if (self.custom == null) return;
         self.loaded = true;
     }
-
-    pub fn measureText(self: Font, text: [:0]const u8, size: ?i8) rl.Vector2 {
-        const s = if (size) |s| s else self.size;
-        if (self.custom) |font| return rl.measureTextEx(font, text, @as(f32, s), 0);
-        const v = rl.Vector2.init(@floatFromInt(rl.measureText(text, @as(i32, s))), @as(f32, s));
-        return v;
-    }
 };
+
+pub fn measureText(text: [:0]const u8, font: ?Font) rl.Vector2 {
+    const fnt: Font = if (font) |f| f else .{};
+    if (fnt.custom) |f| return rl.measureTextEx(f, text, fnt.size, 0);
+    const width = @as(f32, @floatFromInt(rl.measureText(text, @as(i32, fnt.size))));
+    return rl.Vector2.init(width, @as(f32, fnt.size));
+}

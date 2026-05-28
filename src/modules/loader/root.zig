@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 const a = @import("../../root.zig");
 const utils = @import("../../utils.zig");
+const _ui = @import("../../_ui/root.zig");
 
 const App = a.App;
 const AppState = a.State;
@@ -9,7 +10,6 @@ const JobCtx = utils.JobCtx;
 const JobStatus = utils.JobStatus;
 const JobRequest = utils.JobRequest;
 const doJob = utils.doJob;
-const UI = @import("../ui/root.zig").UI;
 const Timer = @import("../timer/root.zig").Timer;
 const Resources = @import("./lib/resources.zig").Resources;
 
@@ -32,26 +32,27 @@ pub const Loader = struct {
         self.resources.deinit();
     }
 
-    pub fn drawLoadingScreen(self: *Loader, ui: *UI) void {
+    pub fn drawLoadingScreen(self: *Loader, font: *_ui.Font) void {
         if (!self.showing) return;
         var alpha: f32 = 1.0;
+        const spacing: f32 = 32;
         var tint = rl.Color.white;
-        const template = ui.defaultRect();
         const loading_txt = "LOADING";
+        const template = _ui.initScreenRect();
         var pos = rl.Vector2.init(template.width, template.height);
-        ui.drawRect(template, rl.Color.black);
+        _ui.drawRect(.{ .rect = template });
         if (self.resources.texture != null) {
-            pos.x -= 32;
-            pos.y -= 32;
+            pos.x -= spacing;
+            pos.y -= spacing;
             if (self.fade_in_timer.is_active) {
                 alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
             } else if (self.fade_out_timer.is_active) alpha = self.fade_out_timer.value_ms / self.fade_out_timer.initial_value_ms;
             tint = rl.Color.white.alpha(alpha);
             self.resources.sprite.draw(&pos, tint);
         }
-        pos.y -= 16;
-        pos.x -= ui.font.measureText(loading_txt, ui.font.size).x + 32;
-        ui.drawText(loading_txt, pos, ui.font.size, tint);
+        pos.y -= @as(f32, @divFloor(spacing, 2));
+        pos.x -= _ui.measureText(loading_txt, font.*).x + spacing;
+        _ui.drawText(.{ .text = loading_txt, .pos = pos, .font = font.*, .color = tint });
     }
 
     pub fn load(self: *Loader, job_request: JobRequest, completion_state: ?AppState) !void {

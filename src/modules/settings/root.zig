@@ -2,13 +2,13 @@ const std = @import("std");
 const rl = @import("raylib");
 const d = @import("./lib/data.zig");
 const is = @import("../intro/root.zig");
+const _ui = @import("../../_ui/root.zig");
 const ih = @import("../input_handler/root.zig");
 
 const Key = ih.Key;
 const Data = d.Data;
 const Intro = is.Intro;
 const InputHandler = ih.InputHandler;
-const UI = @import("../ui/root.zig").UI;
 const App = @import("../../root.zig").App;
 const Timer = @import("../timer/root.zig").Timer;
 const JobRequest = @import("../../utils.zig").JobRequest;
@@ -49,13 +49,13 @@ pub const Settings = struct {
         return std.debug.panic("Failed to initialize the intro\n", .{});
     }
 
-    pub fn drawSettingsScreen(self: *Settings, ui: *UI) void {
+    pub fn drawSettingsScreen(self: *Settings, font: *_ui.Font) void {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const tint = rl.Color.white.alpha(alpha);
-        const rect = ui.defaultRect();
+        const rect = _ui.initScreenRect();
         var pos = rl.Vector2.init(rect.x + 16, rect.y + 16);
-        ui.drawRect(rect, rl.Color.black.alpha(alpha));
+        _ui.drawRect(.{ .rect = rect, .color = rl.Color.black.alpha(alpha) });
         // if (self.resources.texture) |texture| rl.drawTextureV(texture, rl.Vector2.init(rect.x, rect.y), tint);
         for (self.options, 0..) |option, i| {
             var option_buf: [128]u8 = undefined;
@@ -66,24 +66,24 @@ pub const Settings = struct {
                         std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.data.volume }) catch continue
                     else
                         std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.data.volume }) catch continue;
-                    ui.drawText(option_txt, pos, ui.font.size, tint);
+                    _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 },
                 1 => {
                     const option_txt = if (active)
                         std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.data.difficulty }) catch continue
                     else
                         std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.data.difficulty }) catch continue;
-                    ui.drawText(option_txt, pos, ui.font.size, tint);
+                    _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 },
                 else => {
                     const option_txt = if (active)
                         std.fmt.bufPrint(&option_buf, "> {s}", .{option}) catch continue
                     else
                         std.fmt.bufPrint(&option_buf, "{s}", .{option}) catch continue;
-                    ui.drawText(option_txt, pos, ui.font.size, tint);
+                    _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 },
             }
-            pos.y += ui.font.size + 8;
+            pos.y += font.size + 8;
         }
     }
 

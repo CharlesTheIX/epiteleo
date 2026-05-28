@@ -1,9 +1,9 @@
 const rl = @import("raylib");
+const _ui = @import("../../../_ui/root.zig");
 const ih = @import("../../input_handler/root.zig");
 
 const Key = ih.Key;
 const InputHandler = ih.InputHandler;
-const UI = @import("../../ui/root.zig").UI;
 const Camera = @import("../../camera/root.zig").Camera;
 
 pub const Selection = struct {
@@ -17,8 +17,8 @@ pub const Selection = struct {
         self.start = null;
     }
 
-    pub fn draw(self: *Selection, ui: *UI) void {
-        if (self.rect) |rect| ui.drawRect(rect, rl.Color.white.alpha(0.5));
+    pub fn draw(self: *Selection) void {
+        if (self.rect) |rect| _ui.drawRect(.{ .rect = rect, .color = rl.Color.white.alpha(0.5) });
     }
 
     pub fn getRect(self: *Selection, camera: *Camera) ?rl.Rectangle {

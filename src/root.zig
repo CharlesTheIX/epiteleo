@@ -1,5 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ui = @import("./_ui/root.zig");
+
 const gm = @import("./modules/game/root.zig");
 const is = @import("./modules/intro/root.zig");
 const l = @import("./modules/loader/root.zig");
@@ -9,7 +11,6 @@ const Game = gm.Game;
 const Intro = is.Intro;
 const Loader = l.Loader;
 const InputHandler = ih.InputHandler;
-const UI = @import("./modules/ui/root.zig").UI;
 const JobRequest = @import("utils.zig").JobRequest;
 const Dev = @import("./modules/__dev/root.zig").Dev;
 const Camera = @import("./modules/camera/root.zig").Camera;
@@ -18,12 +19,13 @@ const loadIntroTask = is.loadIntroTask;
 const NewGame = @import("./modules/new_game/root.zig").NewGame;
 const Settings = @import("./modules/settings/root.zig").Settings;
 
+pub const AppProps = struct { allocator: std.mem.Allocator, io: *std.Io };
 pub const App = struct {
-    ui: UI,
     io: *std.Io,
     game: ?Game = null,
     state: State = .Init,
     __dev: ?Dev = .init(),
+    ui: _ui.Ui = .init(.{}),
     intro: ?Intro = .init(),
     shut_down: bool = false,
     camera: Camera = .init(),
@@ -35,13 +37,8 @@ pub const App = struct {
     settings: Settings = .init(),
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, io: *std.Io, writer: *std.Io.Writer) App {
-        return App{
-            .io = io,
-            .allocator = allocator,
-            .input_handler = .init(allocator),
-            .ui = UI.init(writer, allocator),
-        };
+    pub fn init(props: AppProps) App {
+        return App{ .io = props.io, .allocator = props.allocator, .input_handler = .init(props.allocator) };
     }
 
     pub fn deinit(self: *App) void {
@@ -62,17 +59,18 @@ pub const App = struct {
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
-        if (self.loader.showing) return self.loader.drawLoadingScreen(&self.ui);
+        const font = &self.ui.font;
+        if (self.loader.showing) return self.loader.drawLoadingScreen(font); // check
 
         switch (self.state) {
             .Init => return,
-            .NewGame => if (self.new_game) |*ng| ng.draw(&self.ui),
-            .Settings => self.settings.drawSettingsScreen(&self.ui),
-            .Intro => if (self.intro) |*i| i.drawIntroScreen(&self.ui, self.allocator),
+            .NewGame => if (self.new_game) |*ng| ng.draw(self.allocator, font),
+            .Settings => self.settings.drawSettingsScreen(font), // check
+            .Intro => if (self.intro) |*i| i.drawIntroScreen(font, self.allocator), // check
             .Game => {
                 rl.beginMode2D(self.camera.camera);
-                if (self.game) |*g| g.draw(&self.ui);
-                self.canvas.draw(&self.ui);
+                if (self.game) |*g| g.draw();
+                self.canvas.draw();
                 rl.endMode2D();
             },
         }

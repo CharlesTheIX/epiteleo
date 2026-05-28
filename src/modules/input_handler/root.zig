@@ -7,7 +7,6 @@ pub const Key = kb.Key;
 pub const Click = m.Click;
 pub const Mouse = m.Mouse;
 pub const Keyboard = kb.Keyboard;
-const UI = @import("../ui/root.zig").UI;
 
 pub const InputHandler = struct {
     mouse: Mouse,

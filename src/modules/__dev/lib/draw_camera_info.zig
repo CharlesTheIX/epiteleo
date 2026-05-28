@@ -1,256 +1,260 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ui = @import("../../../_ui/root.zig");
 const App = @import("../../../root.zig").App;
 
 pub fn drawCameraInfo(app: *App) void {
-    var padding = rl.Vector2.init(16, 16);
-    app.ui.drawRect(
-        rl.Rectangle.init(
-            0,
-            0,
-            @as(f32, @floatFromInt(rl.getScreenWidth())),
-            @as(f32, @floatFromInt(rl.getScreenHeight())),
-        ),
-        rl.Color.black.alpha(0.8),
-    );
+    var font = app.ui.font;
+    const spacing: f32 = 16;
+    var pos = rl.Vector2.init(spacing, spacing);
+    const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
+    const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
+    _ui.drawRect(.{ .rect = .init(0, 0, screen_w, screen_h), .color = rl.Color.black.alpha(0.8) });
 
     // Intro Text
-    app.ui.drawText("Camera Info:", padding, null, rl.Color.white);
-    padding.y += app.ui.font.size;
-    padding.y += 16; // Extra spacing after title
+    _ui.drawText(.{ .text = "Camera Info:", .pos = pos, .color = .white });
+    pos.y += font.size;
+
+    pos.y += spacing;
+    font.size = spacing;
 
     // Note Text
-    app.ui.drawText("Press .Zero (0) to cycle through camera states", padding, 16, rl.Color.white);
-    padding.y += 16;
-    app.ui.drawText("Press .Nine (9) to toggle snap to canvas", padding, 16, rl.Color.white);
-    padding.y += 16;
-    padding.y += 16; // Extra spacing after note
+    _ui.drawText(.{
+        .pos = pos,
+        .font = font,
+        .color = .white,
+        .text = "Press .Zero (0) to cycle through camera states",
+    });
+    _ui.drawText(.{ .text = "Press .Zero (0) to cycle through camera states", .pos = pos, .font = font, .color = .white });
+    pos.y += spacing;
+    _ui.drawText(.{ .text = "Press .Nine (9) to toggle snap to canvas", .pos = pos, .font = font, .color = .white });
+    pos.y += spacing * 2;
 
     // Camera State
     const state_title = "Camera | State:";
-    const state_title_width = app.ui.font.measureText(state_title, 16);
-    app.ui.drawText(state_title, padding, 16, rl.Color.white);
+    const state_title_width = _ui.measureText(state_title, font);
+    _ui.drawText(.{ .text = state_title, .pos = pos, .font = font, .color = .white });
     const state_string = app.camera.state.toString();
-    padding.x += state_title_width.x + 8;
-    app.ui.drawText(state_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += state_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = state_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Snaps to Canvas
     const snap_to_canvas_title = "Camera | Snaps to Canvas:";
-    const snap_to_canvas_title_width = app.ui.font.measureText(snap_to_canvas_title, 16);
-    app.ui.drawText(snap_to_canvas_title, padding, 16, rl.Color.white);
+    const snap_to_canvas_title_width = _ui.measureText(snap_to_canvas_title, font);
+    _ui.drawText(.{ .text = snap_to_canvas_title, .pos = pos, .font = font, .color = .white });
     const snap_to_canvas_string = if (app.camera.snap_to_canvas) "True" else "False";
-    padding.x += snap_to_canvas_title_width.x + 8;
-    app.ui.drawText(snap_to_canvas_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += snap_to_canvas_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = snap_to_canvas_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Camera Zoom
     const camera_zoom_title = "Camera | Zoom:";
-    const camera_zoom_title_width = app.ui.font.measureText(camera_zoom_title, 16);
-    app.ui.drawText(camera_zoom_title, padding, 16, rl.Color.white);
+    const camera_zoom_title_width = _ui.measureText(camera_zoom_title, font);
+    _ui.drawText(.{ .text = camera_zoom_title, .pos = pos, .font = font, .color = .white });
     const camera_zoom_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.camera.zoom}) catch "";
-    padding.x += camera_zoom_title_width.x + 8;
-    app.ui.drawText(camera_zoom_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += camera_zoom_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = camera_zoom_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Camera Rotation
     const camera_rotation_title = "Camera | Rotation:";
-    const camera_rotation_title_width = app.ui.font.measureText(camera_rotation_title, 16);
-    app.ui.drawText(camera_rotation_title, padding, 16, rl.Color.white);
+    const camera_rotation_title_width = _ui.measureText(camera_rotation_title, font);
+    _ui.drawText(.{ .text = camera_rotation_title, .pos = pos, .font = font, .color = .white });
     const camera_rotation_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.camera.rotation}) catch "";
-    padding.x += camera_rotation_title_width.x + 8;
-    app.ui.drawText(camera_rotation_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += camera_rotation_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = camera_rotation_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Camera Target
     const camera_target_title = "Camera | Target:";
-    const camera_target_title_width = app.ui.font.measureText(camera_target_title, 16);
-    app.ui.drawText(camera_target_title, padding, 16, rl.Color.white);
+    const camera_target_title_width = _ui.measureText(camera_target_title, font);
+    _ui.drawText(.{ .text = camera_target_title, .pos = pos, .font = font, .color = .white });
     const camera_target_string = std.fmt.allocPrint(
         app.allocator,
         "({d}, {d})",
         .{ app.camera.camera.target.x, app.camera.camera.target.y },
     ) catch "";
-    padding.x += camera_target_title_width.x + 8;
-    app.ui.drawText(camera_target_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += camera_target_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = camera_target_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Camera Offset
     const camera_offset_title = "Camera | Offset:";
-    const camera_offset_title_width = app.ui.font.measureText(camera_offset_title, 16);
-    app.ui.drawText(camera_offset_title, padding, 16, rl.Color.white);
+    const camera_offset_title_width = _ui.measureText(camera_offset_title, font);
+    _ui.drawText(.{ .text = camera_offset_title, .pos = pos, .font = font, .color = .white });
     const camera_offset_string = std.fmt.allocPrint(
         app.allocator,
         "({d}, {d})",
         .{ app.camera.camera.offset.x, app.camera.camera.offset.y },
     ) catch "";
-    padding.x += camera_offset_title_width.x + 8;
-    app.ui.drawText(camera_offset_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += camera_offset_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = camera_offset_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
-    padding.y += 8; // Extra spacing before zoom info
+    pos.y += @as(f32, @divFloor(spacing, 2));
 
     // Zoom Min
     const zoom_min_title = "Zoom | Min:";
-    const zoom_min_title_width = app.ui.font.measureText(zoom_min_title, 16);
-    app.ui.drawText(zoom_min_title, padding, 16, rl.Color.white);
+    const zoom_min_title_width = _ui.measureText(zoom_min_title, font);
+    _ui.drawText(.{ .text = zoom_min_title, .pos = pos, .font = font, .color = .white });
     const zoom_min_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.zoom.min}) catch "";
-    padding.x += zoom_min_title_width.x + 8;
-    app.ui.drawText(zoom_min_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += zoom_min_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = zoom_min_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Zoom Max
     const zoom_max_title = "Zoom | Max:";
-    const zoom_max_title_width = app.ui.font.measureText(zoom_max_title, 16);
-    app.ui.drawText(zoom_max_title, padding, 16, rl.Color.white);
+    const zoom_max_title_width = _ui.measureText(zoom_max_title, font);
+    _ui.drawText(.{ .text = zoom_max_title, .pos = pos, .font = font, .color = .white });
     const zoom_max_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.zoom.max}) catch "";
-    padding.x += zoom_max_title_width.x + 8;
-    app.ui.drawText(zoom_max_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += zoom_max_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = zoom_max_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Zoom Speed
     const zoom_speed_title = "Zoom | Speed:";
-    const zoom_speed_title_width = app.ui.font.measureText(zoom_speed_title, 16);
-    app.ui.drawText(zoom_speed_title, padding, 16, rl.Color.white);
+    const zoom_speed_title_width = _ui.measureText(zoom_speed_title, font);
+    _ui.drawText(.{ .text = zoom_speed_title, .pos = pos, .font = font, .color = .white });
     const zoom_speed_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.zoom.speed}) catch "";
-    padding.x += zoom_speed_title_width.x + 8;
-    app.ui.drawText(zoom_speed_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += zoom_speed_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = zoom_speed_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Zoom Target
     const zoom_target_title = "Zoom | Target:";
-    const zoom_target_title_width = app.ui.font.measureText(zoom_target_title, 16);
-    app.ui.drawText(zoom_target_title, padding, 16, rl.Color.white);
+    const zoom_target_title_width = _ui.measureText(zoom_target_title, font);
+    _ui.drawText(.{ .text = zoom_target_title, .pos = pos, .font = font, .color = .white });
     const zoom_target_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.zoom.target}) catch "";
-    padding.x += zoom_target_title_width.x + 8;
-    app.ui.drawText(zoom_target_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += zoom_target_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = zoom_target_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     //  Zoom Lerp Speed
     const zoom_lerp_speed_title = "Zoom | Lerp Speed:";
-    const zoom_lerp_speed_title_width = app.ui.font.measureText(zoom_lerp_speed_title, 16);
-    app.ui.drawText(zoom_lerp_speed_title, padding, 16, rl.Color.white);
+    const zoom_lerp_speed_title_width = _ui.measureText(zoom_lerp_speed_title, font);
+    _ui.drawText(.{ .text = zoom_lerp_speed_title, .pos = pos, .font = font, .color = .white });
     const zoom_lerp_speed_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.zoom.lerp_speed}) catch "";
-    padding.x += zoom_lerp_speed_title_width.x + 8;
-    app.ui.drawText(zoom_lerp_speed_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += zoom_lerp_speed_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = zoom_lerp_speed_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
-    padding.y += 8; // Extra spacing before movement info
+    pos.y += @as(f32, @divFloor(spacing, 2));
 
     // Movement Lerp Speed
     const movement_lerp_speed_title = "Movement | Lerp Speed:";
-    const movement_lerp_speed_title_width = app.ui.font.measureText(movement_lerp_speed_title, 16);
-    app.ui.drawText(movement_lerp_speed_title, padding, 16, rl.Color.white);
+    const movement_lerp_speed_title_width = _ui.measureText(movement_lerp_speed_title, font);
+    _ui.drawText(.{ .text = movement_lerp_speed_title, .pos = pos, .font = font, .color = .white });
     const movement_lerp_speed_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.movement.lerp_speed}) catch "";
-    padding.x += movement_lerp_speed_title_width.x + 8;
-    app.ui.drawText(movement_lerp_speed_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += movement_lerp_speed_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = movement_lerp_speed_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Movement Speed
     const movement_speed_title = "Movement | Speed:";
-    const movement_speed_title_width = app.ui.font.measureText(movement_speed_title, 16);
-    app.ui.drawText(movement_speed_title, padding, 16, rl.Color.white);
+    const movement_speed_title_width = _ui.measureText(movement_speed_title, font);
+    _ui.drawText(.{ .text = movement_speed_title, .pos = pos, .font = font, .color = .white });
     const movement_speed_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.movement.movement_speed}) catch "";
-    padding.x += movement_speed_title_width.x + 8;
-    app.ui.drawText(movement_speed_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += movement_speed_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = movement_speed_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Movement Target Position
     const movement_target_position_title = "Movement | Target Position:";
-    const movement_target_position_title_width = app.ui.font.measureText(movement_target_position_title, 16);
-    app.ui.drawText(movement_target_position_title, padding, 16, rl.Color.white);
+    const movement_target_position_title_width = _ui.measureText(movement_target_position_title, font);
+    _ui.drawText(.{ .text = movement_target_position_title, .pos = pos, .font = font, .color = .white });
     const movement_target_position_string = std.fmt.allocPrint(
         app.allocator,
         "({d}, {d})",
         .{ app.camera.movement.target_position.x, app.camera.movement.target_position.y },
     ) catch "";
-    padding.x += movement_target_position_title_width.x + 8;
-    app.ui.drawText(movement_target_position_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += movement_target_position_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = movement_target_position_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Movement Mouse Pan Start
     const movement_mouse_pan_start_title = "Movement | Mouse Pan Start:";
-    const movement_mouse_pan_start_title_width = app.ui.font.measureText(movement_mouse_pan_start_title, 16);
-    app.ui.drawText(movement_mouse_pan_start_title, padding, 16, rl.Color.white);
+    const movement_mouse_pan_start_title_width = _ui.measureText(movement_mouse_pan_start_title, font);
+    _ui.drawText(.{ .text = movement_mouse_pan_start_title, .pos = pos, .font = font, .color = .white });
     const movement_mouse_pan_start_string = std.fmt.allocPrint(
         app.allocator,
         "({d}, {d})",
         .{ app.camera.movement.mouse_pan_start.x, app.camera.movement.mouse_pan_start.y },
     ) catch "";
-    padding.x += movement_mouse_pan_start_title_width.x + 8;
-    app.ui.drawText(movement_mouse_pan_start_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += movement_mouse_pan_start_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = movement_mouse_pan_start_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Movement Mouse Pan Target
     const movement_mouse_pan_target_title = "Movement | Mouse Pan Target:";
-    const movement_mouse_pan_target_title_width = app.ui.font.measureText(movement_mouse_pan_target_title, 16);
-    app.ui.drawText(movement_mouse_pan_target_title, padding, 16, rl.Color.white);
+    const movement_mouse_pan_target_title_width = _ui.measureText(movement_mouse_pan_target_title, font);
+    _ui.drawText(.{ .text = movement_mouse_pan_target_title, .pos = pos, .font = font, .color = .white });
     const movement_mouse_pan_target_string = std.fmt.allocPrint(
         app.allocator,
         "({d}, {d})",
         .{ app.camera.movement.mouse_pan_target.x, app.camera.movement.mouse_pan_target.y },
     ) catch "";
-    padding.x += movement_mouse_pan_target_title_width.x + 8;
-    app.ui.drawText(movement_mouse_pan_target_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += movement_mouse_pan_target_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = movement_mouse_pan_target_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Movement Mouse Pan Active
     const movement_mouse_pan_active_title = "Movement | Mouse Pan Active:";
-    const movement_mouse_pan_active_title_width = app.ui.font.measureText(movement_mouse_pan_active_title, 16);
-    app.ui.drawText(movement_mouse_pan_active_title, padding, 16, rl.Color.white);
+    const movement_mouse_pan_active_title_width = _ui.measureText(movement_mouse_pan_active_title, font);
+    _ui.drawText(.{ .text = movement_mouse_pan_active_title, .pos = pos, .font = font, .color = .white });
     const movement_mouse_pan_active_string = if (app.camera.movement.mouse_pan_active) "True" else "False";
-    padding.x += movement_mouse_pan_active_title_width.x + 8;
-    app.ui.drawText(movement_mouse_pan_active_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += movement_mouse_pan_active_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = movement_mouse_pan_active_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
-    padding.y += 8; // Extra spacing before rotation info
+    pos.y += @as(f32, @divFloor(spacing, 2));
 
     // Rotation Speed
     const rotation_speed_title = "Rotation | Speed:";
-    const rotation_speed_title_width = app.ui.font.measureText(rotation_speed_title, 16);
-    app.ui.drawText(rotation_speed_title, padding, 16, rl.Color.white);
+    const rotation_speed_title_width = _ui.measureText(rotation_speed_title, font);
+    _ui.drawText(.{ .text = rotation_speed_title, .pos = pos, .font = font, .color = .white });
     const rotation_speed_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.rotation.speed}) catch "";
-    padding.x += rotation_speed_title_width.x + 8;
-    app.ui.drawText(rotation_speed_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += rotation_speed_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = rotation_speed_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Rotation Target
     const rotation_target_title = "Rotation | Target:";
-    const rotation_target_title_width = app.ui.font.measureText(rotation_target_title, 16);
-    app.ui.drawText(rotation_target_title, padding, 16, rl.Color.white);
+    const rotation_target_title_width = _ui.measureText(rotation_target_title, font);
+    _ui.drawText(.{ .text = rotation_target_title, .pos = pos, .font = font, .color = .white });
     const rotation_target_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.rotation.target}) catch "";
-    padding.x += rotation_target_title_width.x + 8;
-    app.ui.drawText(rotation_target_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += rotation_target_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = rotation_target_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
     // Rotation Lerp Speed
     const rotation_lerp_speed_title = "Rotation | Lerp Speed:";
-    const rotation_lerp_speed_title_width = app.ui.font.measureText(rotation_lerp_speed_title, 16);
-    app.ui.drawText(rotation_lerp_speed_title, padding, 16, rl.Color.white);
+    const rotation_lerp_speed_title_width = _ui.measureText(rotation_lerp_speed_title, font);
+    _ui.drawText(.{ .text = rotation_lerp_speed_title, .pos = pos, .font = font, .color = .white });
     const rotation_lerp_speed_string = std.fmt.allocPrint(app.allocator, "{d}", .{app.camera.rotation.lerp_speed}) catch "";
-    padding.x += rotation_lerp_speed_title_width.x + 8;
-    app.ui.drawText(rotation_lerp_speed_string, padding, 16, rl.Color.white);
-    padding.x = 16;
-    padding.y += 16;
+    pos.x += rotation_lerp_speed_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = rotation_lerp_speed_string, .pos = pos, .font = font, .color = .white });
+    pos.x = spacing;
+    pos.y += spacing;
 
-    padding.y += 8; // Extra spacing before follow info
+    pos.y += @as(f32, @divFloor(spacing, 2));
 }

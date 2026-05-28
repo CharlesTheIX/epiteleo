@@ -1,34 +1,28 @@
 const std = @import("std");
 const rl = @import("raylib");
-const UI = @import("../root.zig").UI;
+const _ui = @import("../../root.zig");
+
+pub const TextInputProps = struct {
+    content: ?[]const u8 = null,
+    rect: rl.Rectangle = .init(0, 0, 0, 0),
+    padding: rl.Rectangle = .init(0, 0, 0, 0),
+};
 
 pub const TextInput = struct {
-    ui: *UI,
     rect: rl.Rectangle,
-    focused: bool = false,
+    padding: rl.Rectangle,
     writer: std.Io.Writer,
+    focused: bool = false,
     cursor_position: usize = 0,
     buffer: [256]u8 = undefined,
-    padding: rl.Rectangle = .init(0, 0, 0, 0),
 
-    fn rebindWriter(self: *TextInput) void {
-        const end = self.writer.end;
-        self.writer = std.Io.Writer.fixed(&self.buffer);
-        self.writer.end = @min(end, self.buffer.len - 1);
-    }
-
-    pub fn init(ui: *UI, rect: rl.Rectangle, content: ?[]const u8, padding: ?rl.Rectangle) TextInput {
+    pub fn init(props: TextInputProps) TextInput {
         var text_input: TextInput = undefined;
-        text_input.ui = ui;
-        text_input.rect = rect;
-        text_input.focused = false;
-        text_input.buffer = undefined;
-        text_input.cursor_position = 0;
-        text_input.padding = .init(0, 0, 0, 0);
-        if (padding) |p| text_input.padding = p;
+        text_input.rect = props.rect;
+        text_input.padding = props.padding;
         text_input.writer = std.Io.Writer.fixed(&text_input.buffer);
         text_input.writer.end = 0;
-        if (content) |c| {
+        if (props.content) |c| {
             const len = @min(c.len, text_input.buffer.len - 1);
             @memcpy(text_input.buffer[0..len], c[0..len]);
             text_input.writer.end = len;
@@ -45,17 +39,8 @@ pub const TextInput = struct {
         self.cursor_position = 0;
     }
 
-    pub fn focus(self: *TextInput) void {
-        self.focused = true;
-    }
-
     pub fn blur(self: *TextInput) void {
         self.focused = false;
-    }
-
-    pub fn getText(self: *TextInput) []const u8 {
-        self.rebindWriter();
-        return self.buffer[0..self.writer.end];
     }
 
     pub fn clear(self: *TextInput) void {
@@ -64,9 +49,45 @@ pub const TextInput = struct {
         self.writer.end = 0;
     }
 
-    fn writtenLen(self: *TextInput) usize {
+    pub fn draw(self: *TextInput, allocator: std.mem.Allocator, font: _ui.Font) void {
         self.rebindWriter();
-        return self.writer.end;
+        const text = self.getText();
+        var border_color = rl.Color.gray.alpha(0.5);
+        if (self.focused) border_color = rl.Color.blue.alpha(0.8);
+        _ui.drawRect(.{ .rect = self.rect, .color = rl.Color.white.alpha(0.5) });
+        _ui.strokeRect(.{ .rect = self.rect, .thickness = 4, .color = border_color });
+        const pos = rl.Vector2{ .x = self.rect.x + self.padding.x, .y = self.rect.y + self.padding.y };
+        const text_z = allocator.dupeZ(u8, text) catch return;
+        defer allocator.free(text_z);
+        _ui.drawText(.{ .text = text_z, .color = rl.Color.black, .pos = pos, .font = font });
+        if (self.focused) {
+            _ui.strokeRect(.{ .rect = self.rect, .thickness = 4, .color = rl.Color.green.alpha(0.8) });
+            const cursor_y1 = pos.y;
+            const cursor_y2 = pos.y + @as(f32, @floatFromInt(font.size));
+            var cursor_x_buf: [257:0]u8 = undefined;
+            @memcpy(cursor_x_buf[0..self.cursor_position], self.buffer[0..self.cursor_position]);
+            cursor_x_buf[self.cursor_position] = 0;
+            const cursor_width = _ui.measureText(cursor_x_buf[0..self.cursor_position :0], font).x;
+            const cursor_x = pos.x + cursor_width;
+            const time = rl.getTime();
+            const blink_state = @mod(time * 2.0, 1.0) < 0.4;
+            if (blink_state) {
+                _ui.drawLine(.{
+                    .color = rl.Color.black,
+                    .to = rl.Vector2{ .x = cursor_x, .y = cursor_y2 },
+                    .from = rl.Vector2{ .x = cursor_x, .y = cursor_y1 },
+                });
+            }
+        }
+    }
+
+    pub fn focus(self: *TextInput) void {
+        self.focused = true;
+    }
+
+    pub fn getText(self: *TextInput) []const u8 {
+        self.rebindWriter();
+        return self.buffer[0..self.writer.end];
     }
 
     fn insertChar(self: *TextInput, index: usize, c: u8) void {
@@ -77,6 +98,12 @@ pub const TextInput = struct {
         self.writer.end = len + 1;
     }
 
+    fn rebindWriter(self: *TextInput) void {
+        const end = self.writer.end;
+        self.writer = std.Io.Writer.fixed(&self.buffer);
+        self.writer.end = @min(end, self.buffer.len - 1);
+    }
+
     fn removeChar(self: *TextInput, index: usize) void {
         const len = self.writtenLen();
         if (index >= len) return;
@@ -84,43 +111,6 @@ pub const TextInput = struct {
             std.mem.copyForwards(u8, self.buffer[index .. len - 1], self.buffer[index + 1 .. len]);
         }
         self.writer.end = len - 1;
-    }
-
-    pub fn draw(self: *TextInput) void {
-        self.rebindWriter();
-        const text = self.getText();
-        var border_color = rl.Color.gray.alpha(0.5);
-        if (self.focused) border_color = rl.Color.blue.alpha(0.8);
-        self.ui.drawRect(self.rect, rl.Color.white.alpha(0.5));
-        rl.drawRectangleLinesEx(self.rect, 4, border_color);
-        const pos = rl.Vector2{ .x = self.rect.x + self.padding.x, .y = self.rect.y + self.padding.y };
-        const text_z = self.ui.allocator.dupeZ(u8, text) catch return;
-        defer self.ui.allocator.free(text_z);
-        if (self.ui.font.custom) |font| {
-            rl.drawTextEx(font, text_z, pos, @as(f32, @floatFromInt(self.ui.font.size)), 0, rl.Color.black);
-        } else {
-            rl.drawText(text_z, @intFromFloat(pos.x), @intFromFloat(pos.y), self.ui.font.size, rl.Color.black);
-        }
-        if (self.focused) {
-            const cursor_y1 = pos.y;
-            const cursor_y2 = pos.y + @as(f32, @floatFromInt(self.ui.font.size));
-            var cursor_x_buf: [257:0]u8 = undefined;
-            @memcpy(cursor_x_buf[0..self.cursor_position], self.buffer[0..self.cursor_position]);
-            cursor_x_buf[self.cursor_position] = 0;
-            const cursor_width = self.ui.font.measureText(cursor_x_buf[0..self.cursor_position :0], self.ui.font.size).x;
-            const cursor_x = pos.x + cursor_width;
-            const time = rl.getTime();
-            const blink_state = @mod(time * 2.0, 1.0) < 0.4;
-            if (blink_state) {
-                rl.drawLine(
-                    @intFromFloat(cursor_x),
-                    @intFromFloat(cursor_y1),
-                    @intFromFloat(cursor_x),
-                    @intFromFloat(cursor_y2),
-                    rl.Color.black,
-                );
-            }
-        }
     }
 
     pub fn update(self: *TextInput) void {
@@ -149,5 +139,10 @@ pub const TextInput = struct {
         if (rl.isKeyPressed(rl.KeyboardKey.right)) {
             if (self.cursor_position < self.writtenLen()) self.cursor_position += 1;
         }
+    }
+
+    fn writtenLen(self: *TextInput) usize {
+        self.rebindWriter();
+        return self.writer.end;
     }
 };
