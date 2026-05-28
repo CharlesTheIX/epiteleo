@@ -45,7 +45,7 @@ pub const NewGame = struct {
         // const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture != null) {}
         self.text_box.draw(font);
-        self.text_input.draw(allocator, font.*);
+        self.text_input.draw(allocator, font);
     }
 
     pub fn update(self: *NewGame) void {

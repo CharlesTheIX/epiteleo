@@ -51,10 +51,11 @@ pub const Settings = struct {
 
     pub fn drawSettingsScreen(self: *Settings, font: *_ui.Font) void {
         var alpha: f32 = 1.0;
+        const spacing: f32 = 16;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const tint = rl.Color.white.alpha(alpha);
         const rect = _ui.initScreenRect();
-        var pos = rl.Vector2.init(rect.x + 16, rect.y + 16);
+        var pos = rl.Vector2.init(rect.x + spacing, rect.y + spacing);
         _ui.drawRect(.{ .rect = rect, .color = rl.Color.black.alpha(alpha) });
         // if (self.resources.texture) |texture| rl.drawTextureV(texture, rl.Vector2.init(rect.x, rect.y), tint);
         for (self.options, 0..) |option, i| {
@@ -83,7 +84,7 @@ pub const Settings = struct {
                     _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 },
             }
-            pos.y += font.size + 8;
+            pos.y += font.size + @as(f32, @divFloor(spacing, 2));
         }
     }
 

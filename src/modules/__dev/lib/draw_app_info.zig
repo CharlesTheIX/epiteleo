@@ -4,8 +4,8 @@ const _ui = @import("../../../_ui/root.zig");
 const App = @import("../../../root.zig").App;
 
 pub fn drawAppInfo(app: *App) void {
-    var font = app.ui.font;
     const spacing: f32 = 16;
+    var font = app.ui.font;
     var pos = rl.Vector2.init(spacing, spacing);
     const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
     const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
@@ -43,4 +43,5 @@ pub fn drawAppInfo(app: *App) void {
     pos.x += _ui.measureText(fps_title, null).x + @as(f32, @divFloor(spacing, 2));
     const fps_string = std.fmt.allocPrint(app.allocator, "{d}", .{rl.getFPS()}) catch "";
     _ui.drawText(.{ .text = fps_string, .pos = pos, .font = font, .color = .white });
+    font.size = 32;
 }

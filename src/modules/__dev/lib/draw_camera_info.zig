@@ -256,5 +256,5 @@ pub fn drawCameraInfo(app: *App) void {
     pos.x = spacing;
     pos.y += spacing;
 
-    pos.y += @as(f32, @divFloor(spacing, 2));
+    font.size = 32;
 }

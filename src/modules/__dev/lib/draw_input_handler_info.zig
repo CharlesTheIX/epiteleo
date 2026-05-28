@@ -145,4 +145,6 @@ pub fn drawInputHandlerInfo(app: *App) void {
     _ui.drawText(.{ .text = mouse_pos_string, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
     pos.y += spacing;
+
+    font.size = 32;
 }

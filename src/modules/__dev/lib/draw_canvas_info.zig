@@ -15,8 +15,8 @@ pub fn drawCanvasInfo(app: *App) void {
     _ui.drawText(.{ .text = "Canvas Info:", .pos = pos, .font = font, .color = .white });
     pos.y += font.size;
 
-    font.size = spacing;
     pos.y += spacing;
+    font.size = spacing;
 
     // Camera State
     const rect_title = "Canvas | Rectangle:";
@@ -86,4 +86,6 @@ pub fn drawCanvasInfo(app: *App) void {
     }
     pos.x = spacing;
     pos.y += spacing;
+
+    font.size = 32;
 }

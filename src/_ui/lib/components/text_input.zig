@@ -17,9 +17,11 @@ pub const TextInput = struct {
     buffer: [256]u8 = undefined,
 
     pub fn init(props: TextInputProps) TextInput {
-        var text_input: TextInput = undefined;
-        text_input.rect = props.rect;
-        text_input.padding = props.padding;
+        var text_input = TextInput{
+            .rect = props.rect,
+            .padding = props.padding,
+            .writer = undefined,
+        };
         text_input.writer = std.Io.Writer.fixed(&text_input.buffer);
         text_input.writer.end = 0;
         if (props.content) |c| {
@@ -49,8 +51,9 @@ pub const TextInput = struct {
         self.writer.end = 0;
     }
 
-    pub fn draw(self: *TextInput, allocator: std.mem.Allocator, font: _ui.Font) void {
+    pub fn draw(self: *TextInput, allocator: std.mem.Allocator, font: *_ui.Font) void {
         self.rebindWriter();
+        if (self.cursor_position > self.writtenLen()) self.cursor_position = self.writtenLen();
         const text = self.getText();
         var border_color = rl.Color.gray.alpha(0.5);
         if (self.focused) border_color = rl.Color.blue.alpha(0.8);
@@ -59,7 +62,7 @@ pub const TextInput = struct {
         const pos = rl.Vector2{ .x = self.rect.x + self.padding.x, .y = self.rect.y + self.padding.y };
         const text_z = allocator.dupeZ(u8, text) catch return;
         defer allocator.free(text_z);
-        _ui.drawText(.{ .text = text_z, .color = rl.Color.black, .pos = pos, .font = font });
+        _ui.drawText(.{ .text = text_z, .color = rl.Color.black, .pos = pos, .font = font.* });
         if (self.focused) {
             _ui.strokeRect(.{ .rect = self.rect, .thickness = 4, .color = rl.Color.green.alpha(0.8) });
             const cursor_y1 = pos.y;
@@ -67,7 +70,7 @@ pub const TextInput = struct {
             var cursor_x_buf: [257:0]u8 = undefined;
             @memcpy(cursor_x_buf[0..self.cursor_position], self.buffer[0..self.cursor_position]);
             cursor_x_buf[self.cursor_position] = 0;
-            const cursor_width = _ui.measureText(cursor_x_buf[0..self.cursor_position :0], font).x;
+            const cursor_width = _ui.measureText(cursor_x_buf[0..self.cursor_position :0], font.*).x;
             const cursor_x = pos.x + cursor_width;
             const time = rl.getTime();
             const blink_state = @mod(time * 2.0, 1.0) < 0.4;
@@ -116,6 +119,7 @@ pub const TextInput = struct {
     pub fn update(self: *TextInput) void {
         self.rebindWriter();
         if (!self.focused) return;
+        if (self.cursor_position > self.writtenLen()) self.cursor_position = self.writtenLen();
         var char_code = rl.getCharPressed();
         while (char_code > 0) : (char_code = rl.getCharPressed()) {
             if (char_code < 32 or char_code > 126) continue;
