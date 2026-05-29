@@ -1,11 +1,11 @@
 const std = @import("std");
 const rl = @import("raylib");
-const _ui = @import("../../../_ui/root.zig");
-const ih = @import("../../input_handler/root.zig");
+const _ui = @import("../../_ui/root.zig");
+const ih = @import("../../modules/input_handler/root.zig");
 
 const Key = ih.Key;
 const Click = ih.Click;
-const App = @import("../../../root.zig").App;
+const App = @import("../../root.zig").App;
 
 pub fn drawInputHandlerInfo(app: *App) void {
     const spacing: f32 = 16;

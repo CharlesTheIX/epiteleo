@@ -1,6 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
-const _ui = @import("../../root.zig");
+const d = @import("../draw.zig");
+const Font = @import("../font.zig").Font;
+const measureText = @import("../font.zig").measureText;
 
 pub const TextBoxProps = struct {
     content: []const u8 = "",
@@ -21,23 +23,27 @@ pub const TextBox = struct {
         _ = self;
     }
 
-    fn measureTextWidth(self: *TextBox, text: []const u8, font: *_ui.Font) f32 {
+    fn measureTextWidth(self: *TextBox, text: []const u8, font: *Font) f32 {
         var buffer: [1024]u8 = undefined;
         if (text.len + 1 > buffer.len) return self.rect.width + 1;
         @memcpy(buffer[0..text.len], text);
         buffer[text.len] = 0;
         const txt: [:0]const u8 = buffer[0..text.len :0];
-        return _ui.measureText(txt, font.*).x;
+        return measureText(txt, font.*).x;
     }
 
-    pub fn draw(self: *TextBox, font: *_ui.Font) void {
-        _ui.drawRect(.{ .rect = self.rect, .color = rl.Color.white.alpha(0.5) });
-        const pos = rl.Vector2{ .x = self.rect.x + self.padding.x, .y = self.rect.y + self.padding.y };
-        const content_width = self.rect.width - self.padding.x - self.padding.width;
-        const content_height = self.rect.height - self.padding.y - self.padding.height;
+    pub fn draw(self: *TextBox, fnt: *Font, pos: *rl.Vector2) void {
+        var font = fnt.*;
+        font.size = 24;
+        font.line_height = 28;
+        const rect: rl.Rectangle = .init(self.rect.x + pos.x, self.rect.y + pos.y, self.rect.width, self.rect.height);
+        d.drawRect(.{ .rect = rect, .color = rl.Color.white.alpha(0.5) });
+        const text_pos = rl.Vector2{ .x = rect.x + self.padding.x, .y = rect.y + self.padding.y };
+        const content_width = rect.width - self.padding.x - self.padding.width;
+        const content_height = rect.height - self.padding.y - self.padding.height;
         if (content_width <= 0 or content_height <= 0) return;
 
-        const line_step = @as(f32, @floatFromInt(font.size)) + 4;
+        const line_step = @as(f32, @floatFromInt(font.line_height));
         const max_lines_by_height: usize = @intFromFloat(@floor(content_height / line_step));
         if (max_lines_by_height == 0) return;
 
@@ -62,7 +68,7 @@ pub const TextBox = struct {
                 const candidate_end = scan + 1;
                 const candidate = self.content[line_start..candidate_end];
 
-                if (self.measureTextWidth(candidate, font) > content_width) {
+                if (self.measureTextWidth(candidate, &font) > content_width) {
                     wrapped = true;
                     if (last_space) |space_index| {
                         if (space_index > line_start) {
@@ -98,15 +104,11 @@ pub const TextBox = struct {
             if (index <= line_start) index = line_start + 1;
         }
 
-        var y = pos.y;
+        var y = text_pos.y;
         var i: usize = 0;
         while (i < line_count) : (i += 1) {
-            _ui.drawText(.{ .text = lines[i], .pos = .init(pos.x, y), .color = .black, .font = font.* });
+            d.drawText(.{ .text = lines[i], .pos = .init(text_pos.x, y), .color = .black, .font = font });
             y += line_step;
         }
-    }
-
-    pub fn update(self: *TextBox) void {
-        _ = self;
     }
 };

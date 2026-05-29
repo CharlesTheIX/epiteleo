@@ -1,18 +1,16 @@
 const std = @import("std");
 const rl = @import("raylib");
 const _ui = @import("./_ui/root.zig");
+const Dev = @import("./__dev/root.zig").Dev;
+const Game = @import("./modules/game/root.zig").Game;
+const Loader = @import("./modules/loader/root.zig").Loader;
 
-const gm = @import("./modules/game/root.zig");
 const is = @import("./modules/intro/root.zig");
-const l = @import("./modules/loader/root.zig");
 const ih = @import("./modules/input_handler/root.zig");
 
-const Game = gm.Game;
 const Intro = is.Intro;
-const Loader = l.Loader;
 const InputHandler = ih.InputHandler;
 const JobRequest = @import("utils.zig").JobRequest;
-const Dev = @import("./modules/__dev/root.zig").Dev;
 const Camera = @import("./modules/camera/root.zig").Camera;
 const Canvas = @import("./modules/canvas/root.zig").Canvas;
 const loadIntroTask = is.loadIntroTask;
@@ -82,7 +80,7 @@ pub const App = struct {
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
         self.camera.resize(rl.Vector2.init(screen_w, screen_h).scale(0.5));
-        self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
+        // self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
     }
 
     fn load(self: *App) void {

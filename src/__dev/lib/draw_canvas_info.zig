@@ -1,7 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
-const _ui = @import("../../../_ui/root.zig");
-const App = @import("../../../root.zig").App;
+const _ui = @import("../../_ui/root.zig");
+const App = @import("../../root.zig").App;
 
 pub fn drawCanvasInfo(app: *App) void {
     const spacing: f32 = 16;

@@ -24,7 +24,7 @@ pub const NewGame = struct {
         const text_box = _ui.TextBox.init(.{
             .padding = padding,
             .rect = text_box_rect,
-            .content = "Lorem\n ipsum\n dolor\n sit\n amet,\n consectetur\n adipiscing\n elit.\n Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor.",
+            .content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor.",
         });
         text_input.focus();
         return .{ .text_input = text_input, .text_box = text_box };
@@ -38,14 +38,15 @@ pub const NewGame = struct {
 
     pub fn draw(self: *NewGame, allocator: std.mem.Allocator, font: *_ui.Font) void {
         var alpha: f32 = 1.0;
+        const spacing: f32 = 16;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
-        const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
-        const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
-        _ui.drawRect(.{ .rect = .init(0, 0, screen_w, screen_h), .color = rl.Color.green.alpha(alpha) });
+        const template = _ui.initScreenRect();
+        _ui.drawRect(.{ .rect = template, .color = rl.Color.black.alpha(alpha) });
         // const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture != null) {}
-        self.text_box.draw(font);
-        self.text_input.draw(allocator, font);
+        var pos = rl.Vector2.init(template.x + spacing, template.y + spacing);
+        self.text_box.draw(font, &pos);
+        self.text_input.draw(allocator, font, &pos);
     }
 
     pub fn update(self: *NewGame) void {

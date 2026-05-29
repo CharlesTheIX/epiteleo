@@ -21,7 +21,7 @@ pub const Game = struct {
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
-        _ui.drawRect(.{ .rect = .init(0, 0, screen_w, screen_h), .color = rl.Color.maroon.alpha(alpha) });
+        _ui.drawRect(.{ .rect = .init(0, 0, screen_w, screen_h), .color = rl.Color.black.alpha(alpha) });
         // const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture != null) {}
     }

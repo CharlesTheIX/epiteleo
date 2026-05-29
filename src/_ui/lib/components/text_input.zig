@@ -18,9 +18,9 @@ pub const TextInput = struct {
 
     pub fn init(props: TextInputProps) TextInput {
         var text_input = TextInput{
+            .writer = undefined,
             .rect = props.rect,
             .padding = props.padding,
-            .writer = undefined,
         };
         text_input.writer = std.Io.Writer.fixed(&text_input.buffer);
         text_input.writer.end = 0;
@@ -51,27 +51,28 @@ pub const TextInput = struct {
         self.writer.end = 0;
     }
 
-    pub fn draw(self: *TextInput, allocator: std.mem.Allocator, font: *_ui.Font) void {
+    pub fn draw(self: *TextInput, allocator: std.mem.Allocator, font: *_ui.Font, pos: *rl.Vector2) void {
         self.rebindWriter();
         if (self.cursor_position > self.writtenLen()) self.cursor_position = self.writtenLen();
         const text = self.getText();
         var border_color = rl.Color.gray.alpha(0.5);
         if (self.focused) border_color = rl.Color.blue.alpha(0.8);
-        _ui.drawRect(.{ .rect = self.rect, .color = rl.Color.white.alpha(0.5) });
-        _ui.strokeRect(.{ .rect = self.rect, .thickness = 4, .color = border_color });
-        const pos = rl.Vector2{ .x = self.rect.x + self.padding.x, .y = self.rect.y + self.padding.y };
+        const rect: rl.Rectangle = .init(self.rect.x + pos.x, self.rect.y + pos.y, self.rect.width, self.rect.height);
+        _ui.drawRect(.{ .rect = rect, .color = rl.Color.white.alpha(0.5) });
+        _ui.strokeRect(.{ .rect = rect, .thickness = 4, .color = border_color });
+        const text_pos = rl.Vector2{ .x = rect.x + self.padding.x, .y = rect.y + self.padding.y };
         const text_z = allocator.dupeZ(u8, text) catch return;
         defer allocator.free(text_z);
-        _ui.drawText(.{ .text = text_z, .color = rl.Color.black, .pos = pos, .font = font.* });
+        _ui.drawText(.{ .text = text_z, .color = rl.Color.black, .pos = text_pos, .font = font.* });
         if (self.focused) {
-            _ui.strokeRect(.{ .rect = self.rect, .thickness = 4, .color = rl.Color.green.alpha(0.8) });
-            const cursor_y1 = pos.y;
-            const cursor_y2 = pos.y + @as(f32, @floatFromInt(font.size));
+            _ui.strokeRect(.{ .rect = rect, .thickness = 4, .color = rl.Color.green.alpha(0.8) });
+            const cursor_y1 = text_pos.y;
+            const cursor_y2 = text_pos.y + @as(f32, @floatFromInt(font.size));
             var cursor_x_buf: [257:0]u8 = undefined;
             @memcpy(cursor_x_buf[0..self.cursor_position], self.buffer[0..self.cursor_position]);
             cursor_x_buf[self.cursor_position] = 0;
             const cursor_width = _ui.measureText(cursor_x_buf[0..self.cursor_position :0], font.*).x;
-            const cursor_x = pos.x + cursor_width;
+            const cursor_x = text_pos.x + cursor_width;
             const time = rl.getTime();
             const blink_state = @mod(time * 2.0, 1.0) < 0.4;
             if (blink_state) {

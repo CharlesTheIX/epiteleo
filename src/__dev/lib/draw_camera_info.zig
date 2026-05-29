@@ -1,18 +1,18 @@
 const std = @import("std");
 const rl = @import("raylib");
-const _ui = @import("../../../_ui/root.zig");
-const App = @import("../../../root.zig").App;
+const _ui = @import("../../_ui/root.zig");
+const App = @import("../../root.zig").App;
 
 pub fn drawCameraInfo(app: *App) void {
-    var font = app.ui.font;
     const spacing: f32 = 16;
+    var font = app.ui.font;
     var pos = rl.Vector2.init(spacing, spacing);
     const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
     const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
     _ui.drawRect(.{ .rect = .init(0, 0, screen_w, screen_h), .color = rl.Color.black.alpha(0.8) });
 
     // Intro Text
-    _ui.drawText(.{ .text = "Camera Info:", .pos = pos, .color = .white });
+    _ui.drawText(.{ .text = "Camera Info:", .pos = pos, .color = .white, .font = font });
     pos.y += font.size;
 
     pos.y += spacing;
@@ -20,14 +20,24 @@ pub fn drawCameraInfo(app: *App) void {
 
     // Note Text
     _ui.drawText(.{
-        .pos = pos,
         .font = font,
+        .pos = pos,
         .color = .white,
         .text = "Press .Zero (0) to cycle through camera states",
     });
-    _ui.drawText(.{ .text = "Press .Zero (0) to cycle through camera states", .pos = pos, .font = font, .color = .white });
+    _ui.drawText(.{
+        .text = "Press .Zero (0) to cycle through camera states",
+        .pos = pos,
+        .font = font,
+        .color = .white,
+    });
     pos.y += spacing;
-    _ui.drawText(.{ .text = "Press .Nine (9) to toggle snap to canvas", .pos = pos, .font = font, .color = .white });
+    _ui.drawText(.{
+        .text = "Press .Nine (9) to toggle snap to canvas",
+        .pos = pos,
+        .font = font,
+        .color = .white,
+    });
     pos.y += spacing * 2;
 
     // Camera State
