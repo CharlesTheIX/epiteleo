@@ -2,13 +2,13 @@ const std = @import("std");
 const rl = @import("raylib");
 const _ui = @import("../../_ui/root.zig");
 const Timer = @import("../timer/root.zig").Timer;
-const PlayerData = @import("../player/lib/data.zig").Data;
+const Player = @import("../player/root.zig").Player;
 const Resources = @import("./lib/resources.zig").Resources;
 
 pub const Game = struct {
+    player: Player = .{},
     new_game: bool = false,
     resources: Resources = .{},
-    player_data: PlayerData = .{},
     fade_in_timer: Timer = .init(0.5),
 
     pub fn init() Game {
@@ -32,8 +32,8 @@ pub const Game = struct {
     pub fn load(self: *Game, io: *std.Io) void {
         self.resources.load();
         self.fade_in_timer.is_active = true;
-        if (self.new_game) return self.player_data.save(io);
-        return self.player_data.load(io);
+        if (self.new_game) return self.player.save(io);
+        return self.player.load(io);
     }
 
     pub fn update(self: *Game) void {

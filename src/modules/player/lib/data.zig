@@ -1,9 +1,15 @@
 const std = @import("std");
+const nowEpochYearSeconds = @import("../../../utils.zig").nowEpochYearSeconds;
 
 pub const Data = struct {
     play_time: u64 = 0,
-    name: []const u8 = "PLAYER",
+    start_time: i64 = 0,
     path: *const [19:0]u8 = ".data/player_data.z",
+    name: [64]u8 = blk: {
+        var buf: [64]u8 = [_]u8{0} ** 64;
+        @memcpy(buf[0.."Player".len], "Player");
+        break :blk buf;
+    },
 
     pub fn load(self: *Data, io: *std.Io) void {
         const cwd = std.Io.Dir.cwd();
@@ -22,11 +28,7 @@ pub const Data = struct {
             const key = std.mem.trim(u8, line_split.first(), " \t\r");
             if (line_split.next()) |value| {
                 const parsed_value = std.mem.trim(u8, value, " \t\r");
-                if (std.mem.eql(u8, key, "name")) {
-                    var name = parsed_value;
-                    if (name.len > 16) name = name[0..16]; // This is an arbitrary limit to prevent excessively long names, adjust as needed - CIX
-                    self.name = name;
-                }
+                if (std.mem.eql(u8, key, "name")) self.setName(parsed_value);
 
                 if (std.mem.eql(u8, key, "play_time")) {
                     const play_time = std.fmt.parseInt(u64, parsed_value, 10) catch self.play_time;
@@ -34,9 +36,12 @@ pub const Data = struct {
                 }
             }
         }
+
+        self.start_time = nowEpochYearSeconds();
     }
 
     pub fn save(self: *Data, io: *std.Io) void {
+        self.setPlayTime(null);
         const cwd = std.Io.Dir.cwd();
         cwd.createDirPath(io.*, ".data") catch {
             return std.debug.print("Error: Failed to save settings data - create directory\n", .{});
@@ -47,7 +52,8 @@ pub const Data = struct {
         defer file.close(io.*);
         var total_len: usize = 0;
         var buffer: [1024]u8 = undefined;
-        const name = std.fmt.bufPrint(buffer[total_len..], "name={s}\n", .{self.name}) catch {
+        const n = self.name[0..(std.mem.indexOfScalar(u8, self.name[0..], 0) orelse self.name.len)];
+        const name = std.fmt.bufPrint(buffer[total_len..], "name={s}\n", .{n}) catch {
             return std.debug.print("Error: Failed to save settings data - write line\n", .{});
         };
         total_len += name.len;
@@ -58,6 +64,31 @@ pub const Data = struct {
         file.writePositionalAll(io.*, buffer[0..total_len], 0) catch {
             return std.debug.print("Error: Failed to save settings data - write file\n", .{});
         };
+    }
+
+    pub fn setName(self: *Data, _name: []const u8) void {
+        var name = _name;
+        if (name.len >= self.name.len) name = name[0 .. self.name.len - 1];
+        @memset(self.name[0..], 0);
+        @memcpy(self.name[0..name.len], name);
+    }
+
+    pub fn setPlayTime(self: *Data, play_time: ?u64) void {
+        if (play_time) |pt| {
+            self.play_time = pt;
+            return;
+        }
+        const now = nowEpochYearSeconds();
+        if (self.start_time == 0) {
+            self.play_time = 0;
+            self.start_time = now;
+            return;
+        }
+        if (now <= self.start_time) {
+            self.play_time = 0;
+            return;
+        }
+        self.play_time = @intCast(now - self.start_time);
     }
 };
 
