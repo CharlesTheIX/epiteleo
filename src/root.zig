@@ -127,7 +127,7 @@ pub const App = struct {
             .Game => if (self.game) |*g| return g.update(),
             .Settings => return self.settings.update(self),
             .Intro => if (self.intro) |*i| return i.update(self),
-            .NewGame => if (self.new_game) |*ng| return ng.update(),
+            .NewGame => if (self.new_game) |*ng| return ng.update(self),
             .Init => {
                 if (self.intro) |*i| {
                     const request: _job.Request = .{ .Task = .{

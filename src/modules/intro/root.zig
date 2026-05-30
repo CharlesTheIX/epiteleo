@@ -14,10 +14,10 @@ pub const Intro = struct {
     _start: Start = .{},
     state: State = .Init,
     resources: Resources = .{},
-    has_save_data: bool = false,
+    has_player_data: bool = false,
     input_timer: Timer = .init(0.3),
     fade_in_timer: Timer = .init(0.5),
-    game_data_path: *const [17:0]u8 = ".data/save_data.z",
+    player_data_path: *const [19:0]u8 = ".data/player_data.z",
 
     pub fn init() Intro {
         return .{};
@@ -71,9 +71,9 @@ pub fn loadIntroTask(ctx: *anyopaque, io: *std.Io) void {
     module.resources.load();
     module.fade_in_timer.is_active = true;
     module._init.fade_in_timer.is_active = true;
-    const file = cwd.statFile(io.*, module.game_data_path, .{}) catch {
-        module.has_save_data = false;
+    const file = cwd.statFile(io.*, module.player_data_path, .{}) catch {
+        module.has_player_data = false;
         return;
     };
-    module.has_save_data = file.kind == .file;
+    module.has_player_data = file.kind == .file;
 }

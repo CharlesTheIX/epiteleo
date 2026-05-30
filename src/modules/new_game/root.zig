@@ -1,6 +1,9 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _game = @import("../game/root.zig");
 const _ui = @import("../../_ui/root.zig");
+const App = @import("../../root.zig").App;
+const _job = @import("../loader/lib/job.zig");
 const Timer = @import("../timer/root.zig").Timer;
 const Resources = @import("./lib/resources.zig").Resources;
 
@@ -49,11 +52,25 @@ pub const NewGame = struct {
         self.text_input.draw(allocator, font, &pos);
     }
 
-    pub fn update(self: *NewGame) void {
+    pub fn update(self: *NewGame, app: *App) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         self.text_input.update();
         if (rl.isKeyPressed(rl.KeyboardKey.enter)) {
-            return std.debug.print("Start game with name: {s}\n", .{self.text_input.getText()});
+            defer self.deinit();
+            if (app.game == null) app.game = _game.Game.init();
+            if (app.game) |*_gm| {
+                _gm.new_game = true;
+                _gm.player_data.name = &self.text_input.buffer;
+                std.debug.print("Player name: {s}\n", .{_gm.player_data.name});
+                const request: _job.Request = .{ .Task = .{
+                    .io = app.io,
+                    .ctx = @ptrCast(_gm),
+                    .run_on_main_thread = true,
+                    .run = _game.loadGameTask,
+                } };
+                return app.setState(.Game, request);
+            }
+            return std.debug.panic("Failed to initialize the new game\n", .{});
         }
     }
 };

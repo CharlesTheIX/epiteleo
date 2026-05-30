@@ -23,7 +23,7 @@ pub const Start = struct {
         _ui.drawRect(.{ .rect = template, .color = rl.Color.black.alpha(alpha) });
         const tint = rl.Color.white.alpha(alpha);
         var pos = rl.Vector2.init(template.x + spacing, template.y + spacing);
-        if (intro.has_save_data) {
+        if (intro.has_player_data) {
             for (self.has_save_options, 0..) |option, i| {
                 var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
                 if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
@@ -43,7 +43,7 @@ pub const Start = struct {
     pub fn update(self: *Start, intro: *Intro, app: *App) void {
         const kb = app.ih.keyboard;
         var next_index: usize = self.option_index;
-        const option_count = if (intro.has_save_data) self.has_save_options.len else self.no_save_options.len;
+        const option_count = if (intro.has_player_data) self.has_save_options.len else self.no_save_options.len;
         if (kb.activeKeysInclude(&[_]Key{ .W, .Up }, .Or)) next_index = if (next_index == 0) option_count - 1 else next_index - 1;
         if (kb.activeKeysInclude(&[_]Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % option_count;
         if (next_index != self.option_index) {
@@ -52,7 +52,7 @@ pub const Start = struct {
         }
         if (kb.activeKeysInclude(&[_]Key{.Enter}, .And)) {
             intro.input_timer.is_active = true;
-            if (intro.has_save_data) {
+            if (intro.has_player_data) {
                 switch (self.option_index) {
                     0 => {
                         defer intro.deinit();

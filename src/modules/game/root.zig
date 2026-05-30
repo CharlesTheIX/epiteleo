@@ -2,10 +2,13 @@ const std = @import("std");
 const rl = @import("raylib");
 const _ui = @import("../../_ui/root.zig");
 const Timer = @import("../timer/root.zig").Timer;
+const PlayerData = @import("../player/lib/data.zig").Data;
 const Resources = @import("./lib/resources.zig").Resources;
 
 pub const Game = struct {
+    new_game: bool = false,
     resources: Resources = .{},
+    player_data: PlayerData = .{},
     fade_in_timer: Timer = .init(0.5),
 
     pub fn init() Game {
@@ -26,14 +29,19 @@ pub const Game = struct {
         if (self.resources.texture != null) {}
     }
 
+    pub fn load(self: *Game, io: *std.Io) void {
+        self.resources.load();
+        self.fade_in_timer.is_active = true;
+        if (self.new_game) return self.player_data.save(io);
+        return self.player_data.load(io);
+    }
+
     pub fn update(self: *Game) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
     }
 };
 
 pub fn loadGameTask(ctx: *anyopaque, io: *std.Io) void {
-    _ = io;
     const module: *Game = @ptrCast(@alignCast(ctx));
-    module.resources.load();
-    module.fade_in_timer.is_active = true;
+    module.load(io);
 }
