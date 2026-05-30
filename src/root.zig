@@ -64,7 +64,7 @@ pub const App = struct {
             .Game => {
                 rl.beginMode2D(self.camera.camera);
                 if (self.game) |*g| g.draw();
-                self.canvas.draw();
+                // self.canvas.draw();
                 rl.endMode2D();
             },
         }
@@ -109,25 +109,26 @@ pub const App = struct {
         self.prev_state = self.state;
         self.state = state;
         switch (state) {
-            // TODO: update the game - this is here for testing - CIX
-            .Game => self.camera.state = .Free,
+            .Game => self.camera.state = .Follow,
             else => self.camera.state = .Fixed,
         }
     }
 
     fn update(self: *App) void {
         if (self.shut_down) return;
-        self.handleResize();
         self.ih.update();
-        self.camera.update(&self.ih, null, &self.canvas.rect);
-        self.canvas.update(&self.ih, &self.camera);
+        self.handleResize();
         if (self.__dev) |*dev| dev.update(self);
         if (self.loader.showing) return self.loader.update(self);
+        var target: ?rl.Vector2 = null;
         switch (self.state) {
-            .Game => if (self.game) |*g| return g.update(),
-            .Settings => return self.settings.update(self),
-            .Intro => if (self.intro) |*i| return i.update(self),
-            .NewGame => if (self.new_game) |*ng| return ng.update(self),
+            .Game => if (self.game) |*g| {
+                g.update(&self.camera.camera, &self.ih);
+                target = g.player.data.pos;
+            },
+            .Settings => self.settings.update(self),
+            .Intro => if (self.intro) |*i| i.update(self),
+            .NewGame => if (self.new_game) |*ng| ng.update(self),
             .Init => {
                 if (self.intro) |*i| {
                     const request: _job.Request = .{ .Task = .{
@@ -141,6 +142,8 @@ pub const App = struct {
                 return std.debug.panic("Failed to initialize the application\n", .{});
             },
         }
+        self.camera.update(&self.ih, target, &self.canvas.rect);
+        self.canvas.update(&self.ih, &self.camera);
     }
 };
 
