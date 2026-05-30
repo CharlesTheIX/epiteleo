@@ -1,23 +1,13 @@
 const std = @import("std");
 const rl = @import("raylib");
-const gm = @import("../game/root.zig");
 const _ui = @import("../../_ui/root.zig");
-const ss = @import("../settings/root.zig");
-const ih = @import("../input_handler/root.zig");
-
-const Key = ih.Key;
-const Game = gm.Game;
-const Settings = ss.Settings;
-const State = enum { Init, Start };
-const InputHandler = ih.InputHandler;
 const App = @import("../../root.zig").App;
 const Init = @import("./lib/init.zig").Init;
 const Start = @import("./lib/start.zig").Start;
 const Timer = @import("../timer/root.zig").Timer;
-const JobRequest = @import("../../utils.zig").JobRequest;
-const loadGameTask = gm.loadGameTask;
 const Resources = @import("./lib/resources.zig").Resources;
-const loadSettingsTask = ss.loadSettingsTask;
+
+const State = enum { Init, Start };
 
 pub const Intro = struct {
     _init: Init = .{},

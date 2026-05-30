@@ -1,6 +1,5 @@
 const std = @import("std");
 const rl = @import("raylib");
-
 pub const Click = @import("./click.zig").Click;
 pub const Cursor = @import("./cursor.zig").Cursor;
 

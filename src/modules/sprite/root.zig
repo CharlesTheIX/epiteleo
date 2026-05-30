@@ -1,23 +1,18 @@
 const std = @import("std");
 const rl = @import("raylib");
-const utils = @import("./lib/utils.zig");
-
-const State = utils.State;
-const Direction = utils.Direction;
-const SpriteType = utils.SpriteType;
+const _utils = @import("./lib/utils.zig");
 const Data = @import("./lib/data.zig").Data;
 const Animation = @import("./lib/animation.zig").Animation;
-const getRectCentre = utils.getRectCentre;
 
 pub const Sprite = struct {
-    id: SpriteType,
     data: Data = .{},
-    state: State = .Idle,
-    direction: Direction,
+    id: _utils.SpriteType,
     animation: Animation = .{},
+    state: _utils.State = .Idle,
+    direction: _utils.Direction,
     texture: ?*rl.Texture2D = null,
 
-    pub fn init(id: SpriteType, direction: ?Direction, state: ?State) Sprite {
+    pub fn init(id: _utils.SpriteType, direction: ?_utils.Direction, state: ?_utils.State) Sprite {
         const dir = if (direction) |d| d else .Down;
         const st = if (state) |s| s else .Idle;
         return Sprite{ .id = id, .direction = dir, .state = st };
@@ -61,7 +56,7 @@ pub const Sprite = struct {
                 @as(f32, @floatFromInt(size[0])),
                 @as(f32, @floatFromInt(size[1])),
             );
-            return getRectCentre(rect);
+            return _utils.getRectCentre(rect);
         }
         return pos.*;
     }

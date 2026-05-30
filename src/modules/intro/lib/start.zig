@@ -1,18 +1,13 @@
 const std = @import("std");
 const rl = @import("raylib");
-const gm = @import("../../game/root.zig");
-const _ui = @import("../../../_ui/root.zig");
-const ng = @import("../../new_game/root.zig");
-
-const Game = gm.Game;
-const NewGame = ng.NewGame;
 const Intro = @import("../root.zig").Intro;
+const _game = @import("../../game/root.zig");
+const _ui = @import("../../../_ui/root.zig");
 const App = @import("../../../root.zig").App;
 const Timer = @import("../../timer/root.zig").Timer;
+const _new_game = @import("../../new_game/root.zig");
 const Key = @import("../../input_handler/root.zig").Key;
-const loadGameTask = gm.loadGameTask;
-const JobRequest = @import("../../../utils.zig").JobRequest;
-const loadNewGameTask = ng.loadNewGameTask;
+const _job = @import("../../../modules/loader/lib/job.zig");
 
 pub const Start = struct {
     option_index: u2 = 0,
@@ -46,49 +41,46 @@ pub const Start = struct {
     }
 
     pub fn update(self: *Start, intro: *Intro, app: *App) void {
+        const kb = app.ih.keyboard;
         var next_index: usize = self.option_index;
         const option_count = if (intro.has_save_data) self.has_save_options.len else self.no_save_options.len;
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .W, .Up }, .Or)) {
-            next_index = if (next_index == 0) option_count - 1 else next_index - 1;
-        }
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .S, .Down }, .Or)) {
-            next_index = (next_index + 1) % option_count;
-        }
+        if (kb.activeKeysInclude(&[_]Key{ .W, .Up }, .Or)) next_index = if (next_index == 0) option_count - 1 else next_index - 1;
+        if (kb.activeKeysInclude(&[_]Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % option_count;
         if (next_index != self.option_index) {
             intro.input_timer.is_active = true;
             self.option_index = @intCast(next_index);
         }
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Enter}, .And)) {
+        if (kb.activeKeysInclude(&[_]Key{.Enter}, .And)) {
             intro.input_timer.is_active = true;
             if (intro.has_save_data) {
                 switch (self.option_index) {
                     0 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.game == null) app.game = Game.init();
+                        if (app.game == null) app.game = _game.Game.init();
                         if (app.game) |*_gm| {
-                            const job_request: JobRequest = .{ .Task = .{
+                            const request: _job.Request = .{ .Task = .{
                                 .io = app.io,
                                 .ctx = @ptrCast(_gm),
                                 .run_on_main_thread = true,
-                                .run = loadGameTask,
+                                .run = _game.loadGameTask,
                             } };
-                            return app.setState(.Game, job_request);
+                            return app.setState(.Game, request);
                         }
                         return std.debug.panic("Failed to initialize the new game\n", .{});
                     },
                     1 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui.font);
+                        if (app.new_game == null) app.new_game = _new_game.NewGame.init(&app.ui.font);
                         if (app.new_game) |*_ng| {
-                            const job_request: JobRequest = .{ .Task = .{
+                            const request: _job.Request = .{ .Task = .{
                                 .io = app.io,
                                 .ctx = @ptrCast(_ng),
                                 .run_on_main_thread = true,
-                                .run = loadNewGameTask,
+                                .run = _new_game.loadNewGameTask,
                             } };
-                            return app.setState(.NewGame, job_request);
+                            return app.setState(.NewGame, request);
                         }
                         return std.debug.panic("Failed to initialize the new game\n", .{});
                     },
@@ -102,15 +94,15 @@ pub const Start = struct {
                     0 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.new_game == null) app.new_game = NewGame.init(&app.ui.font);
+                        if (app.new_game == null) app.new_game = _new_game.NewGame.init(&app.ui.font);
                         if (app.new_game) |*_ng| {
-                            const job_request: JobRequest = .{ .Task = .{
+                            const request: _job.Request = .{ .Task = .{
                                 .io = app.io,
                                 .ctx = @ptrCast(_ng),
                                 .run_on_main_thread = true,
-                                .run = loadNewGameTask,
+                                .run = _new_game.loadNewGameTask,
                             } };
-                            return app.setState(.NewGame, job_request);
+                            return app.setState(.NewGame, request);
                         }
                         return std.debug.panic("Failed to initialize the new game\n", .{});
                     },

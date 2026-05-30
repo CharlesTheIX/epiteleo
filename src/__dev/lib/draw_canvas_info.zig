@@ -35,7 +35,7 @@ pub fn drawCanvasInfo(app: *App) void {
     // Mouse Canvas Position
     const mouse_title = "Mouse | Canvas Position:";
     const mouse_title_width = _ui.measureText(mouse_title, font);
-    const mouse_canvas_pos = rl.getScreenToWorld2D(app.input_handler.mouse.pos, app.camera.camera);
+    const mouse_canvas_pos = rl.getScreenToWorld2D(app.ih.mouse.pos, app.camera.camera);
     _ui.drawText(.{ .text = mouse_title, .pos = pos, .font = font, .color = .white });
     const mouse_string = std.fmt.allocPrint(
         app.allocator,

@@ -1,6 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const m = @import("lib/mouse.zig");
+const m = @import("./lib/mouse.zig");
 const kb = @import("./lib/keyboard.zig");
 
 pub const Key = kb.Key;

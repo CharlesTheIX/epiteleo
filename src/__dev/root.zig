@@ -1,11 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ih = @import("../modules/input_handler/root.zig");
-
-const Key = ih.Key;
-const InputHandler = ih.InputHandler;
 const App = @import("../root.zig").App;
-const JobRequest = @import("../utils.zig").JobRequest;
+const _job = @import("../modules/loader/lib/job.zig");
+const _ih = @import("../modules/input_handler/root.zig");
 const Timer = @import("../modules/timer/root.zig").Timer;
 const Camera = @import("../modules/camera/root.zig").Camera;
 const Canvas = @import("../modules/canvas/root.zig").Canvas;
@@ -47,12 +44,13 @@ pub const Dev = struct {
 
     pub fn update(self: *Dev, app: *App) void {
         if (self.input_timer.is_active) return self.input_timer.update();
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Zero }, .And)) {
+        const kb = app.ih.keyboard;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Zero }, .And)) {
             self.show_module = null;
             return;
         }
 
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .One }, .And)) {
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .One }, .And)) {
             self.input_timer.is_active = true;
             if (self.show_module == null or self.show_module != .__App) {
                 self.show_module = .__App;
@@ -60,7 +58,7 @@ pub const Dev = struct {
             return;
         }
 
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Two }, .And)) {
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Two }, .And)) {
             self.input_timer.is_active = true;
             if (self.show_module == null or self.show_module != .__InputHandler) {
                 self.show_module = .__InputHandler;
@@ -68,7 +66,7 @@ pub const Dev = struct {
             return;
         }
 
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Three }, .And)) {
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Three }, .And)) {
             self.input_timer.is_active = true;
             if (self.show_module == null or self.show_module != .__Camera) {
                 self.show_module = .__Camera;
@@ -76,7 +74,7 @@ pub const Dev = struct {
             return;
         }
 
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Four }, .And)) {
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Four }, .And)) {
             self.input_timer.is_active = true;
             if (self.show_module == null or self.show_module != .__Canvas) {
                 self.show_module = .__Canvas;
@@ -84,7 +82,7 @@ pub const Dev = struct {
             return;
         }
 
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftControl, .Five }, .And)) {
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Five }, .And)) {
             self.input_timer.is_active = true;
             if (self.show_module == null or self.show_module != .__Settings) {
                 self.show_module = .__Settings;
@@ -95,18 +93,18 @@ pub const Dev = struct {
         if (self.show_module) |module| {
             switch (module) {
                 .__App => {
-                    if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
+                    if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
                         if (!app.loader.loading) {
                             app.loader.load(
-                                JobRequest{ .SleepNs = std.time.ns_per_s * 5 },
+                                _job.Request{ .SleepNs = std.time.ns_per_s * 5 },
                                 app.state,
                             ) catch {};
                         }
                     }
                 },
                 .__Camera => {
-                    if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Zero}, .And)) {
+                    if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
                         switch (app.camera.state) {
                             .Free => app.camera.state = .Fixed,
@@ -114,7 +112,7 @@ pub const Dev = struct {
                             .Fixed => app.camera.state = .Follow,
                         }
                     }
-                    if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Nine}, .And)) {
+                    if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Nine}, .And)) {
                         self.input_timer.is_active = true;
                         if (app.camera.snap_to_canvas) {
                             app.camera.snap_to_canvas = false;

@@ -1,24 +1,17 @@
 const std = @import("std");
 const rl = @import("raylib");
-const d = @import("./lib/data.zig");
-const is = @import("../intro/root.zig");
+const _data = @import("./lib/data.zig");
 const _ui = @import("../../_ui/root.zig");
-const ih = @import("../input_handler/root.zig");
-
-const Key = ih.Key;
-const Data = d.Data;
-const Intro = is.Intro;
-const InputHandler = ih.InputHandler;
 const App = @import("../../root.zig").App;
+const _intro = @import("../intro/root.zig");
+const _job = @import("../loader/lib/job.zig");
+const _ih = @import("../input_handler/root.zig");
 const Timer = @import("../timer/root.zig").Timer;
-const JobRequest = @import("../../utils.zig").JobRequest;
 const Resources = @import("./lib/resources.zig").Resources;
-const loadIntroTask = is.loadIntroTask;
-const saveDataOnThread = d.saveDataOnThread;
 
 pub const Settings = struct {
-    data: Data = .{},
     option_index: u4 = 0,
+    data: _data.Data = .{},
     resources: Resources = .{},
     input_timer: Timer = .init(0.3),
     fade_in_timer: Timer = .init(0.5),
@@ -36,15 +29,15 @@ pub const Settings = struct {
         defer self.deinit();
         self.option_index = 0;
         self.data.save(app.io);
-        if (app.intro == null) app.intro = Intro.init();
+        if (app.intro == null) app.intro = _intro.Intro.init();
         if (app.intro) |*p| {
-            const job_request: JobRequest = .{ .Task = .{
+            const request: _job.Request = .{ .Task = .{
                 .io = app.io,
                 .ctx = @ptrCast(p),
                 .run_on_main_thread = true,
-                .run = loadIntroTask,
+                .run = _intro.loadIntroTask,
             } };
-            return app.setState(app.prev_state, job_request);
+            return app.setState(app.prev_state, request);
         }
         return std.debug.panic("Failed to initialize the intro\n", .{});
     }
@@ -89,20 +82,17 @@ pub const Settings = struct {
     }
 
     fn handleHorizontalInput(self: *Settings, app: *App) void {
+        const kb = app.ih.keyboard;
         switch (self.option_index) {
             0 => {
-                if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .D, .Right }, .Or)) {
-                    self.data.volume = (self.data.volume + 10) % 110;
-                }
-                if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .A, .Left }, .Or)) {
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.data.volume = (self.data.volume + 10) % 110;
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
                     self.data.volume = if (self.data.volume == 0) 100 else self.data.volume - 10;
                 }
             },
             1 => {
-                if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .D, .Right }, .Or)) {
-                    self.data.difficulty = (self.data.difficulty + 1) % 4;
-                }
-                if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .A, .Left }, .Or)) {
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.data.difficulty = (self.data.difficulty + 1) % 4;
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
                     self.data.difficulty = if (self.data.difficulty == 0) 3 else self.data.difficulty - 1;
                 }
             },
@@ -112,12 +102,9 @@ pub const Settings = struct {
 
     fn handleVerticalInput(self: *Settings, app: *App) void {
         var next_index: usize = self.option_index;
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .W, .Up }, .Or)) {
-            next_index = if (next_index == 0) self.options.len - 1 else next_index - 1;
-        }
-        if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .S, .Down }, .Or)) {
-            next_index = (next_index + 1) % self.options.len;
-        }
+        const kb = app.ih.keyboard;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) next_index = if (next_index == 0) self.options.len - 1 else next_index - 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % self.options.len;
         if (next_index != self.option_index) {
             self.input_timer.is_active = true;
             self.option_index = @intCast(next_index);
@@ -131,10 +118,11 @@ pub const Settings = struct {
     pub fn update(self: *Settings, app: *App) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         if (self.input_timer.is_active) return self.input_timer.update();
+        const kb = app.ih.keyboard;
         switch (self.option_index) {
-            2 => if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Enter}, .And)) return self.back(app),
+            2 => if (kb.activeKeysInclude(&[_]_ih.Key{.Enter}, .And)) return self.back(app),
             else => {
-                if (app.input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .A, .D, .Left, .Right }, .Or)) {
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .D, .Left, .Right }, .Or)) {
                     self.input_timer.is_active = true;
                     return self.handleHorizontalInput(app);
                 }

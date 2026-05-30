@@ -1,8 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const d = @import("../draw.zig");
-const Font = @import("../font.zig").Font;
-const measureText = @import("../font.zig").measureText;
+const _font = @import("../font.zig");
 
 pub const TextBoxProps = struct {
     content: []const u8 = "",
@@ -23,16 +22,16 @@ pub const TextBox = struct {
         _ = self;
     }
 
-    fn measureTextWidth(self: *TextBox, text: []const u8, font: *Font) f32 {
+    fn measureTextWidth(self: *TextBox, text: []const u8, font: *_font.Font) f32 {
         var buffer: [1024]u8 = undefined;
         if (text.len + 1 > buffer.len) return self.rect.width + 1;
         @memcpy(buffer[0..text.len], text);
         buffer[text.len] = 0;
         const txt: [:0]const u8 = buffer[0..text.len :0];
-        return measureText(txt, font.*).x;
+        return _font.measureText(txt, font.*).x;
     }
 
-    pub fn draw(self: *TextBox, fnt: *Font, pos: *rl.Vector2) void {
+    pub fn draw(self: *TextBox, fnt: *_font.Font, pos: *rl.Vector2) void {
         var font = fnt.*;
         font.size = 24;
         font.line_height = 28;

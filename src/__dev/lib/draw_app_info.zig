@@ -13,9 +13,7 @@ pub fn drawAppInfo(app: *App) void {
 
     // Intro Text
     _ui.drawText(.{ .text = "App Info:", .pos = pos, .color = .white, .font = font });
-    pos.y += font.size;
-
-    pos.y += spacing;
+    pos.y += font.size + spacing;
     font.size = spacing;
 
     // State
@@ -23,7 +21,6 @@ pub fn drawAppInfo(app: *App) void {
     _ui.drawText(.{ .text = state_title, .pos = pos, .font = font, .color = .white });
     pos.x += _ui.measureText(state_title, font).x + @as(f32, @divFloor(spacing, 2));
     _ui.drawText(.{ .text = app.state.toString(), .pos = pos, .font = font, .color = .white });
-
     pos.x = spacing;
     pos.y += spacing;
 
@@ -33,7 +30,6 @@ pub fn drawAppInfo(app: *App) void {
     pos.x += _ui.measureText(is_loading_title, font).x + @as(f32, @divFloor(spacing, 2));
     const is_loading_string = if (app.loader.loading) "True" else "False";
     _ui.drawText(.{ .text = is_loading_string, .pos = pos, .font = font, .color = .white });
-
     pos.x = spacing;
     pos.y += spacing;
 
@@ -43,5 +39,5 @@ pub fn drawAppInfo(app: *App) void {
     pos.x += _ui.measureText(fps_title, font).x + @as(f32, @divFloor(spacing, 2));
     const fps_string = std.fmt.allocPrint(app.allocator, "{d}", .{rl.getFPS()}) catch "";
     _ui.drawText(.{ .text = fps_string, .pos = pos, .font = font, .color = .white });
-    font.size = 32;
+    font.size = app.ui.font.size; // reset the font size back to the default - CIX
 }

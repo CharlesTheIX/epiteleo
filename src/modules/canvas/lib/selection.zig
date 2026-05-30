@@ -1,9 +1,6 @@
 const rl = @import("raylib");
 const _ui = @import("../../../_ui/root.zig");
-const ih = @import("../../input_handler/root.zig");
-
-const Key = ih.Key;
-const InputHandler = ih.InputHandler;
+const _ih = @import("../../input_handler/root.zig");
 const Camera = @import("../../camera/root.zig").Camera;
 
 pub const Selection = struct {
@@ -46,12 +43,14 @@ pub const Selection = struct {
         } else return null;
     }
 
-    pub fn update(self: *Selection, input_handler: *InputHandler, camera: *Camera) void {
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) return self.reset();
-        if (input_handler.mouse.active_clicks.get(.Left) != null) {
+    pub fn update(self: *Selection, ih: *_ih.InputHandler, camera: *Camera) void {
+        const mouse = ih.mouse;
+        const kb = ih.keyboard;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) return self.reset();
+        if (mouse.active_clicks.get(.Left) != null) {
             if (self.start == null) {
-                self.start = input_handler.mouse.pos;
-            } else self.end = input_handler.mouse.pos;
+                self.start = mouse.pos;
+            } else self.end = mouse.pos;
             self.rect = self.getRect(camera);
         } else self.reset();
     }

@@ -1,12 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
-const utils = @import("../../utils.zig");
-
 const Zoom = @import("./lib/zoom.zig").Zoom;
 const Movement = @import("./lib/movement.zig").Movement;
 const Rotation = @import("./lib/rotation.zig").Rotation;
-const invertScroll = utils.invertScroll;
-const rotateVector = utils.rotateVector;
 const InputHandler = @import("../input_handler/root.zig").InputHandler;
 
 pub const Camera = struct {

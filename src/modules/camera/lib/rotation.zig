@@ -1,8 +1,5 @@
 const rl = @import("raylib");
-const ih = @import("../../input_handler/root.zig");
-
-const Key = ih.Key;
-const InputHandler = ih.InputHandler;
+const _ih = @import("../../input_handler/root.zig");
 const invertScroll = @import("../../../utils.zig").invertScroll;
 
 pub const Rotation = struct {
@@ -17,14 +14,14 @@ pub const Rotation = struct {
         _ = self;
     }
 
-    pub fn update(self: *Rotation, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        self.updateFromInput(camera, input_handler);
-        self.updateFromScroll(input_handler);
+    pub fn update(self: *Rotation, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        self.updateFromInput(camera, ih);
+        self.updateFromScroll(ih);
     }
 
-    fn updateFromInput(self: *Rotation, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        const rotate_left = input_handler.keyboard.getActiveKeysInclude(&[_]Key{.RightBracket}, .And);
-        const rotate_right = input_handler.keyboard.getActiveKeysInclude(&[_]Key{.LeftBracket}, .And);
+    fn updateFromInput(self: *Rotation, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        const rotate_left = ih.keyboard.activeKeysInclude(&[_]_ih.Key{.RightBracket}, .And);
+        const rotate_right = ih.keyboard.activeKeysInclude(&[_]_ih.Key{.LeftBracket}, .And);
         if (rotate_left) self.target -= self.speed;
         if (rotate_right) self.target += self.speed;
         const rotation_diff = self.target - camera.rotation;
@@ -33,9 +30,9 @@ pub const Rotation = struct {
         } else camera.rotation = self.target;
     }
 
-    fn updateFromScroll(self: *Rotation, input_handler: *InputHandler) void {
-        if (input_handler.mouse.scroll.x == 0 and input_handler.mouse.scroll.y == 0) return;
-        const has_rotation_modifier = input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftAlt, .RightAlt }, .Or);
-        if (has_rotation_modifier) self.target += invertScroll(&input_handler.mouse.scroll).y * self.speed;
+    fn updateFromScroll(self: *Rotation, ih: *_ih.InputHandler) void {
+        if (ih.mouse.scroll.x == 0 and ih.mouse.scroll.y == 0) return;
+        const has_rotation_modifier = ih.keyboard.activeKeysInclude(&[_]_ih.Key{ .LeftAlt, .RightAlt }, .Or);
+        if (has_rotation_modifier) self.target += invertScroll(&ih.mouse.scroll).y * self.speed;
     }
 };

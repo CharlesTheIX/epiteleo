@@ -1,6 +1,5 @@
 const std = @import("std");
 const rl = @import("raylib");
-
 pub const Key = @import("./key.zig").Key;
 
 pub const Keyboard = struct {
@@ -20,7 +19,11 @@ pub const Keyboard = struct {
         self.next_key_press_order = 0;
     }
 
-    pub fn getActiveKeysInclude(self: Keyboard, keys: []const Key, filter: enum { And, Or }) bool {
+    pub fn activeKeyIndex(self: Keyboard, key: Key) ?u64 {
+        return self.active_keys.get(key);
+    }
+
+    pub fn activeKeysInclude(self: Keyboard, keys: []const Key, filter: enum { And, Or }) bool {
         switch (filter) {
             .And => {
                 for (keys) |key| {
@@ -37,11 +40,7 @@ pub const Keyboard = struct {
         }
     }
 
-    pub fn getKeyPressOrderIndex(self: Keyboard, key: Key) ?u64 {
-        return self.active_keys.get(key);
-    }
-
-    pub fn getMostRecentlyPressedKey(self: Keyboard) ?Key {
+    pub fn mostRecentActiveKey(self: Keyboard) ?Key {
         var most_recent_time: u64 = 0;
         var most_recent_key: ?Key = null;
         var it = self.active_keys.iterator();

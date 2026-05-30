@@ -1,9 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ih = @import("../../input_handler/root.zig");
-
-const Key = ih.Key;
-const InputHandler = ih.InputHandler;
+const _ih = @import("../../input_handler/root.zig");
 const invertScroll = @import("../../../utils.zig").invertScroll;
 
 pub const Zoom = struct {
@@ -25,14 +22,14 @@ pub const Zoom = struct {
         self.target = std.math.clamp(value, self.min, self.max);
     }
 
-    pub fn update(self: *Zoom, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        self.updateFromInput(camera, input_handler);
-        self.updateFromScroll(camera, input_handler);
+    pub fn update(self: *Zoom, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        self.updateFromInput(camera, ih);
+        self.updateFromScroll(camera, ih);
     }
 
-    fn updateFromInput(self: *Zoom, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        const zoom_out = input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Minus}, .And);
-        const zoom_in = input_handler.keyboard.getActiveKeysInclude(&[_]Key{.Equal}, .And);
+    fn updateFromInput(self: *Zoom, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        const zoom_out = ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Minus}, .And);
+        const zoom_in = ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Equal}, .And);
         if (zoom_in) self.setTarget(self.target + self.speed);
         if (zoom_out) self.setTarget(self.target - self.speed);
         const zoom_diff = self.target - camera.zoom;
@@ -41,10 +38,10 @@ pub const Zoom = struct {
         } else camera.zoom = self.target;
     }
 
-    fn updateFromScroll(self: *Zoom, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        if (input_handler.mouse.scroll.y == 0) return;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) {
-            self.setTarget(self.target + invertScroll(&input_handler.mouse.scroll).y * self.speed);
+    fn updateFromScroll(self: *Zoom, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        if (ih.mouse.scroll.y == 0) return;
+        if (ih.keyboard.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) {
+            self.setTarget(self.target + invertScroll(&ih.mouse.scroll).y * self.speed);
             camera.zoom = self.target;
         }
     }

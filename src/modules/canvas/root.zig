@@ -3,8 +3,6 @@ const _ui = @import("../../_ui/root.zig");
 const _ih = @import("../input_handler/root.zig");
 const Camera = @import("../camera/root.zig").Camera;
 const Selection = @import("./lib/selection.zig").Selection;
-const Key = _ih.Key;
-const InputHandler = _ih.InputHandler;
 
 pub const Canvas = struct {
     selection: Selection = .{},
@@ -29,7 +27,7 @@ pub const Canvas = struct {
         self.rect = rect;
     }
 
-    pub fn update(self: *Canvas, input_handler: *InputHandler, camera: *Camera) void {
-        self.selection.update(input_handler, camera);
+    pub fn update(self: *Canvas, ih: *_ih.InputHandler, camera: *Camera) void {
+        self.selection.update(ih, camera);
     }
 };

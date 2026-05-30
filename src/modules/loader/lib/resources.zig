@@ -1,6 +1,5 @@
 const std = @import("std");
 const rl = @import("raylib");
-
 const Sprite = @import("../../sprite/root.zig").Sprite;
 
 pub const Resources = struct {

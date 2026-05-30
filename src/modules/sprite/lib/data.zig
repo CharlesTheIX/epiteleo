@@ -1,10 +1,6 @@
 const std = @import("std");
 const rl: type = @import("raylib");
-const utils = @import("./utils.zig");
-
-const State = utils.State;
-const Direction = utils.Direction;
-const SpriteType = utils.SpriteType;
+const _utils = @import("./utils.zig");
 const StateOptions = @import("./state_options.zig").StateOptions;
 
 pub const Data = struct {
@@ -16,9 +12,9 @@ pub const Data = struct {
     hurt: ?StateOptions = null,
     dying: ?StateOptions = null,
     attack: ?StateOptions = null,
-    direction: Direction = .Down,
+    direction: _utils.Direction = .Down,
 
-    pub fn fpsFromState(self: Data, state: State) ?f32 {
+    pub fn fpsFromState(self: Data, state: _utils.State) ?f32 {
         return switch (state) {
             .Dead => null,
             .Run => if (self.run) |run| @as(f32, @floatFromInt(run.fps)) else null,
@@ -30,7 +26,7 @@ pub const Data = struct {
         };
     }
 
-    pub fn load(self: *Data, id: SpriteType, io: *std.Io) void {
+    pub fn load(self: *Data, id: _utils.SpriteType, io: *std.Io) void {
         const cwd = std.Io.Dir.cwd();
         const path = id.dataPath();
         const file = cwd.openFile(io.*, path, .{}) catch return;
@@ -88,7 +84,7 @@ pub const Data = struct {
         self.size = new_size;
     }
 
-    pub fn maxFramesFromState(self: Data, state: State) ?u4 {
+    pub fn maxFramesFromState(self: Data, state: _utils.State) ?u4 {
         return switch (state) {
             .Idle => if (self.idle) |idle| idle.max_frames else null,
             .Walk => if (self.walk) |walk| walk.max_frames else null,
@@ -100,7 +96,7 @@ pub const Data = struct {
         };
     }
 
-    pub fn maxVFromState(self: Data, state: State) ?u8 {
+    pub fn maxVFromState(self: Data, state: _utils.State) ?u8 {
         return switch (state) {
             .Idle => if (self.idle) |idle| idle.max_v else null,
             .Walk => if (self.walk) |walk| walk.max_v else null,

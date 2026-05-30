@@ -1,12 +1,6 @@
 const rl = @import("raylib");
-const utils = @import("../../../utils.zig");
-const ih = @import("../../input_handler/root.zig");
-
-const Key = ih.Key;
-const Click = ih.Click;
-const InputHandler = ih.InputHandler;
-const invertScroll = utils.invertScroll;
-const rotateVector = utils.rotateVector;
+const _utils = @import("../../../utils.zig");
+const _ih = @import("../../input_handler/root.zig");
 
 pub const Movement = struct {
     lerp_speed: f32 = 0.1,
@@ -24,23 +18,25 @@ pub const Movement = struct {
         _ = self;
     }
 
-    pub fn update(self: *Movement, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        self.updateFromScroll(camera, input_handler);
-        self.updateFromClick(camera, input_handler);
-        if (!self.mouse_pan_active) self.updateFromInput(camera, input_handler);
+    pub fn update(self: *Movement, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        self.updateFromScroll(camera, ih);
+        self.updateFromClick(camera, ih);
+        if (!self.mouse_pan_active) self.updateFromInput(camera, ih);
     }
 
-    fn updateFromClick(self: *Movement, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        if (input_handler.mouse.getActiveClicksInclude(&[_]Click{.Left}, .And)) {
-            if (!input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) return;
-            const mouse_pos = input_handler.mouse.pos;
+    fn updateFromClick(self: *Movement, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        const mouse = ih.mouse;
+        const kb = ih.keyboard;
+        if (mouse.getActiveClicksInclude(&[_]_ih.Click{.Left}, .And)) {
+            if (!kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) return;
+            const mouse_pos = mouse.pos;
             if (!self.mouse_pan_active) {
                 self.mouse_pan_active = true;
                 self.mouse_pan_start = mouse_pos;
                 self.mouse_pan_target = camera.target;
             } else {
                 var delta = mouse_pos.subtract(self.mouse_pan_start);
-                delta = rotateVector(delta, -camera.rotation);
+                delta = _utils.rotateVector(delta, -camera.rotation);
                 self.target_position = self.mouse_pan_target.subtract(delta.scale(1.0 / camera.zoom));
             }
         } else self.mouse_pan_active = false;
@@ -49,24 +45,26 @@ pub const Movement = struct {
         camera.target = camera.target.add(diff.scale(self.lerp_speed));
     }
 
-    fn updateFromInput(self: *Movement, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        var movement = rl.Vector2.zero();
+    fn updateFromInput(self: *Movement, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        const kb = ih.keyboard;
         var speed = self.movement_speed;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) speed *= 4;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .W, .Up }, .Or)) movement.y -= 1;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .S, .Down }, .Or)) movement.y += 1;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .A, .Left }, .Or)) movement.x -= 1;
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .D, .Right }, .Or)) movement.x += 1;
+        var movement = rl.Vector2.zero();
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) speed *= 4;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) movement.y -= 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) movement.y += 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) movement.x -= 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) movement.x += 1;
         if (movement.x == 0 and movement.y == 0) return;
-        movement = rotateVector(movement, -camera.rotation);
+        movement = _utils.rotateVector(movement, -camera.rotation);
         movement = movement.scale(speed * self.lerp_speed / camera.zoom);
         self.target_position = self.target_position.add(movement);
     }
 
-    fn updateFromScroll(self: *Movement, camera: *rl.Camera2D, input_handler: *InputHandler) void {
-        if (input_handler.keyboard.getActiveKeysInclude(&[_]Key{ .LeftShift, .RightShift }, .Or)) return;
-        var movement = invertScroll(&input_handler.mouse.scroll);
-        movement = rotateVector(movement, -camera.rotation);
+    fn updateFromScroll(self: *Movement, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+        const kb = ih.keyboard;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) return;
+        var movement = _utils.invertScroll(&ih.mouse.scroll);
+        movement = _utils.rotateVector(movement, -camera.rotation);
         movement = movement.scale(self.movement_speed * self.lerp_speed / camera.zoom);
         self.target_position = self.target_position.add(movement);
     }
