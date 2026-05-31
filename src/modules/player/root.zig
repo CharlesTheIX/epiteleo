@@ -5,7 +5,8 @@ const _utils = @import("../../utils.zig");
 const Data = @import("./lib/data.zig").Data;
 const Timer = @import("../timer/root.zig").Timer;
 const Sprite = @import("../sprite/root.zig").Sprite;
-const SpriteState = @import("../sprite/lib/utils.zig").State;
+const SpriteUtils = @import("../sprite/lib/utils.zig");
+const SpriteState = SpriteUtils.State;
 
 pub const Player = struct {
     data: Data = .{},
@@ -53,31 +54,45 @@ pub const Player = struct {
     }
 
     fn updateFromInput(self: *Player, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
-        const deceleration: f32 = 0.8;
         const stop_epsilon: f32 = 0.01;
+        const idle_drag_min: f32 = 0.80;
+        const idle_drag_max: f32 = 0.99;
         const run_multiplier: f32 = 1.8;
         const kb = ih.keyboard;
         const acceleration_step: f32 = 0.2;
+        const orthogonal_drag_min: f32 = 0.79;
+        const orthogonal_drag_max: f32 = 0.89;
+
         self.acceleration = rl.Vector2.zero();
-        var next_state = SpriteState.Idle;
+        var next_state = SpriteUtils.State.Idle;
+
         if (self.sprite.noInterrupt()) {
             // do nothing, keep current state and ignore input
         } else if (kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or)) {
             next_state = .Attack;
         } else {
-            self.acceleration = rl.Vector2.zero();
-            if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) {
-                self.acceleration.y -= 1;
-                self.sprite.direction = .Up;
-            } else if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) {
-                self.acceleration.y += 1;
-                self.sprite.direction = .Down;
-            } else if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
-                self.acceleration.x -= 1;
-                self.sprite.direction = .Left;
-            } else if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) {
-                self.acceleration.x += 1;
-                self.sprite.direction = .Right;
+            var latest_key: ?_ih.Key = null;
+            var latest_order: u64 = 0;
+
+            for (SpriteUtils.movement_keys) |key| {
+                if (kb.activeKeyIndex(key)) |order| {
+                    if (order > latest_order) {
+                        latest_order = order;
+                        latest_key = key;
+                    }
+                }
+            }
+
+            if (latest_key) |key| {
+                if (SpriteUtils.Direction.fromKey(key)) |direction| {
+                    self.sprite.direction = direction;
+                    switch (direction) {
+                        .Up => self.acceleration.y -= 1,
+                        .Down => self.acceleration.y += 1,
+                        .Left => self.acceleration.x -= 1,
+                        .Right => self.acceleration.x += 1,
+                    }
+                }
             }
         }
 
@@ -91,8 +106,23 @@ pub const Player = struct {
             self.acceleration = self.acceleration.normalize().scale(acceleration_step);
             self.acceleration = _utils.rotateVector(self.acceleration, -camera.rotation);
             self.velocity = self.velocity.add(self.acceleration);
+
+            const max_speed_for_drag = @max(self.max_speed * run_multiplier, 0.001);
+            const speed_ratio = @min(self.velocity.length() / max_speed_for_drag, 1.0);
+            const orthogonal_drag = orthogonal_drag_min + (orthogonal_drag_max - orthogonal_drag_min) * speed_ratio;
+            const accel_dir = self.acceleration.normalize();
+            const parallel_dot = self.velocity.x * accel_dir.x + self.velocity.y * accel_dir.y;
+            const parallel_velocity = rl.Vector2.init(accel_dir.x * parallel_dot, accel_dir.y * parallel_dot);
+            const orthogonal_velocity = rl.Vector2.init(
+                self.velocity.x - parallel_velocity.x,
+                self.velocity.y - parallel_velocity.y,
+            ).scale(orthogonal_drag);
+            self.velocity = parallel_velocity.add(orthogonal_velocity);
         } else {
-            self.velocity = self.velocity.scale(deceleration);
+            const max_speed_for_drag = @max(self.max_speed * run_multiplier, 0.001);
+            const speed_ratio = @min(self.velocity.length() / max_speed_for_drag, 1.0);
+            const idle_drag = idle_drag_min + (idle_drag_max - idle_drag_min) * speed_ratio;
+            self.velocity = self.velocity.scale(idle_drag);
             if (self.velocity.length() < stop_epsilon) self.velocity = rl.Vector2.zero();
         }
 
