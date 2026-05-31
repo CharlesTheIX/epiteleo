@@ -8,13 +8,13 @@ pub const Direction = enum {
     Left,
     Right,
 
-    pub fn fromRL(key: rl.KeyboardKey) ?Direction {
-        return switch (key) {
-            .up, .w => .Up,
-            .down, .s => .Down,
-            .left, .a => .Left,
-            .right, .d => .Right,
-            else => null,
+    pub fn fromInt(raw: u32) Direction {
+        return switch (raw) {
+            0 => .Up,
+            1 => .Down,
+            2 => .Left,
+            3 => .Right,
+            else => .Down,
         };
     }
 
@@ -28,6 +28,20 @@ pub const Direction = enum {
         };
     }
 
+    pub fn fromRL(key: rl.KeyboardKey) ?Direction {
+        return switch (key) {
+            .up, .w => .Up,
+            .down, .s => .Down,
+            .left, .a => .Left,
+            .right, .d => .Right,
+            else => null,
+        };
+    }
+
+    pub fn toInt(self: Direction) u8 {
+        return @intFromEnum(self);
+    }
+
     pub fn toKey(self: Direction) Key {
         return switch (self) {
             .Up => .Up,
@@ -37,7 +51,25 @@ pub const Direction = enum {
         };
     }
 
-    pub fn toTextureRow(self: Direction, state: *State) u32 {
+    pub fn toRL(self: Direction) rl.KeyboardKey {
+        return switch (self) {
+            .Up => .up,
+            .Down => .down,
+            .Left => .left,
+            .Right => .right,
+        };
+    }
+
+    pub fn toString(self: Direction) []const u8 {
+        return switch (self) {
+            .Up => "Up",
+            .Down => "Down",
+            .Left => "Left",
+            .Right => "Right",
+        };
+    }
+
+    pub fn toTextureRow(self: Direction, state: *State) u8 {
         var multiplier = state.toInt();
         if (state.* == .Dead) multiplier = State.Dying.toInt();
         multiplier *= 4;
@@ -86,7 +118,32 @@ pub const State = enum {
     Dying,
     Dead,
 
-    pub fn toInt(self: State) u32 {
-        return @as(u32, @intFromEnum(self));
+    pub fn fromInt(raw: u8) State {
+        return switch (raw) {
+            0 => .Idle,
+            1 => .Walk,
+            2 => .Run,
+            3 => .Attack,
+            4 => .Hurt,
+            5 => .Dying,
+            6 => .Dead,
+            else => .Idle,
+        };
+    }
+
+    pub fn toInt(self: State) u8 {
+        return @intFromEnum(self);
+    }
+
+    pub fn toString(self: State) []const u8 {
+        return switch (self) {
+            .Idle => "Idle",
+            .Walk => "Walk",
+            .Run => "Run",
+            .Attack => "Attack",
+            .Hurt => "Hurt",
+            .Dying => "Dying",
+            .Dead => "Dead",
+        };
     }
 };

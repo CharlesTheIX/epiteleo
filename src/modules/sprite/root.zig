@@ -37,16 +37,16 @@ pub const Sprite = struct {
         }
     }
 
-    //     pub fn drawHitbox(self: *Sprite, pos: *rl.Vector2) void {
-    //     if (self.data.hitbox) |hitbox| {
-    //         const width = @as(f32, @floatFromInt(hitbox[2]));
-    //         const height = @as(f32, @floatFromInt(hitbox[3]));
-    //         const x = @as(f32, @floatFromInt(hitbox[0])) + pos.x;
-    //         const y = @as(f32, @floatFromInt(hitbox[1])) + pos.y;
-    //         const rect = rl.Rectangle.init(x, y, width, height);
-    //         rl.drawRectangleRec(rect, rl.Color.red.alpha(0.5));
-    //     }
-    // }
+    pub fn drawHitbox(self: *Sprite, pos: *rl.Vector2) void {
+        if (self.data.hitbox) |hitbox| {
+            const width = @as(f32, @floatFromInt(hitbox[2]));
+            const height = @as(f32, @floatFromInt(hitbox[3]));
+            const x = @as(f32, @floatFromInt(hitbox[0])) + pos.x;
+            const y = @as(f32, @floatFromInt(hitbox[1])) + pos.y;
+            const rect = rl.Rectangle.init(x, y, width, height);
+            rl.drawRectangleRec(rect, rl.Color.red.alpha(0.5));
+        }
+    }
 
     pub fn focalPoint(self: *Sprite, pos: *rl.Vector2) rl.Vector2 {
         if (self.data.size) |size| {

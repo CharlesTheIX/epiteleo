@@ -71,6 +71,10 @@ pub const Data = struct {
             return std.debug.print("Error: Failed to save settings data - write line\n", .{});
         };
         total_len += name.len;
+        file.writePositionalAll(io.*, buffer[0..total_len], 0) catch {
+            return std.debug.print("Error: Failed to save settings data - write file\n", .{});
+        };
+
         const play_time = std.fmt.bufPrint(buffer[total_len..], "play_time={d}\n", .{self.play_time}) catch {
             return std.debug.print("Error: Failed to save settings data - write line\n", .{});
         };
@@ -78,11 +82,12 @@ pub const Data = struct {
         file.writePositionalAll(io.*, buffer[0..total_len], 0) catch {
             return std.debug.print("Error: Failed to save settings data - write file\n", .{});
         };
-        const pos = std.fmt.bufPrint(buffer[0..], "pos={d},{d}\n", .{ self.pos.x, self.pos.y }) catch {
+
+        const pos = std.fmt.bufPrint(buffer[total_len..], "pos={d},{d}\n", .{ self.pos.x, self.pos.y }) catch {
             return std.debug.print("Error: Failed to save settings data - write line\n", .{});
         };
         total_len += pos.len;
-        file.writePositionalAll(io.*, buffer[total_len .. total_len + pos.len], total_len) catch {
+        file.writePositionalAll(io.*, buffer[0..total_len], 0) catch {
             return std.debug.print("Error: Failed to save settings data - write file\n", .{});
         };
     }

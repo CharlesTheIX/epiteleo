@@ -3,14 +3,18 @@ const rl = @import("raylib");
 const _utils = @import("../../utils.zig");
 const Data = @import("./lib/data.zig").Data;
 const _ih = @import("../input_handler/root.zig");
+const Timer = @import("../timer/root.zig").Timer;
 const Sprite = @import("../sprite/root.zig").Sprite;
 
 pub const Player = struct {
     data: Data = .{},
-    speed: f32 = 2.0,
+    timer: Timer = .init(0.2),
     texture: ?rl.Texture2D = null,
+
+    max_speed: f32 = 2.0,
+    velocity: rl.Vector2 = .zero(),
+    acceleration: rl.Vector2 = .zero(),
     sprite: Sprite = .init(.AnimalBoar, .Right, .Walk),
-    // inventory: Inventory,
 
     pub fn init() Player {
         return .{};
@@ -47,23 +51,52 @@ pub const Player = struct {
     }
 
     pub fn update(self: *Player, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
-        self.sprite.update();
         self.updateFromInput(camera, ih);
+        self.sprite.update();
     }
 
     fn updateFromInput(self: *Player, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
-        _ = camera;
-        var speed = self.speed;
+        const deceleration: f32 = 0.82;
+        const stop_epsilon: f32 = 0.01;
+        const run_multiplier: f32 = 1.8;
         const kb = ih.keyboard;
-        var movement = rl.Vector2.zero();
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) speed *= 4;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) movement.y -= 1;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) movement.y += 1;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) movement.x -= 1;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) movement.x += 1;
-        if (movement.x == 0 and movement.y == 0) return;
-        // movement = _utils.rotateVector(movement, -camera.rotation);
-        // movement = movement.scale(speed / camera.zoom);
-        self.data.pos = self.data.pos.add(movement);
+        const acceleration_step: f32 = 0.2;
+
+        if (kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or)) {
+            self.sprite.state = .Attack;
+            self.velocity = rl.Vector2.zero();
+            self.acceleration = rl.Vector2.zero();
+            return;
+        }
+
+        self.sprite.state = .Idle;
+        self.acceleration = rl.Vector2.zero();
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) self.acceleration.y -= 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) self.acceleration.y += 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) self.acceleration.x -= 1;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.acceleration.x += 1;
+
+        var speed_cap = self.max_speed;
+        if (self.acceleration.length() > 0) {
+            self.sprite.state = .Walk;
+            if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) {
+                self.sprite.state = .Run;
+                speed_cap *= run_multiplier;
+            }
+            self.acceleration = self.acceleration.normalize().scale(acceleration_step);
+            self.acceleration = _utils.rotateVector(self.acceleration, -camera.rotation);
+            self.velocity = self.velocity.add(self.acceleration);
+        } else {
+            self.velocity = self.velocity.scale(deceleration);
+            if (self.velocity.length() < stop_epsilon) self.velocity = rl.Vector2.zero();
+        }
+
+        if (self.velocity.length() > speed_cap) self.velocity = self.velocity.normalize().scale(speed_cap);
+        if (kb.mostRecentActiveKey() == .W or kb.mostRecentActiveKey() == .Up) self.sprite.direction = .Up;
+        if (kb.mostRecentActiveKey() == .S or kb.mostRecentActiveKey() == .Down) self.sprite.direction = .Down;
+        if (kb.mostRecentActiveKey() == .A or kb.mostRecentActiveKey() == .Left) self.sprite.direction = .Left;
+        if (kb.mostRecentActiveKey() == .D or kb.mostRecentActiveKey() == .Right) self.sprite.direction = .Right;
+
+        self.data.pos = self.data.pos.add(self.velocity);
     }
 };

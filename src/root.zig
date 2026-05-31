@@ -64,7 +64,7 @@ pub const App = struct {
             .Game => {
                 rl.beginMode2D(self.camera.camera);
                 if (self.game) |*g| g.draw();
-                // self.canvas.draw();
+                self.canvas.draw();
                 rl.endMode2D();
             },
         }

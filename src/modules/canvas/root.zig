@@ -18,7 +18,7 @@ pub const Canvas = struct {
 
     pub fn draw(self: *Canvas) void {
         _ui.drawRect(.{ .rect = self.rect, .color = rl.Color.orange.alpha(0.5) });
-        _ui.drawGrid(.{ .rect = self.rect, .gap = 8, .color = rl.Color.gray.alpha(0.5) });
+        _ui.drawGrid(.{ .rect = self.rect, .gap = 32, .color = rl.Color.gray.alpha(0.5) });
         self.selection.draw();
     }
 

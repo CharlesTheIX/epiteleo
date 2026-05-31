@@ -7,11 +7,13 @@ const Timer = @import("../modules/timer/root.zig").Timer;
 const Camera = @import("../modules/camera/root.zig").Camera;
 const Canvas = @import("../modules/canvas/root.zig").Canvas;
 const drawAppInfo = @import("./lib/draw_app_info.zig").drawAppInfo;
+const drawGameInfo = @import("./lib/draw_game_info.zig").drawGameInfo;
 const drawCameraInfo = @import("./lib/draw_camera_info.zig").drawCameraInfo;
 const drawCanvasInfo = @import("./lib/draw_canvas_info.zig").drawCanvasInfo;
 const drawInputHandlerInfo = @import("./lib/draw_input_handler_info.zig").drawInputHandlerInfo;
 const Module = enum {
     __App,
+    __Game,
     __Camera,
     __Canvas,
     __Settings,
@@ -35,6 +37,7 @@ pub const Dev = struct {
             switch (module) {
                 .__Settings => return, // TODO: draw settings info
                 .__App => return drawAppInfo(app),
+                .__Game => return drawGameInfo(app),
                 .__Camera => return drawCameraInfo(app),
                 .__Canvas => return drawCanvasInfo(app),
                 .__InputHandler => return drawInputHandlerInfo(app),
@@ -90,6 +93,14 @@ pub const Dev = struct {
             return;
         }
 
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Six }, .And)) {
+            self.input_timer.is_active = true;
+            if (self.show_module == null or self.show_module != .__Game) {
+                self.show_module = .__Game;
+            } else self.show_module = null;
+            return;
+        }
+
         if (self.show_module) |module| {
             switch (module) {
                 .__App => {
@@ -117,6 +128,12 @@ pub const Dev = struct {
                         if (app.camera.snap_to_canvas) {
                             app.camera.snap_to_canvas = false;
                         } else app.camera.snap_to_canvas = true;
+                    }
+                },
+                .__Game => {
+                    if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Zero}, .And)) {
+                        self.input_timer.is_active = true;
+                        if (app.game) |*g| g.player.save(app.io);
                     }
                 },
                 .__Canvas, .__InputHandler, .__Settings => return,
