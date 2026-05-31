@@ -133,7 +133,7 @@ pub const App = struct {
         var target: ?rl.Vector2 = null;
         switch (self.state) {
             .Game => if (self.game) |*g| {
-                g.update(&self.camera.camera, &self.ih);
+                g.update(&self.ih);
                 target = g.player.data.pos;
             },
             .Settings => self.settings.update(self),

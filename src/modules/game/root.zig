@@ -63,10 +63,10 @@ pub const Game = struct {
         self.player.load(&self.player.texture, io);
     }
 
-    pub fn update(self: *Game, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
+    pub fn update(self: *Game, ih: *_ih.InputHandler) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         switch (self.state) {
-            .Playing => self.player.update(camera, ih),
+            .Playing => self.player.update(ih),
             else => return,
         }
     }

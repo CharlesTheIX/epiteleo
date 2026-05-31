@@ -79,7 +79,7 @@ pub fn drawGameInfo(app: *App) void {
         const player_velocity_string = std.fmt.bufPrint(
             &value_buf,
             "{d}, {d}",
-            .{ game.player.velocity.x, game.player.velocity.y },
+            .{ game.player.body.velocity.x, game.player.body.velocity.y },
         ) catch "ERR";
         _ui.drawText(.{ .text = player_velocity_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
@@ -92,7 +92,7 @@ pub fn drawGameInfo(app: *App) void {
         const player_acceleration_string = std.fmt.bufPrint(
             &value_buf,
             "{d}, {d}",
-            .{ game.player.acceleration.x, game.player.acceleration.y },
+            .{ game.player.body.acceleration.x, game.player.body.acceleration.y },
         ) catch "ERR";
         _ui.drawText(.{ .text = player_acceleration_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;

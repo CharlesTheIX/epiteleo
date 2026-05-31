@@ -1,6 +1,10 @@
 const std = @import("std");
 const rl = @import("raylib");
 
+pub fn degToRad(degrees: f32) f32 {
+    return degrees * std.math.pi / 180.0;
+}
+
 pub fn invertScroll(scroll: *rl.Vector2) rl.Vector2 {
     return rl.Vector2{ .x = scroll.x * -1, .y = scroll.y * -1 };
 }
