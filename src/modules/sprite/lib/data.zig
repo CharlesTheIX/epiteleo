@@ -26,10 +26,20 @@ pub const Data = struct {
         };
     }
 
+    pub fn hitboxRect(self: Data, pos: *rl.Vector2) rl.Rectangle {
+        if (self.hitbox) |hitbox| {
+            const width = @as(f32, @floatFromInt(hitbox[2]));
+            const height = @as(f32, @floatFromInt(hitbox[3]));
+            const x = @as(f32, @floatFromInt(hitbox[0])) + pos.x;
+            const y = @as(f32, @floatFromInt(hitbox[1])) + pos.y;
+            return rl.Rectangle.init(x, y, width, height);
+        }
+        return rl.Rectangle.init(pos.x, pos.y, 0, 0);
+    }
+
     pub fn load(self: *Data, id: _utils.SpriteType, io: *std.Io) void {
         var path_buffer: [128]u8 = undefined;
         const path = id.path(&path_buffer, .Data) orelse return;
-        std.debug.print("Loading sprite data for {s}\n", .{path});
         const cwd = std.Io.Dir.cwd();
         const file = cwd.openFile(io.*, path, .{}) catch return;
         defer file.close(io.*);
@@ -108,5 +118,12 @@ pub const Data = struct {
             .Dying => if (self.dying) |dying| dying.max_v else null,
             .Dead => null,
         };
+    }
+
+    pub fn sizeVector(self: Data) rl.Vector2 {
+        if (self.size) |size| {
+            return rl.Vector2.init(@as(f32, @floatFromInt(size[0])), @as(f32, @floatFromInt(size[1])));
+        }
+        return rl.Vector2.zero();
     }
 };

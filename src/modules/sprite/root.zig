@@ -24,41 +24,28 @@ pub const Sprite = struct {
 
     pub fn draw(self: *Sprite, pos: *rl.Vector2, tint: rl.Color) void {
         if (self.texture) |texture| {
-            if (self.data.size) |size| {
-                const width = @as(f32, @floatFromInt(size[0]));
-                const height = @as(f32, @floatFromInt(size[1]));
-                const x = @as(f32, @floatFromInt(self.animation.frame)) * width;
-                const y = @as(f32, @floatFromInt(self.direction.toTextureRow(&self.state))) * height;
-                const rect = rl.Rectangle.init(x, y, width, height);
-                const origin = rl.Vector2.init(width / 2, height / 2);
-                const dest = rl.Rectangle.init(pos.x, pos.y, width, height);
-                rl.drawTexturePro(texture.*, rect, dest, origin, 0, tint);
-            }
+            if (self.data.size == null) return;
+            const size_v = self.data.sizeVector();
+            const origin = size_v.scale(0.5);
+            const x = @as(f32, @floatFromInt(self.animation.frame)) * size_v.x;
+            const y = @as(f32, @floatFromInt(self.direction.toTextureRow(&self.state))) * size_v.y;
+            const rect = rl.Rectangle.init(x, y, size_v.x, size_v.y);
+            const dest = rl.Rectangle.init(pos.x, pos.y, size_v.x, size_v.y);
+            rl.drawTexturePro(texture.*, rect, dest, origin, 0, tint);
         }
     }
 
     pub fn drawHitbox(self: *Sprite, pos: *rl.Vector2) void {
-        if (self.data.hitbox) |hitbox| {
-            const width = @as(f32, @floatFromInt(hitbox[2]));
-            const height = @as(f32, @floatFromInt(hitbox[3]));
-            const x = @as(f32, @floatFromInt(hitbox[0])) + pos.x;
-            const y = @as(f32, @floatFromInt(hitbox[1])) + pos.y;
-            const rect = rl.Rectangle.init(x, y, width, height);
-            rl.drawRectangleRec(rect, rl.Color.red.alpha(0.5));
-        }
+        if (self.data.hitbox == null) return;
+        const hitbox_rect = self.data.hitboxRect(pos);
+        rl.drawRectangleRec(hitbox_rect, rl.Color.red.alpha(0.5));
     }
 
     pub fn focalPoint(self: *Sprite, pos: *rl.Vector2) rl.Vector2 {
-        if (self.data.size) |size| {
-            const rect = rl.Rectangle.init(
-                pos.x,
-                pos.y,
-                @as(f32, @floatFromInt(size[0])),
-                @as(f32, @floatFromInt(size[1])),
-            );
-            return _utils.getRectCentre(rect);
-        }
-        return pos.*;
+        if (self.data.size == null) return;
+        const size_v = self.data.sizeVector();
+        const rect = rl.Rectangle.init(pos.x, pos.y, size_v.x, size_v.y);
+        return _utils.getRectCentre(rect);
     }
 
     pub fn load(self: *Sprite, texture: *rl.Texture2D, io: *std.Io) void {
@@ -81,6 +68,17 @@ pub const Sprite = struct {
         self.animation.finished = false;
         self.animation.max_frames = if (self.data.maxFramesFromState(.Idle)) |count| count else 0;
         self.animation.fps = if (self.data.fpsFromState(self.state)) |fps| @as(u8, @intFromFloat(fps)) else 0;
+    }
+
+    pub fn setState(self: *Sprite, new_state: _utils.State) void {
+        if (self.noInterrupt()) return;
+        if (self.state == new_state) return;
+        self.state = new_state;
+        self.animation.frame = 0;
+        self.animation.time_elapsed = 0;
+        self.animation.finished = false;
+        self.animation.max_frames = if (self.data.maxFramesFromState(new_state)) |count| count else 0;
+        self.animation.fps = if (self.data.fpsFromState(new_state)) |fps| @as(u8, @intFromFloat(fps)) else 0;
     }
 
     pub fn update(self: *Sprite) void {

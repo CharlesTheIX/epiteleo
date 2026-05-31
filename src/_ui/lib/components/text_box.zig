@@ -33,8 +33,6 @@ pub const TextBox = struct {
 
     pub fn draw(self: *TextBox, fnt: *_font.Font, pos: *rl.Vector2) void {
         var font = fnt.*;
-        font.size = 24;
-        font.line_height = 28;
         const rect: rl.Rectangle = .init(self.rect.x + pos.x, self.rect.y + pos.y, self.rect.width, self.rect.height);
         d.drawRect(.{ .rect = rect, .color = rl.Color.white.alpha(0.5) });
         const text_pos = rl.Vector2{ .x = rect.x + self.padding.x, .y = rect.y + self.padding.y };

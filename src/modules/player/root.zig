@@ -5,6 +5,7 @@ const _utils = @import("../../utils.zig");
 const Data = @import("./lib/data.zig").Data;
 const Timer = @import("../timer/root.zig").Timer;
 const Sprite = @import("../sprite/root.zig").Sprite;
+const SpriteState = @import("../sprite/lib/utils.zig").State;
 
 pub const Player = struct {
     data: Data = .{},
@@ -37,14 +38,9 @@ pub const Player = struct {
         self.sprite.focalPoint(self.data.pos);
     }
 
-    pub fn load(self: *Player, io: *std.Io) void {
+    pub fn load(self: *Player, texture: *?rl.Texture2D, io: *std.Io) void {
         self.data.load(io);
-        std.debug.print("Drawing player load: {any}\n", .{self.texture});
-        const img = rl.loadImage("assets/screens/player_screen.png") catch return;
-        defer rl.unloadImage(img);
-        const texture = rl.loadTextureFromImage(img) catch return;
-        self.texture = texture;
-        if (self.texture) |*txt| self.sprite.load(txt, io);
+        if (texture.*) |*txt| self.sprite.load(txt, io);
     }
 
     pub fn save(self: *Player, io: *std.Io) void {
@@ -57,31 +53,39 @@ pub const Player = struct {
     }
 
     fn updateFromInput(self: *Player, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {
-        const deceleration: f32 = 0.82;
+        const deceleration: f32 = 0.8;
         const stop_epsilon: f32 = 0.01;
         const run_multiplier: f32 = 1.8;
         const kb = ih.keyboard;
         const acceleration_step: f32 = 0.2;
-
-        if (kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or)) {
-            self.sprite.state = .Attack;
-            self.velocity = rl.Vector2.zero();
-            self.acceleration = rl.Vector2.zero();
-            return;
-        }
-
-        self.sprite.state = .Idle;
         self.acceleration = rl.Vector2.zero();
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) self.acceleration.y -= 1;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) self.acceleration.y += 1;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) self.acceleration.x -= 1;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.acceleration.x += 1;
+        var next_state = SpriteState.Idle;
+        if (self.sprite.noInterrupt()) {
+            // do nothing, keep current state and ignore input
+        } else if (kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or)) {
+            next_state = .Attack;
+        } else {
+            self.acceleration = rl.Vector2.zero();
+            if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) {
+                self.acceleration.y -= 1;
+                self.sprite.direction = .Up;
+            } else if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) {
+                self.acceleration.y += 1;
+                self.sprite.direction = .Down;
+            } else if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
+                self.acceleration.x -= 1;
+                self.sprite.direction = .Left;
+            } else if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) {
+                self.acceleration.x += 1;
+                self.sprite.direction = .Right;
+            }
+        }
 
         var speed_cap = self.max_speed;
         if (self.acceleration.length() > 0) {
-            self.sprite.state = .Walk;
+            next_state = .Walk;
             if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) {
-                self.sprite.state = .Run;
+                next_state = .Run;
                 speed_cap *= run_multiplier;
             }
             self.acceleration = self.acceleration.normalize().scale(acceleration_step);
@@ -93,11 +97,7 @@ pub const Player = struct {
         }
 
         if (self.velocity.length() > speed_cap) self.velocity = self.velocity.normalize().scale(speed_cap);
-        if (kb.mostRecentActiveKey() == .W or kb.mostRecentActiveKey() == .Up) self.sprite.direction = .Up;
-        if (kb.mostRecentActiveKey() == .S or kb.mostRecentActiveKey() == .Down) self.sprite.direction = .Down;
-        if (kb.mostRecentActiveKey() == .A or kb.mostRecentActiveKey() == .Left) self.sprite.direction = .Left;
-        if (kb.mostRecentActiveKey() == .D or kb.mostRecentActiveKey() == .Right) self.sprite.direction = .Right;
-
+        self.sprite.setState(next_state);
         self.data.pos = self.data.pos.add(self.velocity);
     }
 };

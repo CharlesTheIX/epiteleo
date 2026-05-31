@@ -20,6 +20,7 @@ pub const Game = struct {
     // quests: []Quest = &[_]Quest{},
     // enemies: []Enemy = &[_]Enemy{},
     fade_in_timer: Timer = .init(0.5),
+    player_texture: ?rl.Texture2D = null,
 
     pub fn init() Game {
         return .{};
@@ -50,7 +51,11 @@ pub const Game = struct {
     pub fn load(self: *Game, io: *std.Io) void {
         self.fade_in_timer.is_active = true;
         if (self.new_game) self.player.save(io);
-        self.player.load(io);
+        const img = rl.loadImage("assets/screens/player_screen.png") catch return;
+        const texture = rl.loadTextureFromImage(img) catch return;
+        defer rl.unloadImage(img);
+        self.player_texture = texture;
+        self.player.load(&self.player_texture, io);
     }
 
     pub fn update(self: *Game, camera: *rl.Camera2D, ih: *_ih.InputHandler) void {

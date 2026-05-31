@@ -14,20 +14,21 @@ pub const NewGame = struct {
     fade_in_timer: Timer = .init(0.5),
 
     pub fn init(font: *_ui.Font) NewGame {
-        var spacing: f32 = 8;
-        const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
-        const padding = rl.Rectangle.init(spacing, spacing, spacing, spacing);
-        const input_height = padding.y + font.size + padding.height;
-        const text_input_rect = rl.Rectangle.init(0, 0, screen_w, input_height);
-        var text_input = _ui.TextInput.init(.{ .rect = text_input_rect, .padding = padding });
-        spacing = 16;
-        const box_y = text_input_rect.y + text_input_rect.height + spacing;
-        const box_height = padding.y + font.size * 3 + padding.height;
-        const text_box_rect = rl.Rectangle.init(screen_w / 4, box_y, screen_w / 2, box_height);
+        const spacing: f32 = 16;
+        const template = _ui.initScreenRect();
+        const font_size = @as(f32, @floatFromInt(font.size));
+        const box_height = (font_size * 3) + (spacing * 2);
+        const text_padding = rl.Rectangle.init(8, 8, 8, 8);
+        const text_box_rect = rl.Rectangle.init(0, 0, template.width - (spacing * 16), box_height);
         const text_box = _ui.TextBox.init(.{
-            .padding = padding,
             .rect = text_box_rect,
-            .content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor.",
+            .padding = text_padding,
+            .content = "Welcome to Epiteleo!\nPlease enter your name to start a new game.",
+        });
+        const text_input_rect = rl.Rectangle.init(0, 0, template.width - (spacing * 16), font_size + (8 * 2));
+        var text_input = _ui.TextInput.init(.{
+            .rect = text_input_rect,
+            .padding = text_padding,
         });
         text_input.focus();
         return .{ .text_input = text_input, .text_box = text_box };
@@ -44,12 +45,20 @@ pub const NewGame = struct {
         const spacing: f32 = 16;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const template = _ui.initScreenRect();
-        _ui.drawRect(.{ .rect = template, .color = rl.Color.black.alpha(alpha) });
+        _ui.drawRect(.{ .rect = template, .color = rl.Color.dark_purple.alpha(alpha) });
         // const tint = rl.Color.white.alpha(alpha);
         if (self.resources.texture != null) {}
-        var pos = rl.Vector2.init(template.x + spacing, template.y + spacing);
-        self.text_box.draw(font, &pos);
-        self.text_input.draw(allocator, font, &pos);
+        var box_pos = rl.Vector2.init(template.x + (spacing * 8), template.y + (spacing * 8));
+        self.text_box.draw(font, &box_pos);
+        var input_pos = rl.Vector2.init(template.x + (spacing * 8), box_pos.y + self.text_box.rect.height + spacing);
+        self.text_input.draw(allocator, font, &input_pos);
+    }
+
+    pub fn resize(self: *NewGame) void {
+        const spacing: f32 = 16;
+        const template = _ui.initScreenRect();
+        self.text_box.rect.width = template.width - (spacing * 16);
+        self.text_input.rect.width = template.width - (spacing * 16);
     }
 
     pub fn update(self: *NewGame, app: *App) void {

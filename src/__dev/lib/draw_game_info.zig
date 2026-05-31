@@ -136,6 +136,51 @@ pub fn drawGameInfo(app: *App) void {
         pos.x = spacing;
         pos.y += spacing;
 
+        // Player Sprite Animation FPS
+        const player_sprite_animation_fps_title = "Player | Sprite Animation FPS:";
+        _ui.drawText(.{ .text = player_sprite_animation_fps_title, .pos = pos, .font = font, .color = .white });
+        pos.x += _ui.measureText(player_sprite_animation_fps_title, font).x + @as(f32, @divFloor(spacing, 2));
+        const player_sprite_animation_fps_string = std.fmt.allocPrint(
+            app.allocator,
+            "{d}",
+            .{game.player.sprite.animation.fps},
+        ) catch "Error formatting player sprite animation fps";
+        _ui.drawText(.{ .text = player_sprite_animation_fps_string, .pos = pos, .font = font, .color = .white });
+        pos.x = spacing;
+        pos.y += spacing;
+
+        // Player Sprite Animation Frame
+        const player_sprite_animation_frame_title = "Player | Sprite Animation Frame:";
+        _ui.drawText(.{ .text = player_sprite_animation_frame_title, .pos = pos, .font = font, .color = .white });
+        pos.x += _ui.measureText(player_sprite_animation_frame_title, font).x + @as(f32, @divFloor(spacing, 2));
+        const player_sprite_animation_frame_string = std.fmt.allocPrint(
+            app.allocator,
+            "{d}",
+            .{game.player.sprite.animation.frame},
+        ) catch "Error formatting player sprite animation frame";
+        _ui.drawText(.{ .text = player_sprite_animation_frame_string, .pos = pos, .font = font, .color = .white });
+        pos.x = spacing;
+        pos.y += spacing;
+
+        // Player Sprite Animation Max Frames
+        const player_sprite_animation_max_frames_title = "Player | Sprite Animation Max Frames:";
+        _ui.drawText(.{
+            .text = player_sprite_animation_max_frames_title,
+            .pos = pos,
+            .font = font,
+            .color = .white,
+        });
+        pos.x += _ui.measureText(player_sprite_animation_max_frames_title, font).x + @as(f32, @divFloor(spacing, 2));
+        const player_sprite_animation_max_frames_string = std.fmt.allocPrint(app.allocator, "{d}", .{
+            game.player.sprite.animation.max_frames,
+        }) catch "Error formatting player sprite animation max frames";
+        _ui.drawText(.{
+            .text = player_sprite_animation_max_frames_string,
+            .pos = pos,
+            .font = font,
+            .color = .white,
+        });
+
         font.size = app.ui.font.size; // reset the font size back to the default - CIX
     }
 }

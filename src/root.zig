@@ -77,6 +77,11 @@ pub const App = struct {
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
         self.camera.resize(rl.Vector2.init(screen_w, screen_h).scale(0.5));
         // self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
+        switch (self.state) {
+            .NewGame => if (self.new_game) |*ng| ng.resize(),
+            // .Game => self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h),
+            else => {},
+        }
     }
 
     fn load(self: *App) void {
