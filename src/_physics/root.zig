@@ -68,9 +68,10 @@ pub const Body = struct {
 
     pub fn applyOrthogonalDrag(self: *Body, applied_force: rl.Vector2, surface: Surface, dt: f32, stop_speed: f32) void {
         if (applied_force.length() == 0) return;
+        const multiplier = 3.0; // Arbitrary multiplier to make orthogonal drag more noticeable.
 
         const normal_force = self.normalForce(null);
-        const harsh_drag_force = surface.static_friction_coefficient * normal_force;
+        const harsh_drag_force = surface.static_friction_coefficient * normal_force * multiplier;
         const harsh_drag_acceleration = harsh_drag_force / @max(self.mass, 0.001);
         const delta_v = harsh_drag_acceleration * dt;
 

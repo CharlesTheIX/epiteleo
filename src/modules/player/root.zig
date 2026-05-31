@@ -63,16 +63,17 @@ pub const Player = struct {
         const kb = ih.keyboard;
         const force_multiplier: f32 = 2.8;
         const dt = rl.getFrameTime();
+        const wants_attack = kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or);
         var speed_cap: f32 = self.max_speed;
         var input_force = rl.Vector2.zero();
         var next_state = _sprite_utils.State.Idle;
 
         self.body.resetAcceleration();
 
-        if (self.sprite.noInterrupt()) {
-            // do nothing, keep current state and ignore input
-        } else if (kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or)) {
+        if (wants_attack and !self.sprite.noInterrupt()) {
             next_state = .Attack;
+        } else if (self.sprite.noInterrupt()) {
+            // do nothing, keep current state and ignore input
         } else {
             for (_sprite_utils.movement_keys) |key| {
                 if (kb.activeKeyIndex(key)) |order| {
@@ -107,11 +108,13 @@ pub const Player = struct {
         }
 
         self.body.applySurfaceResistance(input_force, self.surface, dt, stop_speed);
-        // self.body.applyOrthogonalDrag(input_force, self.surface, dt, stop_speed);
+        self.body.applyOrthogonalDrag(input_force, self.surface, dt, stop_speed);
         self.body.applyAcceleration(dt);
 
-        if (self.body.velocity.length() > 2.1) next_state = .Run;
-        if (input_force.length() == 0 and self.body.velocity.length() > stop_speed) next_state = .Walk;
+        if (next_state != .Attack and !self.sprite.noInterrupt()) {
+            if (self.body.velocity.length() > 2.1) next_state = .Run;
+            if (input_force.length() == 0 and self.body.velocity.length() > stop_speed) next_state = .Walk;
+        }
         if (self.body.velocity.length() > speed_cap) self.body.velocity = self.body.velocity.normalize().scale(speed_cap);
 
         self.sprite.setState(next_state);
