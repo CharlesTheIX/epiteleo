@@ -28,7 +28,7 @@ pub const Settings = struct {
     }
 
     fn back(self: *Settings, app: *App) void {
-        app.ah.playAudio(.Sfx);
+        app.ah.playAudio(.Sfx, "test");
         defer self.deinit();
         self.option_index = 0;
         self.data.save(app.io);
@@ -86,7 +86,7 @@ pub const Settings = struct {
     }
 
     fn handleHorizontalInput(self: *Settings, app: *App) void {
-        app.ah.playAudio(.Sfx);
+        app.ah.playAudio(.Sfx, "test");
         const kb = app.ih.keyboard;
         switch (self.option_index) {
             0 => {
@@ -107,7 +107,7 @@ pub const Settings = struct {
     }
 
     fn handleVerticalInput(self: *Settings, app: *App) void {
-        app.ah.playAudio(.Sfx);
+        app.ah.playAudio(.Sfx, "test");
         const kb = app.ih.keyboard;
         var next_index: usize = self.option_index;
         if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) {

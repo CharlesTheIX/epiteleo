@@ -73,10 +73,10 @@ pub fn loadIntroTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
     module.resources.load();
     module.fade_in_timer.is_active = true;
     module._init.fade_in_timer.is_active = true;
-    ah.loadAudio(io, .Sfx, "assets/audio/sfx/click.mp3");
-    ah.loadAudio(io, .Music, "assets/audio/music/test_1.mp3");
-    // if (ah.music != null) ah.playAudio(.Music);
-    if (ah.sfx != null) ah.playAudio(.Sfx);
+    ah.loadAudio(io, .Sfx, "assets/audio/sfx/click.mp3", "test");
+    ah.loadAudio(io, .Music, "assets/audio/music/test_1.mp3", "test");
+    // if (ah.music != null) ah.playAudio(.Music, "test");
+    if (ah.sfx != null) ah.playAudio(.Sfx, "test");
     const file = cwd.statFile(io.*, module.player_data_path, .{}) catch {
         module.has_player_data = false;
         return;

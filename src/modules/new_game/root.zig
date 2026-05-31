@@ -68,7 +68,7 @@ pub const NewGame = struct {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         self.text_input.update();
         if (rl.isKeyPressed(rl.KeyboardKey.enter)) {
-            app.ah.playAudio(.Sfx);
+            app.ah.playAudio(.Sfx, "test");
             defer app.new_game = null;
             defer self.deinit();
             if (app.game == null) app.game = _game.Game.init();

@@ -42,12 +42,12 @@ pub const Init = struct {
             next_index = (next_index + 1) % self.options.len;
         }
         if (next_index != self.option_index) {
-            app.ah.playAudio(.Sfx);
+            app.ah.playAudio(.Sfx, "test");
             intro.input_timer.is_active = true;
             self.option_index = @intCast(next_index);
         }
         if (kb.activeKeysInclude(&[_]Key{.Enter}, .And)) {
-            app.ah.playAudio(.Sfx);
+            app.ah.playAudio(.Sfx, "test");
             intro.input_timer.is_active = true;
             switch (self.option_index) {
                 0 => {

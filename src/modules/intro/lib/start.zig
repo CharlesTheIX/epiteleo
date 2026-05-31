@@ -53,12 +53,12 @@ pub const Start = struct {
         if (kb.activeKeysInclude(&[_]Key{ .W, .Up }, .Or)) next_index = if (next_index == 0) option_count - 1 else next_index - 1;
         if (kb.activeKeysInclude(&[_]Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % option_count;
         if (next_index != self.option_index) {
-            app.ah.playAudio(.Sfx);
+            app.ah.playAudio(.Sfx, "test");
             intro.input_timer.is_active = true;
             self.option_index = @intCast(next_index);
         }
         if (kb.activeKeysInclude(&[_]Key{.Enter}, .And)) {
-            app.ah.playAudio(.Sfx);
+            app.ah.playAudio(.Sfx, "test");
             intro.input_timer.is_active = true;
             if (intro.has_player_data) {
                 switch (self.option_index) {
