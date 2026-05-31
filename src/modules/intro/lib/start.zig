@@ -4,9 +4,9 @@ const Intro = @import("../root.zig").Intro;
 const _game = @import("../../game/root.zig");
 const _ui = @import("../../../_ui/root.zig");
 const App = @import("../../../root.zig").App;
+const Key = @import("../../../_ih/root.zig").Key;
 const Timer = @import("../../timer/root.zig").Timer;
 const _new_game = @import("../../new_game/root.zig");
-const Key = @import("../../input_handler/root.zig").Key;
 const _job = @import("../../../modules/loader/lib/job.zig");
 
 pub const Start = struct {

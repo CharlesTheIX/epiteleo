@@ -10,6 +10,15 @@ pub const Click = enum {
         return &[_]Click{ .Left, .Right, .Middle };
     }
 
+    pub fn fromInt(value: u8) ?Click {
+        return switch (value) {
+            0 => .Left,
+            1 => .Right,
+            2 => .Middle,
+            else => null,
+        };
+    }
+
     pub fn fromRL(rlButton: rl.MouseButton) ?Click {
         return switch (rlButton) {
             rl.MouseButton.left => .Left,
@@ -24,6 +33,10 @@ pub const Click = enum {
             .Right => rl.MouseButton.right,
             .Middle => rl.MouseButton.middle,
         };
+    }
+
+    pub fn toInt(self: Click) u8 {
+        return @intFromEnum(self);
     }
 
     pub fn toString(self: Click) []const u8 {

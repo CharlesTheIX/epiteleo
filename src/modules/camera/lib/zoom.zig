@@ -1,6 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const _ih = @import("../../input_handler/root.zig");
+const _ih = @import("../../../_ih/root.zig");
 const invertScroll = @import("../../../utils.zig").invertScroll;
 
 pub const Zoom = struct {

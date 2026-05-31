@@ -3,8 +3,8 @@ const rl = @import("raylib");
 const Intro = @import("../root.zig").Intro;
 const _ui = @import("../../../_ui/root.zig");
 const App = @import("../../../root.zig").App;
+const Key = @import("../../../_ih/root.zig").Key;
 const Timer = @import("../../timer/root.zig").Timer;
-const Key = @import("../../input_handler/root.zig").Key;
 const _job = @import("../../../modules/loader/lib/job.zig");
 const loadSettingsTask = @import("../../settings/root.zig").loadSettingsTask;
 

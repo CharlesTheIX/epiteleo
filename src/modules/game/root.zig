@@ -1,10 +1,10 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ih = @import("../../_ih/root.zig");
 const _ui = @import("../../_ui/root.zig");
 // const Map = @import("../map.root.zig").Map;
 // const Npc = @import("../npc/root.zig").Npc;
 // const Item  = @import("../item/root.zig").Item;
-const _ih = @import("../input_handler/root.zig");
 // const Quest = @import("../quest/root.zig").Quest;
 const Timer = @import("../timer/root.zig").Timer;
 // const Enemy = @import("../enemy/root.zig").Enemy;

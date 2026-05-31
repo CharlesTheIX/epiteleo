@@ -17,6 +17,23 @@ pub const Cursor = enum {
         return &[_]Cursor{ .Arrow, .Ibeam, .Default, .ResizeEW, .ResizeNS, .Crosshair, .ResizeALL, .ResizeNWSE, .ResizeNESW, .NotAllowed, .PointingHand };
     }
 
+    pub fn fromInt(value: u8) ?Cursor {
+        return switch (value) {
+            0 => .Arrow,
+            1 => .Ibeam,
+            2 => .Default,
+            3 => .ResizeEW,
+            4 => .ResizeNS,
+            5 => .Crosshair,
+            6 => .ResizeALL,
+            7 => .ResizeNWSE,
+            8 => .ResizeNESW,
+            9 => .NotAllowed,
+            10 => .PointingHand,
+            else => null,
+        };
+    }
+
     pub fn fromRL(rlCursor: rl.MouseCursor) ?Cursor {
         return switch (rlCursor) {
             .arrow => .Arrow,
@@ -44,6 +61,10 @@ pub const Cursor = enum {
 
     pub fn show() void {
         rl.showCursor();
+    }
+
+    pub fn toInt(self: Cursor) u8 {
+        return @intFromEnum(self);
     }
 
     pub fn toRL(self: Cursor) rl.MouseCursor {

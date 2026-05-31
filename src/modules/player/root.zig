@@ -1,8 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ih = @import("../../_ih/root.zig");
 const _utils = @import("../../utils.zig");
 const Data = @import("./lib/data.zig").Data;
-const _ih = @import("../input_handler/root.zig");
 const Timer = @import("../timer/root.zig").Timer;
 const Sprite = @import("../sprite/root.zig").Sprite;
 

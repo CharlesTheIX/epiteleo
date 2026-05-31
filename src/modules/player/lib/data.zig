@@ -5,7 +5,7 @@ const nowEpochYearSeconds = @import("../../../utils.zig").nowEpochYearSeconds;
 pub const Data = struct {
     play_time: u64 = 0,
     start_time: i64 = 0,
-    pos: rl.Vector2 = .{ .x = 100, .y = 100 },
+    pos: rl.Vector2 = .zero(),
     path: *const [19:0]u8 = ".data/player_data.z",
     name: [64]u8 = blk: {
         var buf: [64]u8 = [_]u8{0} ** 64;

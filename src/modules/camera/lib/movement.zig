@@ -1,6 +1,6 @@
 const rl = @import("raylib");
 const _utils = @import("../../../utils.zig");
-const _ih = @import("../../input_handler/root.zig");
+const _ih = @import("../../../_ih/root.zig");
 
 pub const Movement = struct {
     lerp_speed: f32 = 0.1,

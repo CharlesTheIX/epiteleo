@@ -1,6 +1,6 @@
 const rl = @import("raylib");
+const _ih = @import("../../../_ih/root.zig");
 const _ui = @import("../../../_ui/root.zig");
-const _ih = @import("../../input_handler/root.zig");
 const Camera = @import("../../camera/root.zig").Camera;
 
 pub const Selection = struct {

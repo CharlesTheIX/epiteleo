@@ -3,7 +3,7 @@ const rl = @import("raylib");
 const Zoom = @import("./lib/zoom.zig").Zoom;
 const Movement = @import("./lib/movement.zig").Movement;
 const Rotation = @import("./lib/rotation.zig").Rotation;
-const InputHandler = @import("../input_handler/root.zig").InputHandler;
+const InputHandler = @import("../../_ih/root.zig").InputHandler;
 
 pub const Camera = struct {
     zoom: Zoom,
@@ -90,20 +90,20 @@ pub const Camera = struct {
         self.movement.target_position.y = std.math.clamp(self.movement.target_position.y, min_y, max_y);
     }
 
-    pub fn update(self: *Camera, input_handler: *InputHandler, target: ?rl.Vector2, canvas_rect: ?*rl.Rectangle) void {
+    pub fn update(self: *Camera, ih: *InputHandler, target: ?rl.Vector2, canvas_rect: ?*rl.Rectangle) void {
         switch (self.state) {
             .Free => {
-                self.zoom.update(&self.camera, input_handler);
-                self.movement.update(&self.camera, input_handler);
+                self.zoom.update(&self.camera, ih);
+                self.movement.update(&self.camera, ih);
                 if (!self.snap_to_canvas) {
-                    self.rotation.update(&self.camera, input_handler);
+                    self.rotation.update(&self.camera, ih);
                 } else {
                     if (canvas_rect) |rect| self.snapToCanvas(rect);
                 }
                 return;
             },
             .Follow => {
-                self.zoom.update(&self.camera, input_handler);
+                self.zoom.update(&self.camera, ih);
                 if (target) |t| {
                     self.movement.target_position = t;
                 } else self.movement.target_position = self.camera.target;
