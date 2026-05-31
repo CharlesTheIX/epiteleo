@@ -15,6 +15,7 @@ pub const Zoom = struct {
     }
 
     pub fn deinit(self: *Zoom) void {
+        std.debug.print("Camera Zoom : Deinitializing...\n", .{});
         _ = self;
     }
 

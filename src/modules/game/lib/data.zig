@@ -5,10 +5,12 @@ pub const Data = struct {
     player: ?PlayerData = null,
 
     pub fn load(self: *Data, io: *std.Io) void {
+        std.debug.print("Game Data : Loading game data...\n", .{});
         if (self.player) |player| player.load(io);
     }
 
     pub fn save(self: *Data, io: *std.Io) void {
+        std.debug.print("Game Data : Saving game data...\n", .{});
         if (self.player) |player| player.save(io);
     }
 };

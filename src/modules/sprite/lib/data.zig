@@ -38,6 +38,7 @@ pub const Data = struct {
     }
 
     pub fn load(self: *Data, id: _utils.SpriteType, io: *std.Io) void {
+        std.debug.print("Sprite Data : Loading sprite data... \n", .{});
         var path_buffer: [128]u8 = undefined;
         const path = id.path(&path_buffer, .Data) orelse return;
         const cwd = std.Io.Dir.cwd();

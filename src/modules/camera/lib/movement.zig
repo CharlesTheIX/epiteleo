@@ -1,3 +1,4 @@
+const std = @import("std");
 const rl = @import("raylib");
 const _utils = @import("../../../utils.zig");
 const _ih = @import("../../../_ih/root.zig");
@@ -15,6 +16,7 @@ pub const Movement = struct {
     }
 
     pub fn deinit(self: *Movement) void {
+        std.debug.print("Camera Movement : Deinitializing...\n", .{});
         _ = self;
     }
 

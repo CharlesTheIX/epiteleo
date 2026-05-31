@@ -26,10 +26,11 @@ pub const Dev = struct {
     show_module: ?Module = null,
 
     pub fn init() Dev {
-        return Dev{ .input_timer = Timer.init(0.3) };
+        return .{ .input_timer = Timer.init(0.3) };
     }
 
     pub fn deinit(self: *Dev) void {
+        std.debug.print("__Dev : Deinitializing...\n", .{});
         self.show_module = null;
     }
 

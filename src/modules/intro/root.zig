@@ -24,10 +24,11 @@ pub const Intro = struct {
     }
 
     pub fn deinit(self: *Intro) void {
+        std.debug.print("Intro : Deinitializing...\n", .{});
         self.resources.deinit();
     }
 
-    pub fn drawIntroScreen(self: *Intro, font: *_ui.Font, allocator: std.mem.Allocator) void {
+    pub fn drawIntroScreen(self: *Intro, font: *_ui.Font) void {
         var alpha: f32 = 1.0;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         const template = _ui.initScreenRect();
@@ -37,8 +38,8 @@ pub const Intro = struct {
         //     rl.drawTextureV(texture, rl.Vector2.init(template.x, template.y), tint);
         // }
         switch (self.state) {
-            .Init => return self._init.draw(font, allocator),
-            .Start => return self._start.draw(self, font, allocator),
+            .Init => return self._init.draw(font),
+            .Start => return self._start.draw(self, font),
         }
     }
 

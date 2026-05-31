@@ -49,6 +49,7 @@ pub const Sprite = struct {
     }
 
     pub fn load(self: *Sprite, texture: *rl.Texture2D, io: *std.Io) void {
+        std.debug.print("Sprite : Loading data...\n", .{});
         self.texture = texture;
         self.data.load(self.id, io);
         self.animation.max_frames = self.data.maxFramesFromState(self.state) orelse 0;

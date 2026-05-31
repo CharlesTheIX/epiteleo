@@ -1,3 +1,4 @@
+const std = @import("std");
 const rl = @import("raylib");
 const _ih = @import("../../../_ih/root.zig");
 const invertScroll = @import("../../../utils.zig").invertScroll;
@@ -10,7 +11,9 @@ pub const Rotation = struct {
     pub fn init() Rotation {
         return .{};
     }
+
     pub fn deinit(self: *Rotation) void {
+        std.debug.print("Camera Rotation : Deinitializing...\n", .{});
         _ = self;
     }
 

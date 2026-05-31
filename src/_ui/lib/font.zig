@@ -1,3 +1,4 @@
+const std = @import("std");
 const rl = @import("raylib");
 
 pub const Font = struct {
@@ -6,18 +7,13 @@ pub const Font = struct {
     line_height: i8 = 32,
     custom: ?rl.Font = null,
 
-    pub fn clone(self: *Font) Font {
-        if (self.custom) |f| {
-            const cloned_font = rl.cloneFont(f);
-            return Font{ .size = self.size, .loaded = true, .custom = cloned_font, .line_height = self.line_height };
-        } else return Font{ .size = self.size, .loaded = false, .custom = null, .line_height = self.line_height };
-    }
-
     pub fn deinit(self: *Font) void {
+        std.debug.print("Font : Deinitializing...\n", .{});
         if (self.loaded) rl.unloadFont(self.custom.?);
     }
 
     pub fn load(self: *Font) void {
+        std.debug.print("Font : Loading font...\n", .{});
         self.loaded = false;
         self.custom = rl.loadFontEx("assets/fonts/JetBrains.ttf", @as(i32, self.size), null) catch null;
         if (self.custom == null) return;

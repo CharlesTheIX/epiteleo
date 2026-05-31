@@ -13,7 +13,7 @@ pub const Init = struct {
     fade_in_timer: Timer = .init(0.5),
     options: [3][]const u8 = .{ "Start Game", "Settings", "Exit" },
 
-    pub fn draw(self: *Init, font: *_ui.Font, allocator: std.mem.Allocator) void {
+    pub fn draw(self: *Init, font: *_ui.Font) void {
         var alpha: f32 = 1.0;
         const spacing: f32 = 16;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
@@ -22,8 +22,11 @@ pub const Init = struct {
         const tint = rl.Color.white.alpha(alpha);
         var pos = rl.Vector2.init(template.x + spacing, template.y + spacing);
         for (self.options, 0..) |option, i| {
-            var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
-            if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
+            var option_buf: [128]u8 = undefined;
+            const option_txt = if (i == self.option_index)
+                std.fmt.bufPrint(&option_buf, "> {s}", .{option}) catch option
+            else
+                std.fmt.bufPrint(&option_buf, "{s}", .{option}) catch option;
             _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
             pos.y += font.size + @as(f32, @divFloor(spacing, 2));
         }

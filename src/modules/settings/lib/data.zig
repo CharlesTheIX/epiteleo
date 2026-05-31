@@ -6,6 +6,7 @@ pub const Data = struct {
     path: *const [16:0]u8 = ".data/settings.z",
 
     pub fn load(self: *Data, io: *std.Io) void {
+        std.debug.print("Settings Data : Loading settings data... \n", .{});
         const cwd = std.Io.Dir.cwd();
         const file = cwd.openFile(io.*, self.path, .{}) catch return self.save(io);
         defer file.close(io.*);
@@ -38,6 +39,7 @@ pub const Data = struct {
     }
 
     pub fn save(self: *Data, io: *std.Io) void {
+        std.debug.print("Settings Data : Saving settings data... \n", .{});
         const cwd = std.Io.Dir.cwd();
         cwd.createDirPath(io.*, ".data") catch {
             return std.debug.print("Error: Failed to save settings data - create directory\n", .{});

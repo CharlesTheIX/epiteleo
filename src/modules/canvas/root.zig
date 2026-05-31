@@ -1,3 +1,4 @@
+const std = @import("std");
 const rl = @import("raylib");
 const _ih = @import("../../_ih/root.zig");
 const _ui = @import("../../_ui/root.zig");
@@ -13,6 +14,7 @@ pub const Canvas = struct {
     }
 
     pub fn deinit(self: *Canvas) void {
+        std.debug.print("Canvas : Deinitializing...\n", .{});
         _ = self;
     }
 
@@ -23,6 +25,7 @@ pub const Canvas = struct {
     }
 
     pub fn load(self: *Canvas, rect: rl.Rectangle) void {
+        std.debug.print("Canvas : Loading canvas...\n", .{});
         self.selection.reset();
         self.rect = rect;
     }

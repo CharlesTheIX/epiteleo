@@ -22,6 +22,7 @@ pub const Settings = struct {
     }
 
     pub fn deinit(self: *Settings) void {
+        std.debug.print("Settings : Deinitializing...\n", .{});
         self.resources.deinit();
     }
 
@@ -112,6 +113,7 @@ pub const Settings = struct {
     }
 
     pub fn load(self: *Settings, io: *std.Io) void {
+        std.debug.print("Settings : Loading settings data...\n", .{});
         self.data.load(io);
     }
 

@@ -35,10 +35,12 @@ pub const Ui = struct {
     }
 
     pub fn deinit(self: *Ui) void {
+        std.debug.print("UI : Deinitializing...\n", .{});
         self.font.deinit();
     }
 
     pub fn load(self: *Ui) void {
+        std.debug.print("UI : Loading UI...\n", .{});
         self.font.load();
     }
 };

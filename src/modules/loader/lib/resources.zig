@@ -7,6 +7,7 @@ pub const Resources = struct {
     sprite: Sprite = .init(.AnimalBoar, .Right, .Walk),
 
     pub fn deinit(self: *Resources) void {
+        std.debug.print("Loader Resources : Deinitializing...\n", .{});
         self.sprite.deinit();
         if (self.texture) |texture| {
             rl.unloadTexture(texture);
@@ -15,6 +16,11 @@ pub const Resources = struct {
     }
 
     pub fn load(self: *Resources, io: *std.Io) void {
+        std.debug.print("Loader Resources : Loading resources...\n", .{});
+        if (self.texture) |texture| {
+            rl.unloadTexture(texture);
+            self.texture = null;
+        }
         const img = rl.loadImage("assets/screens/loading_screen.png") catch return;
         defer rl.unloadImage(img);
         const texture = rl.loadTextureFromImage(img) catch return;

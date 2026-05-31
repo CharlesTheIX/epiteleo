@@ -13,12 +13,14 @@ pub const InputHandler = struct {
     keyboard: Keyboard,
 
     pub fn init(allocator: std.mem.Allocator) InputHandler {
+        std.debug.print("InputHandler : Initializing...\n", .{});
         const mouse = Mouse.init(allocator);
         const keyboard = Keyboard.init(allocator);
         return InputHandler{ .mouse = mouse, .keyboard = keyboard };
     }
 
     pub fn deinit(self: *InputHandler) void {
+        std.debug.print("InputHandler : Deinitializing...\n", .{});
         self.mouse.deinit();
         self.keyboard.deinit();
     }

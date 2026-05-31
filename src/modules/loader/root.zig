@@ -22,6 +22,7 @@ pub const Loader = struct {
     }
 
     pub fn deinit(self: *Loader) void {
+        std.debug.print("Loader : Deinitializing...\n", .{});
         self.resources.deinit();
     }
 

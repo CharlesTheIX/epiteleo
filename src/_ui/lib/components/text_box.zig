@@ -15,10 +15,12 @@ pub const TextBox = struct {
     padding: rl.Rectangle,
 
     pub fn init(props: TextBoxProps) TextBox {
+        std.debug.print("TextBox : Initializing...\n", .{});
         return .{ .content = props.content, .rect = props.rect, .padding = props.padding };
     }
 
     pub fn deinit(self: *TextBox) void {
+        std.debug.print("TextBox : Deinitializing...\n", .{});
         _ = self;
     }
 

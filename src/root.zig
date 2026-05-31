@@ -32,10 +32,12 @@ pub const App = struct {
     intro: ?_intro.Intro = .init(),
 
     pub fn init(props: AppProps) App {
+        std.debug.print("App : Initializing...\n", .{});
         return App{ .io = props.io, .allocator = props.allocator, .ih = .init(props.allocator) };
     }
 
     pub fn deinit(self: *App) void {
+        std.debug.print("App : Deinitializing...\n", .{});
         self.ui.deinit();
         self.camera.deinit();
         self.loader.deinit();
@@ -60,7 +62,7 @@ pub const App = struct {
             .Init => return,
             .NewGame => if (self.new_game) |*ng| ng.draw(self.allocator, font),
             .Settings => self.settings.drawSettingsScreen(font), // check
-            .Intro => if (self.intro) |*i| i.drawIntroScreen(font, self.allocator), // check
+            .Intro => if (self.intro) |*i| i.drawIntroScreen(font), // check
             .Game => {
                 rl.beginMode2D(self.camera.camera);
                 if (self.game) |*g| g.draw();
@@ -85,6 +87,7 @@ pub const App = struct {
     }
 
     fn load(self: *App) void {
+        std.debug.print("App : Loading resources...\n", .{});
         self.ui.load();
         self.settings.load(self.io);
         self.loader.resources.load(self.io);
@@ -101,6 +104,8 @@ pub const App = struct {
         rl.setConfigFlags(config_flags);
         rl.initWindow(960, 540, "Epiteleo");
         defer rl.closeWindow();
+        rl.setWindowMinSize(960, 540);
+        rl.setWindowOpacity(1.0);
         self.load();
         while (!rl.windowShouldClose() and !self.shut_down) {
             self.update();

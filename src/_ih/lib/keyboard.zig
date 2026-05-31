@@ -7,6 +7,7 @@ pub const Keyboard = struct {
     active_keys: std.AutoHashMap(Key, u64),
 
     pub fn init(allocator: std.mem.Allocator) Keyboard {
+        std.debug.print("Keyboard : Initializing...\n", .{});
         const active_keys = std.AutoHashMap(Key, u64).init(allocator);
         return Keyboard{
             .next_key_press_order = 0,
@@ -15,6 +16,7 @@ pub const Keyboard = struct {
     }
 
     pub fn deinit(self: *Keyboard) void {
+        std.debug.print("Keyboard : Deinitializing...\n", .{});
         self.active_keys.deinit();
         self.next_key_press_order = 0;
     }

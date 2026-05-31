@@ -15,7 +15,7 @@ pub const Start = struct {
     no_save_options: [2][]const u8 = .{ "New Game", "Back" },
     has_save_options: [3][]const u8 = .{ "Continue", "New Game", "Back" },
 
-    pub fn draw(self: *Start, intro: *Intro, font: *_ui.Font, allocator: std.mem.Allocator) void {
+    pub fn draw(self: *Start, intro: *Intro, font: *_ui.Font) void {
         var alpha: f32 = 1.0;
         const spacing: f32 = 16;
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
@@ -25,15 +25,21 @@ pub const Start = struct {
         var pos = rl.Vector2.init(template.x + spacing, template.y + spacing);
         if (intro.has_player_data) {
             for (self.has_save_options, 0..) |option, i| {
-                var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
-                if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
+                var option_buf: [128]u8 = undefined;
+                const option_txt = if (i == self.option_index)
+                    std.fmt.bufPrint(&option_buf, "> {s}", .{option}) catch option
+                else
+                    std.fmt.bufPrint(&option_buf, "{s}", .{option}) catch option;
                 _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 pos.y += font.size + @as(f32, @divFloor(spacing, 2));
             }
         } else {
             for (self.no_save_options, 0..) |option, i| {
-                var option_txt = std.fmt.allocPrint(allocator, "{s}", .{option}) catch "";
-                if (i == self.option_index) option_txt = std.fmt.allocPrint(allocator, "> {s}", .{option}) catch "";
+                var option_buf: [128]u8 = undefined;
+                const option_txt = if (i == self.option_index)
+                    std.fmt.bufPrint(&option_buf, "> {s}", .{option}) catch option
+                else
+                    std.fmt.bufPrint(&option_buf, "{s}", .{option}) catch option;
                 _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 pos.y += font.size + @as(f32, @divFloor(spacing, 2));
             }

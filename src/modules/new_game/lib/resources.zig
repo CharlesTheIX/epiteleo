@@ -5,6 +5,7 @@ pub const Resources = struct {
     texture: ?rl.Texture2D = null,
 
     pub fn deinit(self: *Resources) void {
+        std.debug.print("NewGame Resources : Deinitializing...\n", .{});
         if (self.texture) |texture| {
             rl.unloadTexture(texture);
             self.texture = null;
@@ -12,6 +13,7 @@ pub const Resources = struct {
     }
 
     pub fn load(self: *Resources) void {
+        std.debug.print("NewGame Resources : Loading resources...\n", .{});
         if (self.texture) |texture| {
             rl.unloadTexture(texture);
             self.texture = null;

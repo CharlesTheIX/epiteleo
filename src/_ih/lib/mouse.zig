@@ -11,6 +11,7 @@ pub const Mouse = struct {
     active_clicks: std.AutoHashMap(Click, u64),
 
     pub fn init(allocator: std.mem.Allocator) Mouse {
+        std.debug.print("Mouse : Initializing...\n", .{});
         const active_clicks = std.AutoHashMap(Click, u64).init(allocator);
         return Mouse{
             .next_click_press_order = 0,
@@ -21,6 +22,7 @@ pub const Mouse = struct {
     }
 
     pub fn deinit(self: *Mouse) void {
+        std.debug.print("Mouse : Deinitializing...\n", .{});
         self.active_clicks.deinit();
         self.next_click_press_order = 0;
     }

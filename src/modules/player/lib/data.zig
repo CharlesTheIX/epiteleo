@@ -14,6 +14,7 @@ pub const Data = struct {
     },
 
     pub fn load(self: *Data, io: *std.Io) void {
+        std.debug.print("Player Data : Loading player data... \n", .{});
         const cwd = std.Io.Dir.cwd();
         const file = cwd.openFile(io.*, self.path, .{}) catch return self.save(io);
         defer file.close(io.*);
@@ -55,6 +56,7 @@ pub const Data = struct {
     }
 
     pub fn save(self: *Data, io: *std.Io) void {
+        std.debug.print("Player Data : Saving player data... \n", .{});
         self.setPlayTime(null);
         const cwd = std.Io.Dir.cwd();
         cwd.createDirPath(io.*, ".data") catch {

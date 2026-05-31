@@ -17,6 +17,7 @@ pub const TextInput = struct {
     buffer: [256]u8 = undefined,
 
     pub fn init(props: TextInputProps) TextInput {
+        std.debug.print("TextInput : Initializing...\n", .{});
         var text_input = TextInput{
             .writer = undefined,
             .rect = props.rect,
@@ -34,6 +35,7 @@ pub const TextInput = struct {
     }
 
     pub fn deinit(self: *TextInput) void {
+        std.debug.print("TextInput : Deinitializing...\n", .{});
         self.rebindWriter();
         self.writer.end = 0;
         self.focused = false;

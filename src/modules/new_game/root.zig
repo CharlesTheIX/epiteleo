@@ -14,6 +14,7 @@ pub const NewGame = struct {
     fade_in_timer: Timer = .init(0.5),
 
     pub fn init(font: *_ui.Font) NewGame {
+        std.debug.print("NewGame : Initializing...\n", .{});
         const spacing: f32 = 16;
         const template = _ui.initScreenRect();
         const font_size = @as(f32, @floatFromInt(font.size));
@@ -35,6 +36,7 @@ pub const NewGame = struct {
     }
 
     pub fn deinit(self: *NewGame) void {
+        std.debug.print("NewGame : Deinitializing...\n", .{});
         self.text_box.deinit();
         self.resources.deinit();
         self.text_input.deinit();
@@ -65,6 +67,7 @@ pub const NewGame = struct {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         self.text_input.update();
         if (rl.isKeyPressed(rl.KeyboardKey.enter)) {
+            defer app.new_game = null;
             defer self.deinit();
             if (app.game == null) app.game = _game.Game.init();
             if (app.game) |*_gm| {

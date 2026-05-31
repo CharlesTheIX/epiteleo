@@ -7,6 +7,7 @@ pub const StateOptions = struct {
     max_frames: u4 = 0,
 
     pub fn load(value: []const u8) StateOptions {
+        std.debug.print("Sprite Data State Option : Loading sprite data state options... \n", .{});
         var state_options = StateOptions{};
         var opts_it = std.mem.splitSequence(u8, value, ";");
         while (opts_it.next()) |opt| {

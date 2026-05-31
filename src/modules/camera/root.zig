@@ -31,6 +31,7 @@ pub const Camera = struct {
     }
 
     pub fn deinit(self: *Camera) void {
+        std.debug.print("Camera : Deinitializing...\n", .{});
         _ = self;
     }
 
