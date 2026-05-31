@@ -1,8 +1,13 @@
 const std = @import("std");
 const rl = @import("raylib");
 const _ui = @import("../../_ui/root.zig");
+// const Map = @import("../map.root.zig").Map;
+// const Npc = @import("../npc/root.zig").Npc;
+// const Item  = @import("../item/root.zig").Item;
 const _ih = @import("../input_handler/root.zig");
+// const Quest = @import("../quest/root.zig").Quest;
 const Timer = @import("../timer/root.zig").Timer;
+// const Enemy = @import("../enemy/root.zig").Enemy;
 const Player = @import("../player/root.zig").Player;
 
 pub const Game = struct {
@@ -10,6 +15,10 @@ pub const Game = struct {
     player: Player = .{},
     new_game: bool = false,
     state: State = .Playing,
+    // npcs: []Npc = &[_]Npc{},
+    // items: []Item = &[_]Item{},
+    // quests: []Quest = &[_]Quest{},
+    // enemies: []Enemy = &[_]Enemy{},
     fade_in_timer: Timer = .init(0.5),
 
     pub fn init() Game {
@@ -31,8 +40,8 @@ pub const Game = struct {
                     .color = rl.Color.black.alpha(alpha),
                     .rect = .init(0, 0, screen_w, screen_h),
                 });
-                // const tint = rl.Color.white.alpha(alpha);
-                self.player.draw();
+                const tint = rl.Color.white.alpha(alpha);
+                self.player.draw(tint);
             },
             else => return,
         }

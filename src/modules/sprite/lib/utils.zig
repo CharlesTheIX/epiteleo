@@ -89,23 +89,86 @@ pub fn getRectCentre(rect: rl.Rectangle) rl.Vector2 {
 pub const movement_keys: []const Key = &.{ .Up, .Down, .Left, .Right, .W, .A, .S, .D };
 
 pub const SpriteType = enum {
+    AnimalBlackGoose,
     AnimalBoar,
+    AnimalBull,
+    AnimalCalf,
+    AnimalChick,
+    AnimalDeer,
+    AnimalFox,
+    AnimalHare,
+    AnimalLamb,
+    AnimalPiglet,
+    AnimalRooster,
+    AnimalSheep,
+    AnimalTurkey,
+
+    pub fn fromInt(raw: u8) ?SpriteType {
+        return switch (raw) {
+            0 => .AnimalBlackGoose,
+            1 => .AnimalBoar,
+            2 => .AnimalBull,
+            3 => .AnimalCalf,
+            4 => .AnimalChick,
+            5 => .AnimalDeer,
+            6 => .AnimalFox,
+            7 => .AnimalHare,
+            8 => .AnimalLamb,
+            9 => .AnimalPiglet,
+            10 => .AnimalRooster,
+            11 => .AnimalSheep,
+            12 => .AnimalTurkey,
+            else => null,
+        };
+    }
+
+    pub fn toInt(self: SpriteType) u8 {
+        return @intFromEnum(self);
+    }
 
     pub fn toString(self: SpriteType) []const u8 {
         return switch (self) {
+            .AnimalBlackGoose => "AnimalBlackGoose",
             .AnimalBoar => "AnimalBoar",
+            .AnimalBull => "AnimalBull",
+            .AnimalCalf => "AnimalCalf",
+            .AnimalChick => "AnimalChick",
+            .AnimalDeer => "AnimalDeer",
+            .AnimalFox => "AnimalFox",
+            .AnimalHare => "AnimalHare",
+            .AnimalLamb => "AnimalLamb",
+            .AnimalPiglet => "AnimalPiglet",
+            .AnimalRooster => "AnimalRooster",
+            .AnimalSheep => "AnimalSheep",
+            .AnimalTurkey => "AnimalTurkey",
         };
     }
 
     pub fn fromString(s: []const u8) ?SpriteType {
+        if (std.mem.eql(u8, s, "AnimalBlackGoose")) return .AnimalBlackGoose;
         if (std.mem.eql(u8, s, "AnimalBoar")) return .AnimalBoar;
+        if (std.mem.eql(u8, s, "AnimalBull")) return .AnimalBull;
+        if (std.mem.eql(u8, s, "AnimalCalf")) return .AnimalCalf;
+        if (std.mem.eql(u8, s, "AnimalChick")) return .AnimalChick;
+        if (std.mem.eql(u8, s, "AnimalDeer")) return .AnimalDeer;
+        if (std.mem.eql(u8, s, "AnimalFox")) return .AnimalFox;
+        if (std.mem.eql(u8, s, "AnimalHare")) return .AnimalHare;
+        if (std.mem.eql(u8, s, "AnimalLamb")) return .AnimalLamb;
+        if (std.mem.eql(u8, s, "AnimalPiglet")) return .AnimalPiglet;
+        if (std.mem.eql(u8, s, "AnimalRooster")) return .AnimalRooster;
+        if (std.mem.eql(u8, s, "AnimalSheep")) return .AnimalSheep;
+        if (std.mem.eql(u8, s, "AnimalTurkey")) return .AnimalTurkey;
         return null;
     }
 
-    pub fn dataPath(self: SpriteType) []const u8 {
-        return switch (self) {
-            .AnimalBoar => "assets/sprites/animals/boar/data.z",
+    pub fn path(self: SpriteType, buffer: *[128]u8, opt: enum { Data, SpriteSheet }) ?[]const u8 {
+        const id = self.toString();
+        const file_name = switch (opt) {
+            .Data => "data.z",
+            .SpriteSheet => "spritesheet.png",
         };
+        const _path = std.fmt.bufPrint(buffer[0..], "assets/sprites/{s}/{s}", .{ id, file_name }) catch return null;
+        return _path;
     }
 };
 

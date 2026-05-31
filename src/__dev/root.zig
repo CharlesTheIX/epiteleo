@@ -6,6 +6,7 @@ const _ih = @import("../modules/input_handler/root.zig");
 const Timer = @import("../modules/timer/root.zig").Timer;
 const Camera = @import("../modules/camera/root.zig").Camera;
 const Canvas = @import("../modules/canvas/root.zig").Canvas;
+const SpriteType = @import("../modules/sprite/lib/utils.zig").SpriteType;
 const drawAppInfo = @import("./lib/draw_app_info.zig").drawAppInfo;
 const drawGameInfo = @import("./lib/draw_game_info.zig").drawGameInfo;
 const drawCameraInfo = @import("./lib/draw_camera_info.zig").drawCameraInfo;
@@ -134,6 +135,17 @@ pub const Dev = struct {
                     if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Zero}, .And)) {
                         self.input_timer.is_active = true;
                         if (app.game) |*g| g.player.save(app.io);
+                    }
+                    if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.One}, .And)) {
+                        if (app.game) |*game| {
+                            const next_id = game.player.sprite.id.toInt() + 1;
+                            if (SpriteType.fromInt(@as(u8, next_id))) |new_id| {
+                                game.player.sprite.id = new_id;
+                                if (game.player.texture) |*texture| {
+                                    game.player.sprite.load(texture, app.io);
+                                }
+                            }
+                        }
                     }
                 },
                 .__Canvas, .__InputHandler, .__Settings => return,

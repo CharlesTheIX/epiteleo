@@ -28,8 +28,9 @@ pub const Player = struct {
         }
     }
 
-    pub fn draw(self: *Player) void {
-        self.sprite.draw(&self.data.pos, rl.Color.white);
+    pub fn draw(self: *Player, tint: ?rl.Color) void {
+        const clr = if (tint) |t| t else rl.Color.white;
+        self.sprite.draw(&self.data.pos, clr);
     }
 
     pub fn focus(self: *Player) void {

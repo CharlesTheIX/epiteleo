@@ -52,7 +52,7 @@ pub fn drawGameInfo(app: *App) void {
         const play_time_string = std.fmt.allocPrint(
             app.allocator,
             "{d}",
-            .{@divExact(game.player.data.play_time, 1000)},
+            .{game.player.data.play_time},
         ) catch "Error formatting player play time";
         _ui.drawText(.{ .text = play_time_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;

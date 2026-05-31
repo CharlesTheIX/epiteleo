@@ -27,8 +27,10 @@ pub const Data = struct {
     }
 
     pub fn load(self: *Data, id: _utils.SpriteType, io: *std.Io) void {
+        var path_buffer: [128]u8 = undefined;
+        const path = id.path(&path_buffer, .Data) orelse return;
+        std.debug.print("Loading sprite data for {s}\n", .{path});
         const cwd = std.Io.Dir.cwd();
-        const path = id.dataPath();
         const file = cwd.openFile(io.*, path, .{}) catch return;
         defer file.close(io.*);
 
