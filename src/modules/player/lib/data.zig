@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ah = @import("../../../_ah/root.zig");
 const nowEpochYearSeconds = @import("../../../utils.zig").nowEpochYearSeconds;
 
 pub const Data = struct {
@@ -120,7 +121,8 @@ pub const Data = struct {
     }
 };
 
-pub fn saveDataOnThread(ctx: *anyopaque, io: *std.Io) void {
+pub fn saveDataOnThread(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
+    _ = ah;
     const module: *Data = @ptrCast(@alignCast(ctx));
     module.save(io);
 }

@@ -53,10 +53,12 @@ pub const Start = struct {
         if (kb.activeKeysInclude(&[_]Key{ .W, .Up }, .Or)) next_index = if (next_index == 0) option_count - 1 else next_index - 1;
         if (kb.activeKeysInclude(&[_]Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % option_count;
         if (next_index != self.option_index) {
+            app.ah.playAudio(.Sfx);
             intro.input_timer.is_active = true;
             self.option_index = @intCast(next_index);
         }
         if (kb.activeKeysInclude(&[_]Key{.Enter}, .And)) {
+            app.ah.playAudio(.Sfx);
             intro.input_timer.is_active = true;
             if (intro.has_player_data) {
                 switch (self.option_index) {
@@ -67,6 +69,7 @@ pub const Start = struct {
                         if (app.game) |*_gm| {
                             const request: _job.Request = .{ .Task = .{
                                 .io = app.io,
+                                .ah = &app.ah,
                                 .ctx = @ptrCast(_gm),
                                 .run_on_main_thread = true,
                                 .run = _game.loadGameTask,
@@ -82,6 +85,7 @@ pub const Start = struct {
                         if (app.new_game) |*_ng| {
                             const request: _job.Request = .{ .Task = .{
                                 .io = app.io,
+                                .ah = &app.ah,
                                 .ctx = @ptrCast(_ng),
                                 .run_on_main_thread = true,
                                 .run = _new_game.loadNewGameTask,
@@ -104,6 +108,7 @@ pub const Start = struct {
                         if (app.new_game) |*_ng| {
                             const request: _job.Request = .{ .Task = .{
                                 .io = app.io,
+                                .ah = &app.ah,
                                 .ctx = @ptrCast(_ng),
                                 .run_on_main_thread = true,
                                 .run = _new_game.loadNewGameTask,

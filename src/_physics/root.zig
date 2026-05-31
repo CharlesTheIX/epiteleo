@@ -56,6 +56,15 @@ pub const Body = struct {
     velocity: rl.Vector2, // in m/s
     acceleration: rl.Vector2, // in m/s^2
 
+    pub fn applySpeedCapCurve(self: *Body, speed_cap: f32, deceleration: f32, dt: f32) void {
+        const speed = self.velocity.length();
+        if (speed <= speed_cap) return;
+
+        const delta_speed = deceleration * dt;
+        const next_speed = if (speed - speed_cap <= delta_speed) speed_cap else speed - delta_speed;
+        self.velocity = self.velocity.normalize().scale(next_speed);
+    }
+
     pub fn applyAcceleration(self: *Body, dt: f32) void {
         self.velocity = self.velocity.add(self.acceleration.scale(dt));
         if (self.velocity.length() < 0.0001) self.velocity = rl.Vector2.zero();
@@ -68,12 +77,11 @@ pub const Body = struct {
 
     pub fn applyOrthogonalDrag(self: *Body, applied_force: rl.Vector2, surface: Surface, dt: f32, stop_speed: f32) void {
         if (applied_force.length() == 0) return;
-        const multiplier = 3.0; // Arbitrary multiplier to make orthogonal drag more noticeable.
-
+        const multiplier = 2.5; // Arbitrary multiplier to make orthogonal drag more noticeable.
         const normal_force = self.normalForce(null);
-        const harsh_drag_force = surface.static_friction_coefficient * normal_force * multiplier;
-        const harsh_drag_acceleration = harsh_drag_force / @max(self.mass, 0.001);
-        const delta_v = harsh_drag_acceleration * dt;
+        const drag_force = surface.static_friction_coefficient * normal_force * multiplier;
+        const drag_acceleration = drag_force / @max(self.mass, 0.001);
+        const delta_v = drag_acceleration * dt;
 
         // When moving on one axis, aggressively decay residual velocity on the orthogonal axis.
         if (applied_force.x != 0 and applied_force.y == 0) {

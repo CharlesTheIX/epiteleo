@@ -63,13 +63,12 @@ pub const Player = struct {
         const kb = ih.keyboard;
         const force_multiplier: f32 = 2.8;
         const dt = rl.getFrameTime();
-        const wants_attack = kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or);
         var speed_cap: f32 = self.max_speed;
         var input_force = rl.Vector2.zero();
+        const speed_cap_curve_deceleration: f32 = 18.0;
         var next_state = _sprite_utils.State.Idle;
-
+        const wants_attack = kb.activeKeysInclude(&[_]_ih.Key{.Space}, .Or);
         self.body.resetAcceleration();
-
         if (wants_attack and !self.sprite.noInterrupt()) {
             next_state = .Attack;
         } else if (self.sprite.noInterrupt()) {
@@ -83,7 +82,6 @@ pub const Player = struct {
                     }
                 }
             }
-
             if (latest_key) |key| {
                 if (_sprite_utils.Direction.fromKey(key)) |direction| {
                     next_state = .Walk;
@@ -95,34 +93,24 @@ pub const Player = struct {
                         .Left => input_force.x = -1,
                         .Right => input_force.x = 1,
                     }
-
                     if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftShift, .RightShift }, .Or)) {
                         speed_cap *= force_multiplier;
                         force_magnitude *= force_multiplier;
                     }
-
                     input_force = input_force.scale(force_magnitude);
-                    self.body.applyForce(input_force);
                 }
             }
         }
-
+        self.body.applyForce(input_force);
         self.body.applySurfaceResistance(input_force, self.surface, dt, stop_speed);
         self.body.applyOrthogonalDrag(input_force, self.surface, dt, stop_speed);
         self.body.applyAcceleration(dt);
-
         if (next_state != .Attack and !self.sprite.noInterrupt()) {
             if (self.body.velocity.length() > 2.1) next_state = .Run;
             if (input_force.length() == 0 and self.body.velocity.length() > stop_speed) next_state = .Walk;
         }
-        if (self.body.velocity.length() > speed_cap) self.body.velocity = self.body.velocity.normalize().scale(speed_cap);
-
         self.sprite.setState(next_state);
+        self.body.applySpeedCapCurve(speed_cap, speed_cap_curve_deceleration, dt);
         self.data.pos = self.data.pos.add(self.body.velocity);
-
-        std.debug.print("Applied Force: {d}, {d}\n", .{ input_force.x, input_force.y });
-        std.debug.print("Acceleration: {d}, {d}\n", .{ self.body.acceleration.x, self.body.acceleration.y });
-        std.debug.print("Velocity: {d}, {d}\n", .{ self.body.velocity.x, self.body.velocity.y });
-        std.debug.print("Position: {d}, {d}\n", .{ self.data.pos.x, self.data.pos.y });
     }
 };

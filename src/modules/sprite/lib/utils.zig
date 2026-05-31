@@ -167,7 +167,7 @@ pub const SpriteType = enum {
             .Data => "data.z",
             .SpriteSheet => "spritesheet.png",
         };
-        const _path = std.fmt.bufPrint(buffer[0..], "assets/sprites/{s}/{s}", .{ id, file_name }) catch return null;
+        const _path = std.fmt.bufPrint(buffer[0..], "assets/data/sprites/{s}/{s}", .{ id, file_name }) catch return null;
         return _path;
     }
 };

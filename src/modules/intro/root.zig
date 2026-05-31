@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ah = @import("../../_ah/root.zig");
 const _ui = @import("../../_ui/root.zig");
 const App = @import("../../root.zig").App;
 const Init = @import("./lib/init.zig").Init;
@@ -66,12 +67,16 @@ pub const Intro = struct {
     }
 };
 
-pub fn loadIntroTask(ctx: *anyopaque, io: *std.Io) void {
+pub fn loadIntroTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
     const cwd = std.Io.Dir.cwd();
     const module: *Intro = @ptrCast(@alignCast(ctx));
     module.resources.load();
     module.fade_in_timer.is_active = true;
     module._init.fade_in_timer.is_active = true;
+    ah.loadAudio(io, .Sfx, "assets/audio/sfx/click.mp3");
+    ah.loadAudio(io, .Music, "assets/audio/music/test_1.mp3");
+    // if (ah.music != null) ah.playAudio(.Music);
+    if (ah.sfx != null) ah.playAudio(.Sfx);
     const file = cwd.statFile(io.*, module.player_data_path, .{}) catch {
         module.has_player_data = false;
         return;

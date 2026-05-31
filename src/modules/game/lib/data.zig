@@ -1,4 +1,5 @@
 const std = @import("std");
+const _ah = @import("../../_ah/root.zig");
 const PlayerData = @import("../player/lib/data.zig").Data;
 
 pub const Data = struct {
@@ -15,7 +16,8 @@ pub const Data = struct {
     }
 };
 
-pub fn saveDataOnThread(ctx: *anyopaque, io: *std.Io) void {
+pub fn saveDataOnThread(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
+    _ = ah;
     const module: *Data = @ptrCast(@alignCast(ctx));
     module.save(io);
 }

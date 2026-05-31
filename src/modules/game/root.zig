@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ah = @import("../../_ah/root.zig");
 const _ih = @import("../../_ih/root.zig");
 const _ui = @import("../../_ui/root.zig");
 // const Map = @import("../map.root.zig").Map;
@@ -56,7 +57,7 @@ pub const Game = struct {
             rl.unloadTexture(texture);
             self.player.texture = null;
         }
-        const img = rl.loadImage("assets/screens/player_screen.png") catch return;
+        const img = rl.loadImage("assets/data/screens/player_screen.png") catch return;
         const texture = rl.loadTextureFromImage(img) catch return;
         defer rl.unloadImage(img);
         self.player.texture = texture;
@@ -72,7 +73,8 @@ pub const Game = struct {
     }
 };
 
-pub fn loadGameTask(ctx: *anyopaque, io: *std.Io) void {
+pub fn loadGameTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
+    _ = ah;
     const module: *Game = @ptrCast(@alignCast(ctx));
     module.load(io);
 }
@@ -107,6 +109,7 @@ pub const State = enum {
             else => .Playing,
         };
     }
+
     pub fn toInt(self: State) u8 {
         return @intFromBool(self);
     }

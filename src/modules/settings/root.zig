@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const _data = @import("./lib/data.zig");
+const _ah = @import("../../_ah/root.zig");
 const _ih = @import("../../_ih/root.zig");
 const _ui = @import("../../_ui/root.zig");
 const App = @import("../../root.zig").App;
@@ -27,6 +28,7 @@ pub const Settings = struct {
     }
 
     fn back(self: *Settings, app: *App) void {
+        app.ah.playAudio(.Sfx);
         defer self.deinit();
         self.option_index = 0;
         self.data.save(app.io);
@@ -34,6 +36,7 @@ pub const Settings = struct {
         if (app.intro) |*p| {
             const request: _job.Request = .{ .Task = .{
                 .io = app.io,
+                .ah = &app.ah,
                 .ctx = @ptrCast(p),
                 .run_on_main_thread = true,
                 .run = _intro.loadIntroTask,
@@ -83,6 +86,7 @@ pub const Settings = struct {
     }
 
     fn handleHorizontalInput(self: *Settings, app: *App) void {
+        app.ah.playAudio(.Sfx);
         const kb = app.ih.keyboard;
         switch (self.option_index) {
             0 => {
@@ -90,6 +94,7 @@ pub const Settings = struct {
                 if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
                     self.data.volume = if (self.data.volume == 0) 100 else self.data.volume - 10;
                 }
+                app.ah.setMasterVolume(self.data.volume);
             },
             1 => {
                 if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.data.difficulty = (self.data.difficulty + 1) % 4;
@@ -102,9 +107,12 @@ pub const Settings = struct {
     }
 
     fn handleVerticalInput(self: *Settings, app: *App) void {
-        var next_index: usize = self.option_index;
+        app.ah.playAudio(.Sfx);
         const kb = app.ih.keyboard;
-        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) next_index = if (next_index == 0) self.options.len - 1 else next_index - 1;
+        var next_index: usize = self.option_index;
+        if (kb.activeKeysInclude(&[_]_ih.Key{ .W, .Up }, .Or)) {
+            next_index = if (next_index == 0) self.options.len - 1 else next_index - 1;
+        }
         if (kb.activeKeysInclude(&[_]_ih.Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % self.options.len;
         if (next_index != self.option_index) {
             self.input_timer.is_active = true;
@@ -134,7 +142,8 @@ pub const Settings = struct {
     }
 };
 
-pub fn loadSettingsTask(ctx: *anyopaque, io: *std.Io) void {
+pub fn loadSettingsTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
+    _ = ah;
     _ = io;
     const module: *Settings = @ptrCast(@alignCast(ctx));
     module.resources.load();

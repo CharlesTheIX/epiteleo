@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ah = @import("../../../_ah/root.zig");
 
 pub const Ctx = struct { request: Request, status: *std.atomic.Value(u8) };
 
@@ -14,7 +15,7 @@ pub fn run(ctx: Ctx) void {
             ctx.status.store(Status.toInt(.Success), .release);
         },
         .Task => |task| {
-            if (!task.run_on_main_thread) task.run(task.ctx, task.io);
+            if (!task.run_on_main_thread) task.run(task.ctx, task.io, task.ah);
             ctx.status.store(Status.toInt(.Success), .release);
         },
     }
@@ -44,6 +45,7 @@ pub const Status = enum(u8) {
 pub const Task = struct {
     io: *std.Io,
     ctx: *anyopaque,
+    ah: *_ah.AudioHandler,
     run_on_main_thread: bool = false,
-    run: *const fn (ctx: *anyopaque, io: *std.Io) void,
+    run: *const fn (ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void,
 };

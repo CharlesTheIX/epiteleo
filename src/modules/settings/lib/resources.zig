@@ -18,7 +18,7 @@ pub const Resources = struct {
             rl.unloadTexture(texture);
             self.texture = null;
         }
-        const img = rl.loadImage("assets/screens/settings_screen.png") catch return;
+        const img = rl.loadImage("assets/data/screens/settings_screen.png") catch return;
         defer rl.unloadImage(img);
         const texture = rl.loadTextureFromImage(img) catch return;
         self.texture = texture;

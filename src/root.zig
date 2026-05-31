@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ah = @import("./_ah/root.zig");
 const _ih = @import("./_ih/root.zig");
 const _ui = @import("./_ui/root.zig");
 const Dev = @import("./__dev/root.zig").Dev;
@@ -17,6 +18,7 @@ pub const AppProps = struct { allocator: std.mem.Allocator, io: *std.Io };
 pub const App = struct {
     io: *std.Io,
     game: ?Game = null,
+    ah: _ah.AudioHandler,
     ih: _ih.InputHandler,
     state: State = .Init,
     __dev: ?Dev = .init(),
@@ -33,16 +35,22 @@ pub const App = struct {
 
     pub fn init(props: AppProps) App {
         std.debug.print("App : Initializing...\n", .{});
-        return App{ .io = props.io, .allocator = props.allocator, .ih = .init(props.allocator) };
+        return App{
+            .io = props.io,
+            .allocator = props.allocator,
+            .ih = .init(props.allocator),
+            .ah = _ah.AudioHandler.init(props.allocator),
+        };
     }
 
     pub fn deinit(self: *App) void {
         std.debug.print("App : Deinitializing...\n", .{});
+        self.ah.deinit();
+        self.ih.deinit();
         self.ui.deinit();
         self.camera.deinit();
         self.loader.deinit();
         self.settings.deinit();
-        self.ih.deinit();
         if (self.game) |*g| g.deinit();
         if (self.intro) |*i| i.deinit();
         if (self.__dev) |*dev| dev.deinit();
@@ -91,6 +99,7 @@ pub const App = struct {
         self.ui.load();
         self.settings.load(self.io);
         self.loader.resources.load(self.io);
+        self.ah.load(self.settings.data.volume);
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
         self.camera.load(rl.Vector2.init(screen_w, screen_h).scale(0.5));
@@ -101,6 +110,8 @@ pub const App = struct {
         var config_flags = rl.ConfigFlags{ .vsync_hint = true };
         if (self.__dev != null) config_flags.window_resizable = true;
         rl.setTargetFPS(60);
+        rl.initAudioDevice();
+        defer rl.closeAudioDevice();
         rl.setConfigFlags(config_flags);
         rl.initWindow(960, 540, "Epiteleo");
         defer rl.closeWindow();
@@ -127,6 +138,7 @@ pub const App = struct {
     fn update(self: *App) void {
         if (self.shut_down) return;
         self.ih.update();
+        self.ah.update();
         self.handleResize();
         if (self.__dev) |*dev| dev.update(self);
         if (self.loader.showing) return self.loader.update(self);
@@ -143,6 +155,7 @@ pub const App = struct {
                 if (self.intro) |*i| {
                     const request: _job.Request = .{ .Task = .{
                         .io = self.io,
+                        .ah = &self.ah,
                         .ctx = @ptrCast(i),
                         .run_on_main_thread = true,
                         .run = _intro.loadIntroTask,

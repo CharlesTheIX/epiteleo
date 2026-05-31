@@ -38,12 +38,16 @@ pub const Init = struct {
         if (kb.activeKeysInclude(&[_]Key{ .W, .Up }, .Or)) {
             next_index = if (next_index == 0) self.options.len - 1 else next_index - 1;
         }
-        if (kb.activeKeysInclude(&[_]Key{ .S, .Down }, .Or)) next_index = (next_index + 1) % self.options.len;
+        if (kb.activeKeysInclude(&[_]Key{ .S, .Down }, .Or)) {
+            next_index = (next_index + 1) % self.options.len;
+        }
         if (next_index != self.option_index) {
+            app.ah.playAudio(.Sfx);
             intro.input_timer.is_active = true;
             self.option_index = @intCast(next_index);
         }
         if (kb.activeKeysInclude(&[_]Key{.Enter}, .And)) {
+            app.ah.playAudio(.Sfx);
             intro.input_timer.is_active = true;
             switch (self.option_index) {
                 0 => {
@@ -58,6 +62,7 @@ pub const Init = struct {
                     intro.input_timer.is_active = true;
                     const request: _job.Request = .{ .Task = .{
                         .io = app.io,
+                        .ah = &app.ah,
                         .run_on_main_thread = true,
                         .ctx = @ptrCast(&app.settings),
                         .run = loadSettingsTask,

@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const _ah = @import("../../_ah/root.zig");
 const _game = @import("../game/root.zig");
 const _ui = @import("../../_ui/root.zig");
 const App = @import("../../root.zig").App;
@@ -67,6 +68,7 @@ pub const NewGame = struct {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         self.text_input.update();
         if (rl.isKeyPressed(rl.KeyboardKey.enter)) {
+            app.ah.playAudio(.Sfx);
             defer app.new_game = null;
             defer self.deinit();
             if (app.game == null) app.game = _game.Game.init();
@@ -75,6 +77,7 @@ pub const NewGame = struct {
                 _gm.player.data.setName(self.text_input.getText());
                 const request: _job.Request = .{ .Task = .{
                     .io = app.io,
+                    .ah = &app.ah,
                     .ctx = @ptrCast(_gm),
                     .run_on_main_thread = true,
                     .run = _game.loadGameTask,
@@ -86,7 +89,8 @@ pub const NewGame = struct {
     }
 };
 
-pub fn loadNewGameTask(ctx: *anyopaque, io: *std.Io) void {
+pub fn loadNewGameTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
+    _ = ah;
     _ = io;
     const module: *NewGame = @ptrCast(@alignCast(ctx));
     module.resources.load();

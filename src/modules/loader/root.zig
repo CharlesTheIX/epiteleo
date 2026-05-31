@@ -77,7 +77,7 @@ pub const Loader = struct {
                     if (self.active_request) |request| {
                         switch (request) {
                             .SleepNs => {},
-                            .Task => |task| if (task.run_on_main_thread) task.run(task.ctx, task.io),
+                            .Task => |task| if (task.run_on_main_thread) task.run(task.ctx, task.io, task.ah),
                         }
                     }
                     self.active_request = null;
