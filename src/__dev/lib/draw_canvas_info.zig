@@ -22,11 +22,12 @@ pub fn drawCanvasInfo(app: *App) void {
     const rect_title = "Canvas | Rectangle:";
     const rect_title_width = _ui.measureText(rect_title, font);
     _ui.drawText(.{ .text = rect_title, .pos = pos, .font = font, .color = .white });
-    const rect_string = std.fmt.allocPrint(
-        app.allocator,
+    var rect_buf: [96]u8 = undefined;
+    const rect_string = std.fmt.bufPrint(
+        &rect_buf,
         "({d}, {d}, {d}, {d})",
         .{ app.canvas.rect.x, app.canvas.rect.y, app.canvas.rect.width, app.canvas.rect.height },
-    ) catch "";
+    ) catch "ERR";
     pos.x += rect_title_width.x + @as(f32, @divFloor(spacing, 2));
     _ui.drawText(.{ .text = rect_string, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
@@ -37,11 +38,12 @@ pub fn drawCanvasInfo(app: *App) void {
     const mouse_title_width = _ui.measureText(mouse_title, font);
     const mouse_canvas_pos = rl.getScreenToWorld2D(app.ih.mouse.pos, app.camera.camera);
     _ui.drawText(.{ .text = mouse_title, .pos = pos, .font = font, .color = .white });
-    const mouse_string = std.fmt.allocPrint(
-        app.allocator,
+    var mouse_buf: [64]u8 = undefined;
+    const mouse_string = std.fmt.bufPrint(
+        &mouse_buf,
         "({d}, {d})",
         .{ mouse_canvas_pos.x, mouse_canvas_pos.y },
-    ) catch "";
+    ) catch "ERR";
     pos.x += mouse_title_width.x + @as(f32, @divFloor(spacing, 2));
     _ui.drawText(.{ .text = mouse_string, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
@@ -52,7 +54,8 @@ pub fn drawCanvasInfo(app: *App) void {
     const selection_title_width = _ui.measureText(selection_title, font);
     _ui.drawText(.{ .text = selection_title, .pos = pos, .font = font, .color = .white });
     if (app.canvas.selection.start) |start| {
-        const selection_start_string = std.fmt.allocPrint(app.allocator, "({d}, {d})", .{ start.x, start.y }) catch "";
+        var selection_start_buf: [64]u8 = undefined;
+        const selection_start_string = std.fmt.bufPrint(&selection_start_buf, "({d}, {d})", .{ start.x, start.y }) catch "ERR";
         pos.x += selection_title_width.x + @as(f32, @divFloor(spacing, 2));
         _ui.drawText(.{ .text = selection_start_string, .pos = pos, .font = font, .color = .white });
     }
@@ -64,7 +67,8 @@ pub fn drawCanvasInfo(app: *App) void {
     const selection_end_title_width = _ui.measureText(selection_end_title, font);
     _ui.drawText(.{ .text = selection_end_title, .pos = pos, .font = font, .color = .white });
     if (app.canvas.selection.end) |end| {
-        const selection_end_string = std.fmt.allocPrint(app.allocator, "({d}, {d})", .{ end.x, end.y }) catch "";
+        var selection_end_buf: [64]u8 = undefined;
+        const selection_end_string = std.fmt.bufPrint(&selection_end_buf, "({d}, {d})", .{ end.x, end.y }) catch "ERR";
         pos.x += selection_end_title_width.x + @as(f32, @divFloor(spacing, 2));
         _ui.drawText(.{ .text = selection_end_string, .pos = pos, .font = font, .color = .white });
     }
@@ -76,11 +80,12 @@ pub fn drawCanvasInfo(app: *App) void {
     const selection_rect_title_width = _ui.measureText(selection_rect_title, font);
     _ui.drawText(.{ .text = selection_rect_title, .pos = pos, .font = font, .color = .white });
     if (app.canvas.selection.rect) |rect| {
-        const selection_rect_string = std.fmt.allocPrint(
-            app.allocator,
+        var selection_rect_buf: [96]u8 = undefined;
+        const selection_rect_string = std.fmt.bufPrint(
+            &selection_rect_buf,
             "({d}, {d}, {d}, {d})",
             .{ rect.x, rect.y, rect.width, rect.height },
-        ) catch "";
+        ) catch "ERR";
         pos.x += selection_rect_title_width.x + @as(f32, @divFloor(spacing, 2));
         _ui.drawText(.{ .text = selection_rect_string, .pos = pos, .font = font, .color = .white });
     }

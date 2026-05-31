@@ -14,6 +14,7 @@ pub fn drawGameInfo(app: *App) void {
     // Intro Text
     _ui.drawText(.{ .text = "Game Info:", .pos = pos, .color = .white, .font = font });
     if (app.game) |game| {
+        var value_buf: [160]u8 = undefined;
         pos.y += font.size + spacing;
         font.size = spacing;
         // State
@@ -37,10 +38,10 @@ pub fn drawGameInfo(app: *App) void {
         const player_pos_title = "Player | Position:";
         _ui.drawText(.{ .text = player_pos_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_pos_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_pos_string = std.fmt.allocPrint(app.allocator, "{d}, {d}", .{
+        const player_pos_string = std.fmt.bufPrint(&value_buf, "{d}, {d}", .{
             game.player.data.pos.x,
             game.player.data.pos.y,
-        }) catch "Error formatting player position";
+        }) catch "ERR";
         _ui.drawText(.{ .text = player_pos_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -49,11 +50,11 @@ pub fn drawGameInfo(app: *App) void {
         const play_time_title = "Player | Play Time (s):";
         _ui.drawText(.{ .text = play_time_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(play_time_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const play_time_string = std.fmt.allocPrint(
-            app.allocator,
+        const play_time_string = std.fmt.bufPrint(
+            &value_buf,
             "{d}",
             .{game.player.data.play_time},
-        ) catch "Error formatting player play time";
+        ) catch "ERR";
         _ui.drawText(.{ .text = play_time_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -62,11 +63,11 @@ pub fn drawGameInfo(app: *App) void {
         const player_max_speed_title = "Player | Max Speed:";
         _ui.drawText(.{ .text = player_max_speed_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_max_speed_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_max_speed_string = std.fmt.allocPrint(
-            app.allocator,
+        const player_max_speed_string = std.fmt.bufPrint(
+            &value_buf,
             "{d}",
             .{game.player.max_speed},
-        ) catch "Error formatting player max speed";
+        ) catch "ERR";
         _ui.drawText(.{ .text = player_max_speed_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -75,11 +76,11 @@ pub fn drawGameInfo(app: *App) void {
         const player_velocity_title = "Player | Velocity:";
         _ui.drawText(.{ .text = player_velocity_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_velocity_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_velocity_string = std.fmt.allocPrint(
-            app.allocator,
+        const player_velocity_string = std.fmt.bufPrint(
+            &value_buf,
             "{d}, {d}",
             .{ game.player.velocity.x, game.player.velocity.y },
-        ) catch "Error formatting player velocity";
+        ) catch "ERR";
         _ui.drawText(.{ .text = player_velocity_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -88,11 +89,11 @@ pub fn drawGameInfo(app: *App) void {
         const player_acceleration_title = "Player | Acceleration:";
         _ui.drawText(.{ .text = player_acceleration_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_acceleration_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_acceleration_string = std.fmt.allocPrint(
-            app.allocator,
+        const player_acceleration_string = std.fmt.bufPrint(
+            &value_buf,
             "{d}, {d}",
             .{ game.player.acceleration.x, game.player.acceleration.y },
-        ) catch "Error formatting player acceleration";
+        ) catch "ERR";
         _ui.drawText(.{ .text = player_acceleration_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -101,10 +102,10 @@ pub fn drawGameInfo(app: *App) void {
         const player_sprite_state_title = "Player | Sprite State:";
         _ui.drawText(.{ .text = player_sprite_state_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_sprite_state_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_sprite_state_string = std.fmt.allocPrint(app.allocator, "{s}, {s}", .{
+        const player_sprite_state_string = std.fmt.bufPrint(&value_buf, "{s}, {s}", .{
             game.player.sprite.state.toString(),
             game.player.sprite.direction.toString(),
-        }) catch "Error formatting player sprite state";
+        }) catch "ERR";
         _ui.drawText(.{ .text = player_sprite_state_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -114,7 +115,7 @@ pub fn drawGameInfo(app: *App) void {
         _ui.drawText(.{ .text = player_sprite_size_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_sprite_size_title, font).x + @as(f32, @divFloor(spacing, 2));
         if (game.player.sprite.data.size) |size| {
-            const player_sprite_size_string = std.fmt.allocPrint(app.allocator, "{d}x{d}", .{ size[0], size[1] }) catch "Error formatting player sprite size";
+            const player_sprite_size_string = std.fmt.bufPrint(&value_buf, "{d}x{d}", .{ size[0], size[1] }) catch "ERR";
             _ui.drawText(.{ .text = player_sprite_size_string, .pos = pos, .font = font, .color = .white });
         } else _ui.drawText(.{ .text = "N/A", .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
@@ -125,12 +126,12 @@ pub fn drawGameInfo(app: *App) void {
         _ui.drawText(.{ .text = player_sprite_hitbox_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_sprite_hitbox_title, font).x + @as(f32, @divFloor(spacing, 2));
         if (game.player.sprite.data.hitbox) |hitbox| {
-            const player_sprite_hitbox_string = std.fmt.allocPrint(app.allocator, "{d}x{d} @ {d},{d}", .{
+            const player_sprite_hitbox_string = std.fmt.bufPrint(&value_buf, "{d}x{d} @ {d},{d}", .{
                 hitbox[2],
                 hitbox[3],
                 hitbox[0],
                 hitbox[1],
-            }) catch "Error formatting player sprite hitbox";
+            }) catch "ERR";
             _ui.drawText(.{ .text = player_sprite_hitbox_string, .pos = pos, .font = font, .color = .white });
         } else _ui.drawText(.{ .text = "N/A", .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
@@ -140,11 +141,11 @@ pub fn drawGameInfo(app: *App) void {
         const player_sprite_animation_fps_title = "Player | Sprite Animation FPS:";
         _ui.drawText(.{ .text = player_sprite_animation_fps_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_sprite_animation_fps_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_sprite_animation_fps_string = std.fmt.allocPrint(
-            app.allocator,
+        const player_sprite_animation_fps_string = std.fmt.bufPrint(
+            &value_buf,
             "{d}",
             .{game.player.sprite.animation.fps},
-        ) catch "Error formatting player sprite animation fps";
+        ) catch "ERR";
         _ui.drawText(.{ .text = player_sprite_animation_fps_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -153,11 +154,11 @@ pub fn drawGameInfo(app: *App) void {
         const player_sprite_animation_frame_title = "Player | Sprite Animation Frame:";
         _ui.drawText(.{ .text = player_sprite_animation_frame_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_sprite_animation_frame_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_sprite_animation_frame_string = std.fmt.allocPrint(
-            app.allocator,
+        const player_sprite_animation_frame_string = std.fmt.bufPrint(
+            &value_buf,
             "{d}",
             .{game.player.sprite.animation.frame},
-        ) catch "Error formatting player sprite animation frame";
+        ) catch "ERR";
         _ui.drawText(.{ .text = player_sprite_animation_frame_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -171,9 +172,9 @@ pub fn drawGameInfo(app: *App) void {
             .color = .white,
         });
         pos.x += _ui.measureText(player_sprite_animation_max_frames_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_sprite_animation_max_frames_string = std.fmt.allocPrint(app.allocator, "{d}", .{
+        const player_sprite_animation_max_frames_string = std.fmt.bufPrint(&value_buf, "{d}", .{
             game.player.sprite.animation.max_frames,
-        }) catch "Error formatting player sprite animation max frames";
+        }) catch "ERR";
         _ui.drawText(.{
             .text = player_sprite_animation_max_frames_string,
             .pos = pos,

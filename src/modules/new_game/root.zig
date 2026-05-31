@@ -69,7 +69,7 @@ pub const NewGame = struct {
             if (app.game == null) app.game = _game.Game.init();
             if (app.game) |*_gm| {
                 _gm.new_game = true;
-                _gm.player.data.setName(&self.text_input.buffer);
+                _gm.player.data.setName(self.text_input.getText());
                 const request: _job.Request = .{ .Task = .{
                     .io = app.io,
                     .ctx = @ptrCast(_gm),

@@ -1,73 +1,67 @@
 # Epiteleo
 
-Epiteleo is a Zig + raylib project organized around an app state machine, async loader transitions, modular runtime systems, and data-driven sprite metadata.
+Epiteleo is a Zig + raylib prototype built around a modular state machine, async loader transitions, data-driven sprite metadata, and a debug-first development loop.
 
-The project currently provides a playable shell with intro/menu flow, settings persistence, a new-game name input screen, canvas and camera controls, debug overlays, and loading transitions.
+The current project includes:
+
+- Intro and start-menu flow
+- Settings UI with persistence
+- New-game name entry screen
+- Core game shell with player movement and animation
+- Camera/canvas systems
+- Dev overlays and debug hotkeys
 
 ## Requirements
 
-- Zig 0.16.0 or newer
-- A desktop environment that can create a raylib window
+- Zig 0.16.0
+- Desktop environment with a working graphics stack for raylib
 
 ## Quick Start
 
-Build the executable:
+Build:
 
 ```bash
 zig build
 ```
 
-Run the app:
+Run:
 
 ```bash
 zig build run
 ```
 
-Pass runtime args through Zig:
+Pass args to the runtime:
 
 ```bash
 zig build run -- <args>
 ```
 
-The executable is named epiteleo.
+Binary name: epiteleo
 
-## Runtime Overview
+## Runtime Summary
 
 - Window title: Epiteleo
-- Initial window size: 960x540
+- Initial size: 960x540
 - Target FPS: 60
-- Default app state sequence on startup:
+- Main app states: Init, Intro, NewGame, Settings, Game
 
-1. Init
-2. Intro (loaded through loader job)
-
-Available app states:
-
-- Init
-- Intro
-- NewGame
-- Settings
-- Game
-
-State transitions can be direct or go through the loader when a background/main-thread job is required.
+Transitions can be immediate or routed through the loader for task-based loading.
 
 ## State Flow
 
 ```mermaid
 flowchart TD
-	A[Init] --> B[Intro]
-	B --> C[Intro Start Menu]
-	C --> D[Game]
-	C --> E[NewGame]
-	B --> F[Settings]
+	A[Init] --> B[Intro: Init Menu]
+	B --> C[Intro: Start Menu]
+	B --> D[Settings]
+	C --> E[Game]
+	C --> F[NewGame]
 	C --> B
-	F --> B
+	D --> B
+	F --> E
 ```
 
-Notes:
-
-- Intro start menu options depend on whether .data/save_data.z exists.
-- Loader shows a fade-in/fade-out loading screen while jobs run.
+Start-menu options depend on whether player data exists at .data/player_data.z.
 
 ## Controls
 
@@ -77,21 +71,21 @@ Notes:
 - S or Down: next option
 - Enter: confirm
 
-### Intro Screens
+### Intro Menus
 
-Init menu:
+Init menu entries:
 
-- Stat Game (current in-code label)
+- Start Game
 - Settings
 - Exit
 
-Start menu when save data exists:
+Start menu when player data exists:
 
 - Continue
 - New Game
 - Back
 
-Start menu when save data does not exist:
+Start menu when player data does not exist:
 
 - New Game
 - Back
@@ -100,104 +94,135 @@ Start menu when save data does not exist:
 
 - W or Up: move selection up
 - S or Down: move selection down
-- A or Left: decrease value for selected numeric option
-- D or Right: increase value for selected numeric option
-- Enter on Back: return to previous state
+- A or Left: decrease selected value
+- D or Right: increase selected value
+- Enter on Back: return
 
-Settings values:
+Settings ranges:
 
-- Volume: 0 to 100 in steps of 10
-- Difficulty: 0 to 3
+- Volume: 0 to 100 (step 10)
+- Difficulty: 0 to 3 (step 1)
 
 ### New Game Screen
 
 - Text input is focused by default
-- Enter prints: Start game with name: <input>
+- Enter confirms and transitions into Game through loader task
 
-### Camera Controls (Free Mode)
+### Player Movement (Game)
 
-- W A S D or arrow keys: move camera target
-- Hold LeftShift or RightShift with movement: 4x movement speed
-- Mouse/trackpad scroll without Shift: pan camera
-- Hold Shift and use vertical scroll: zoom
+- W/A/S/D or arrows: movement input
+- LeftShift or RightShift: run modifier
+- Space: attack state
+
+Movement behavior:
+
+- Latest active movement key takes precedence for direction
+- Orthogonal axis gets heavier damping while steering
+- Coasting drag is velocity-dependent (higher speed carries longer)
+
+### Camera Controls (Free Camera Mode)
+
+- W/A/S/D or arrows: pan camera
+- Hold LeftShift or RightShift with movement: faster camera pan
+- Mouse/trackpad scroll without Shift: pan
+- Hold Shift + vertical scroll: zoom
 - Equal: zoom in
 - Minus: zoom out
-- LeftBracket and RightBracket: rotate
-- Hold Alt and scroll: rotate
-- Hold LeftClick + Shift and drag: pan by dragging
+- LeftBracket / RightBracket: rotate
+- Hold Alt + scroll: rotate
+- Hold LeftClick + Shift and drag: mouse pan
 
-### Debug Overlay Controls
+### Dev Overlay Controls
 
-Debug module is enabled in the current app configuration.
+Toggle overlays:
 
-- LeftControl + 1: toggle app debug panel
-- LeftControl + 2: toggle input handler debug panel
-- LeftControl + 3: toggle camera debug panel
-- LeftControl + 4: toggle canvas debug panel
-- LeftControl + 5: toggle settings debug panel placeholder
-- LeftControl + 0: hide all debug panels
+- LeftControl + 0: hide all debug overlays
+- LeftControl + 1: app overlay
+- LeftControl + 2: input handler overlay
+- LeftControl + 3: camera overlay
+- LeftControl + 4: canvas overlay
+- LeftControl + 5: settings overlay placeholder
+- LeftControl + 6: game overlay
 
-Additional keys while camera debug panel is active:
+While app overlay is active:
+
+- 0: trigger loader sleep test job (5 seconds)
+
+While camera overlay is active:
 
 - 0: cycle camera mode Free -> Fixed -> Follow -> Free
-- 9: toggle snap-to-canvas constraint
+- 9: toggle snap-to-canvas
 
-Additional key while app debug panel is active:
+While game overlay is active:
 
-- 0: run a 5-second loader sleep job
+- 0: save player data
+- 1: cycle player sprite type and reload sprite metadata
 
-## Data and Assets
+## Persistence
 
-Runtime data files created/used in .data:
+Runtime files under .data:
 
 - .data/settings.z
-- .data/save_data.z (presence check is used for Continue visibility)
+- .data/player_data.z
 
-Important asset paths loaded at runtime:
-
-- assets/fonts/JetBrains.ttf
-- assets/screens/intro_screen.png
-- assets/screens/loading_screen.png
-- assets/screens/player_screen.png
-- assets/sprites/.../data.z
-
-If an asset is missing, most loaders fail gracefully and skip that visual resource.
-
-## Project Structure
-
-High-level module responsibilities:
-
-- src/root.zig: App orchestration, state machine, main update/draw loop
-- src/modules/loader: async job execution, loading screen, transition gating
-- src/modules/intro: intro/menu flow and state decisions
-- src/modules/settings: settings UI and persistence
-- src/modules/new_game: text input based new-game screen shell
-- src/modules/game: game screen shell and fade timer
-- src/modules/camera: free/follow/fixed camera logic with smoothing and clamping
-- src/modules/canvas: world rectangle, grid rendering, drag selection
-- src/modules/input_handler: keyboard/mouse abstraction and active key/click tracking
-- src/modules/sprite: data-driven sprite animation metadata and frame updates
-- src/modules/ui: drawing helpers, font loading, text input creation
-- src/modules/\_\_dev: debug overlays and debug-only controls
-
-## Persistence Format
-
-Settings are stored in a simple key=value format, for example:
+### settings.z format
 
 ```text
 volume=50
 difficulty=1
 ```
 
-## Current Implementation Notes
+### player_data.z format
 
-- Game and NewGame states are still framework shells and not full gameplay.
-- Intro and state loading are integrated with loader transitions.
-- Camera movement, zoom, and rotation use lerp-style smoothing.
-- Window resize support is tied to the debug module presence in current code.
+```text
+name=Player
+play_time=0
+pos=0,0
+```
+
+## Asset Expectations
+
+Core runtime assets include:
+
+- assets/fonts/JetBrains.ttf
+- assets/screens/intro_screen.png
+- assets/screens/loading_screen.png
+- assets/screens/player_screen.png
+- assets/sprites/<sprite>/data.z
+- assets/sprites/<sprite>/spritesheet.png
+
+If an asset is missing, many loaders fail gracefully and simply skip drawing that resource.
+
+## Codebase Structure
+
+- src/main.zig: process entry, app construction
+- src/root.zig: app orchestration, state machine, draw/update loop
+- src/\_ih: keyboard/mouse input abstraction
+- src/\_ui: drawing helpers and font/text components
+- src/modules/intro: intro/start menu states
+- src/modules/settings: settings UI and persistence
+- src/modules/new_game: new-game UI and name input
+- src/modules/game: gameplay shell and player integration
+- src/modules/player: player state, movement, persistence
+- src/modules/sprite: animation/data-driven sprite metadata
+- src/modules/camera: free/follow/fixed camera logic
+- src/modules/canvas: world/canvas rendering helpers
+- src/modules/loader: async loading and transition screen
+- src/modules/\_\_dev: debug overlays and hotkeys
+
+## Current Notes
+
+- Game loop and systems are a playable foundation, not final gameplay.
+- Loader transitions and fade timers are actively used across state changes.
+- Window-resizable behavior is currently tied to dev-module presence in app init.
+
+## Known Issues
+
+- No known issues currently tracked in this README section.
 
 ## Troubleshooting
 
-- If the app runs but text is missing, verify assets/fonts/JetBrains.ttf exists.
-- If menus appear but backgrounds/sprites are blank, verify assets/screens and assets/sprites files exist.
-- If settings are not retained, confirm the process can create/write .data/settings.z.
+- Missing text: verify assets/fonts/JetBrains.ttf.
+- Missing backgrounds/sprites: verify assets/screens and assets/sprites paths.
+- Settings not retained: confirm write access to .data/settings.z.
+- Continue/New Game menu behavior unexpected: verify .data/player_data.z exists and is readable.

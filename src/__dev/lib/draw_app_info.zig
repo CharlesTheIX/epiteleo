@@ -37,7 +37,8 @@ pub fn drawAppInfo(app: *App) void {
     const fps_title = "App | FPS:";
     _ui.drawText(.{ .text = fps_title, .pos = pos, .font = font, .color = .white });
     pos.x += _ui.measureText(fps_title, font).x + @as(f32, @divFloor(spacing, 2));
-    const fps_string = std.fmt.allocPrint(app.allocator, "{d}", .{rl.getFPS()}) catch "";
+    var fps_buf: [16]u8 = undefined;
+    const fps_string = std.fmt.bufPrint(&fps_buf, "{d}", .{rl.getFPS()}) catch "ERR";
     _ui.drawText(.{ .text = fps_string, .pos = pos, .font = font, .color = .white });
     font.size = app.ui.font.size; // reset the font size back to the default - CIX
 }

@@ -24,8 +24,8 @@ pub fn drawInputHandlerInfo(app: *App) void {
     const active_keys_title_width = _ui.measureText(active_keys_title, font);
     _ui.drawText(.{ .text = active_keys_title, .pos = pos, .font = font, .color = .white });
     var first = true;
-    var active_keys_string: std.ArrayList(u8) = .empty;
-    defer active_keys_string.deinit(app.allocator);
+    var active_keys_buf: [256]u8 = undefined;
+    var active_keys_len: usize = 0;
     var last_order: u64 = 0;
     while (true) {
         var next_key: ?_ih.Key = null;
@@ -40,13 +40,21 @@ pub fn drawInputHandlerInfo(app: *App) void {
             }
         }
         const key = next_key orelse break;
-        if (!first) active_keys_string.appendSlice(app.allocator, ", ") catch continue;
-        active_keys_string.appendSlice(app.allocator, key.toString(null)) catch continue;
+        if (!first) {
+            const sep = ", ";
+            const sep_len = @min(sep.len, active_keys_buf.len - active_keys_len);
+            @memcpy(active_keys_buf[active_keys_len .. active_keys_len + sep_len], sep[0..sep_len]);
+            active_keys_len += sep_len;
+        }
+        const key_txt = key.toString(null);
+        const key_len = @min(key_txt.len, active_keys_buf.len - active_keys_len);
+        @memcpy(active_keys_buf[active_keys_len .. active_keys_len + key_len], key_txt[0..key_len]);
+        active_keys_len += key_len;
         first = false;
         last_order = next_order.?;
     }
     pos.x += active_keys_title_width.x + @as(f32, @divFloor(spacing, 2));
-    const active_keys_text = if (active_keys_string.items.len == 0) "None" else active_keys_string.items;
+    const active_keys_text = if (active_keys_len == 0) "None" else active_keys_buf[0..active_keys_len];
     _ui.drawText(.{ .text = active_keys_text, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
     pos.y += spacing;
@@ -68,8 +76,8 @@ pub fn drawInputHandlerInfo(app: *App) void {
     const active_clicks_title_width = _ui.measureText(active_clicks_title, font);
     _ui.drawText(.{ .text = active_clicks_title, .pos = pos, .font = font, .color = .white });
     first = true;
-    var active_clicks_string: std.ArrayList(u8) = .empty;
-    defer active_clicks_string.deinit(app.allocator);
+    var active_clicks_buf: [256]u8 = undefined;
+    var active_clicks_len: usize = 0;
     last_order = 0;
     while (true) {
         var next_order: ?u64 = null;
@@ -84,13 +92,21 @@ pub fn drawInputHandlerInfo(app: *App) void {
             }
         }
         const click = next_click orelse break;
-        if (!first) active_clicks_string.appendSlice(app.allocator, ", ") catch continue;
-        active_clicks_string.appendSlice(app.allocator, click.toString()) catch continue;
+        if (!first) {
+            const sep = ", ";
+            const sep_len = @min(sep.len, active_clicks_buf.len - active_clicks_len);
+            @memcpy(active_clicks_buf[active_clicks_len .. active_clicks_len + sep_len], sep[0..sep_len]);
+            active_clicks_len += sep_len;
+        }
+        const click_txt = click.toString();
+        const click_len = @min(click_txt.len, active_clicks_buf.len - active_clicks_len);
+        @memcpy(active_clicks_buf[active_clicks_len .. active_clicks_len + click_len], click_txt[0..click_len]);
+        active_clicks_len += click_len;
         first = false;
         last_order = next_order.?;
     }
     pos.x += active_clicks_title_width.x + @as(f32, @divFloor(spacing, 2));
-    const active_clicks_text = if (active_clicks_string.items.len == 0) "None" else active_clicks_string.items;
+    const active_clicks_text = if (active_clicks_len == 0) "None" else active_clicks_buf[0..active_clicks_len];
     _ui.drawText(.{ .text = active_clicks_text, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
     pos.y += spacing;
@@ -119,11 +135,12 @@ pub fn drawInputHandlerInfo(app: *App) void {
     const mouse_scroll_title = "Mouse | Scroll:";
     const mouse_scroll_title_width = _ui.measureText(mouse_scroll_title, font);
     _ui.drawText(.{ .text = mouse_scroll_title, .pos = pos, .font = font, .color = .white });
-    const mouse_scroll_string = std.fmt.allocPrint(
-        app.allocator,
+    var mouse_scroll_buf: [64]u8 = undefined;
+    const mouse_scroll_string = std.fmt.bufPrint(
+        &mouse_scroll_buf,
         "({d}, {d})",
         .{ app.ih.mouse.scroll.x, app.ih.mouse.scroll.y },
-    ) catch "Error formatting mouse scroll";
+    ) catch "ERR";
     pos.x += mouse_scroll_title_width.x + @as(f32, @divFloor(spacing, 2));
     _ui.drawText(.{ .text = mouse_scroll_string, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
@@ -133,11 +150,12 @@ pub fn drawInputHandlerInfo(app: *App) void {
     const mouse_pos_title = "Mouse | Position:";
     const mouse_pos_title_width = _ui.measureText(mouse_pos_title, font);
     _ui.drawText(.{ .text = mouse_pos_title, .pos = pos, .font = font, .color = .white });
-    const mouse_pos_string = std.fmt.allocPrint(
-        app.allocator,
+    var mouse_pos_buf: [64]u8 = undefined;
+    const mouse_pos_string = std.fmt.bufPrint(
+        &mouse_pos_buf,
         "({d}, {d})",
         .{ app.ih.mouse.pos.x, app.ih.mouse.pos.y },
-    ) catch "Error formatting mouse position";
+    ) catch "ERR";
     pos.x += mouse_pos_title_width.x + @as(f32, @divFloor(spacing, 2));
     _ui.drawText(.{ .text = mouse_pos_string, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
