@@ -37,8 +37,9 @@ pub const Sprite = struct {
 
     pub fn drawHitbox(self: *Sprite, pos: *rl.Vector2) void {
         if (self.data.hitbox == null) return;
-        const hitbox_rect = self.data.hitboxRect(pos);
-        rl.drawRectangleRec(hitbox_rect, rl.Color.red.alpha(0.5));
+        const hitbox = self.data.hitboxRect(pos);
+        const origin = self.data.sizeVector().scale(0.5);
+        rl.drawRectanglePro(hitbox, origin, 0, rl.Color.red.alpha(0.5));
     }
 
     pub fn focalPoint(self: *Sprite, pos: *rl.Vector2) rl.Vector2 {
@@ -49,7 +50,6 @@ pub const Sprite = struct {
     }
 
     pub fn load(self: *Sprite, texture: *rl.Texture2D, io: *std.Io) void {
-        std.debug.print("Sprite : Loading data...\n", .{});
         self.texture = texture;
         self.data.load(self.id, io);
         self.animation.max_frames = self.data.maxFramesFromState(self.state) orelse 0;
