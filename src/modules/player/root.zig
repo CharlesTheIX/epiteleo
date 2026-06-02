@@ -33,6 +33,7 @@ pub const Player = struct {
     pub fn draw(self: *Player, tint: ?rl.Color) void {
         const clr = if (tint) |t| t else rl.Color.white;
         self.sprite.draw(&self.data.pos, clr);
+        self.sprite.drawHitbox(&self.data.pos);
     }
 
     pub fn focus(self: *Player) void {

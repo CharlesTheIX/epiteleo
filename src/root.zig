@@ -9,7 +9,6 @@ const _job = @import("./modules/loader/lib/job.zig");
 const Game = @import("./modules/game/root.zig").Game;
 const Loader = @import("./modules/loader/root.zig").Loader;
 const Camera = @import("./modules/camera/root.zig").Camera;
-const Canvas = @import("./modules/canvas/root.zig").Canvas;
 const NewGame = @import("./modules/new_game/root.zig").NewGame;
 const Settings = @import("./modules/settings/root.zig").Settings;
 
@@ -25,7 +24,6 @@ pub const App = struct {
     ui: _ui.Ui = .init(.{}),
     shut_down: bool = false,
     camera: Camera = .init(),
-    canvas: Canvas = .init(),
     loader: Loader = .init(),
     prev_state: State = .Init,
     new_game: ?NewGame = null,
@@ -64,17 +62,15 @@ pub const App = struct {
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
         const font = &self.ui.font;
-        if (self.loader.showing) return self.loader.drawLoadingScreen(font); // check
-
+        if (self.loader.showing) return self.loader.drawLoadingScreen(font);
         switch (self.state) {
             .Init => return,
+            .Settings => self.settings.drawSettingsScreen(font),
+            .Intro => if (self.intro) |*i| i.drawIntroScreen(font),
             .NewGame => if (self.new_game) |*ng| ng.draw(self.allocator, font),
-            .Settings => self.settings.drawSettingsScreen(font), // check
-            .Intro => if (self.intro) |*i| i.drawIntroScreen(font), // check
             .Game => {
                 rl.beginMode2D(self.camera.camera);
                 if (self.game) |*g| g.draw();
-                self.canvas.draw();
                 rl.endMode2D();
             },
         }
@@ -86,10 +82,9 @@ pub const App = struct {
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
         self.camera.resize(rl.Vector2.init(screen_w, screen_h).scale(0.5));
-        // self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
         switch (self.state) {
+            .Game => if (self.game) |*g| g.resize(),
             .NewGame => if (self.new_game) |*ng| ng.resize(),
-            // .Game => self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h),
             else => {},
         }
     }
@@ -103,7 +98,6 @@ pub const App = struct {
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
         self.camera.load(rl.Vector2.init(screen_w, screen_h).scale(0.5));
-        self.canvas.rect = rl.Rectangle.init(0, 0, screen_w, screen_h);
     }
 
     pub fn run(self: *App) void {
@@ -142,11 +136,12 @@ pub const App = struct {
         self.handleResize();
         if (self.__dev) |*dev| dev.update(self);
         if (self.loader.showing) return self.loader.update(self);
-        var target: ?rl.Vector2 = null;
         switch (self.state) {
             .Game => if (self.game) |*g| {
                 g.update(&self.ih);
-                target = g.player.data.pos;
+                const target = g.player.data.pos;
+                self.camera.update(&self.ih, target, &g.map.rect);
+                // g.map.update(&self.ih, &self.camera);
             },
             .Settings => self.settings.update(self),
             .Intro => if (self.intro) |*i| i.update(self),
@@ -165,8 +160,6 @@ pub const App = struct {
                 return std.debug.panic("Failed to initialize the application\n", .{});
             },
         }
-        self.camera.update(&self.ih, target, &self.canvas.rect);
-        self.canvas.update(&self.ih, &self.camera);
     }
 };
 

@@ -34,7 +34,7 @@ pub fn drawCameraInfo(app: *App) void {
     });
     pos.y += spacing;
     _ui.drawText(.{
-        .text = "Press .Nine (9) to toggle snap to canvas",
+        .text = "Press .Nine (9) to toggle snap to map",
         .pos = pos,
         .font = font,
         .color = .white,
@@ -51,13 +51,13 @@ pub fn drawCameraInfo(app: *App) void {
     pos.x = spacing;
     pos.y += spacing;
 
-    // Snaps to Canvas
-    const snap_to_canvas_title = "Camera | Snaps to Canvas:";
-    const snap_to_canvas_title_width = _ui.measureText(snap_to_canvas_title, font);
-    _ui.drawText(.{ .text = snap_to_canvas_title, .pos = pos, .font = font, .color = .white });
-    const snap_to_canvas_string = if (app.camera.snap_to_canvas) "True" else "False";
-    pos.x += snap_to_canvas_title_width.x + @as(f32, @divFloor(spacing, 2));
-    _ui.drawText(.{ .text = snap_to_canvas_string, .pos = pos, .font = font, .color = .white });
+    // Snaps to Map
+    const snap_to_map_title = "Camera | Snaps to Map:";
+    const snap_to_map_title_width = _ui.measureText(snap_to_map_title, font);
+    _ui.drawText(.{ .text = snap_to_map_title, .pos = pos, .font = font, .color = .white });
+    const snap_to_map_string = if (app.camera.snap_to_map) "True" else "False";
+    pos.x += snap_to_map_title_width.x + @as(f32, @divFloor(spacing, 2));
+    _ui.drawText(.{ .text = snap_to_map_string, .pos = pos, .font = font, .color = .white });
     pos.x = spacing;
     pos.y += spacing;
 

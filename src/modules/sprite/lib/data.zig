@@ -5,7 +5,7 @@ const StateOptions = @import("./state_options.zig").StateOptions;
 
 pub const Data = struct {
     size: ?[2]u32 = null,
-    hitbox: ?[4]u32 = null,
+    hitbox: ?[4]i32 = null,
     run: ?StateOptions = null,
     idle: ?StateOptions = null,
     walk: ?StateOptions = null,
@@ -72,17 +72,18 @@ pub const Data = struct {
     }
 
     fn loadHitbox(self: *Data, value: []const u8) void {
-        var new_hitbox = [4]u32{ 0, 0, 0, 0 };
+        var new_hitbox = [4]i32{ 0, 0, 0, 0 };
         var array_it = std.mem.splitSequence(u8, value, ",");
-        const offset_x = std.fmt.parseInt(u32, array_it.first(), 10) catch null;
-        const offset_y = if (array_it.next()) |i| std.fmt.parseInt(u32, i, 10) catch null else null;
-        const width = if (array_it.next()) |i| std.fmt.parseInt(u32, i, 10) catch null else null;
-        const height = if (array_it.next()) |i| std.fmt.parseInt(u32, i, 10) catch null else null;
+        const offset_x = std.fmt.parseInt(i32, array_it.first(), 10) catch null;
+        const offset_y = if (array_it.next()) |i| std.fmt.parseInt(i32, i, 10) catch null else null;
+        const width = if (array_it.next()) |i| std.fmt.parseInt(i32, i, 10) catch null else null;
+        const height = if (array_it.next()) |i| std.fmt.parseInt(i32, i, 10) catch null else null;
         if (offset_x) |x| new_hitbox[0] = x;
+        if (offset_y) |y| new_hitbox[1] = y;
         if (width) |w| new_hitbox[2] = w;
         if (height) |h| new_hitbox[3] = h;
-        if (offset_y) |y| new_hitbox[1] = y;
         self.hitbox = new_hitbox;
+        std.debug.print("{any}\n", .{self.hitbox});
     }
 
     fn loadSize(self: *Data, value: []const u8) void {

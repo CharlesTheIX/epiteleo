@@ -3,7 +3,7 @@ const rl = @import("raylib");
 const _ah = @import("../../_ah/root.zig");
 const _ih = @import("../../_ih/root.zig");
 const _ui = @import("../../_ui/root.zig");
-// const Map = @import("../map.root.zig").Map;
+const Map = @import("../map/root.zig").Map;
 // const Npc = @import("../npc/root.zig").Npc;
 // const Item  = @import("../item/root.zig").Item;
 // const Quest = @import("../quest/root.zig").Quest;
@@ -12,7 +12,7 @@ const Timer = @import("../timer/root.zig").Timer;
 const Player = @import("../player/root.zig").Player;
 
 pub const Game = struct {
-    // map: Map = .{},
+    map: Map = .init(),
     player: Player = .{},
     new_game: bool = false,
     state: State = .Playing,
@@ -36,13 +36,8 @@ pub const Game = struct {
         if (self.fade_in_timer.is_active) alpha = 1.0 - self.fade_in_timer.value_ms / self.fade_in_timer.initial_value_ms;
         switch (self.state) {
             .Playing => {
-                const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
-                const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
-                _ui.drawRect(.{
-                    .color = rl.Color.black.alpha(alpha),
-                    .rect = .init(0, 0, screen_w, screen_h),
-                });
                 const tint = rl.Color.white.alpha(alpha);
+                self.map.draw();
                 self.player.draw(tint);
             },
             else => return,
@@ -62,12 +57,22 @@ pub const Game = struct {
         defer rl.unloadImage(img);
         self.player.texture = texture;
         self.player.load(&self.player.texture, io);
+        const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
+        const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
+        self.map.rect = rl.Rectangle.init(0, 0, screen_w * 2, screen_h * 2);
+    }
+
+    pub fn resize(self: *Game) void {
+        _ = self;
     }
 
     pub fn update(self: *Game, ih: *_ih.InputHandler) void {
         if (self.fade_in_timer.is_active) return self.fade_in_timer.update();
         switch (self.state) {
-            .Playing => self.player.update(ih),
+            .Playing => {
+                self.player.update(ih);
+                self.map.applyCollisions(&self.player);
+            },
             else => return,
         }
     }

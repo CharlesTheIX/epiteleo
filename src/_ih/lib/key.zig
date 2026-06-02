@@ -29,7 +29,7 @@ pub const Key = enum {
     // Numbers
     One, // __dev key (Show App info with LeftControl)
     Two, // __dev key (Show Camera info with LeftControl)
-    Three, // __dev key (Show Canvas info with LeftControl)
+    Three, // __dev key (Show Map info with LeftControl)
     Four, // __dev key (Show InputHandler info with LeftControl)
     Five, // __dev key (Show Settings info with LeftControl)
     Six,

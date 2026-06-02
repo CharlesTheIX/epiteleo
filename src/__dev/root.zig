@@ -5,18 +5,18 @@ const App = @import("../root.zig").App;
 const _job = @import("../modules/loader/lib/job.zig");
 const Timer = @import("../modules/timer/root.zig").Timer;
 const Camera = @import("../modules/camera/root.zig").Camera;
-const Canvas = @import("../modules/canvas/root.zig").Canvas;
+const Map = @import("../modules/map/root.zig").Map;
 const SpriteType = @import("../modules/sprite/lib/utils.zig").SpriteType;
 const drawAppInfo = @import("./lib/draw_app_info.zig").drawAppInfo;
 const drawGameInfo = @import("./lib/draw_game_info.zig").drawGameInfo;
 const drawCameraInfo = @import("./lib/draw_camera_info.zig").drawCameraInfo;
-const drawCanvasInfo = @import("./lib/draw_canvas_info.zig").drawCanvasInfo;
+const drawMapInfo = @import("./lib/draw_map_info.zig").drawMapInfo;
 const drawInputHandlerInfo = @import("./lib/draw_input_handler_info.zig").drawInputHandlerInfo;
 const Module = enum {
     __App,
+    __Map,
     __Game,
     __Camera,
-    __Canvas,
     __Settings,
     __InputHandler,
 };
@@ -41,7 +41,7 @@ pub const Dev = struct {
                 .__App => return drawAppInfo(app),
                 .__Game => return drawGameInfo(app),
                 .__Camera => return drawCameraInfo(app),
-                .__Canvas => return drawCanvasInfo(app),
+                .__Map => return drawMapInfo(app),
                 .__InputHandler => return drawInputHandlerInfo(app),
             }
         }
@@ -81,8 +81,8 @@ pub const Dev = struct {
 
         if (kb.activeKeysInclude(&[_]_ih.Key{ .LeftControl, .Four }, .And)) {
             self.input_timer.is_active = true;
-            if (self.show_module == null or self.show_module != .__Canvas) {
-                self.show_module = .__Canvas;
+            if (self.show_module == null or self.show_module != .__Map) {
+                self.show_module = .__Map;
             } else self.show_module = null;
             return;
         }
@@ -127,9 +127,9 @@ pub const Dev = struct {
                     }
                     if (app.ih.keyboard.activeKeysInclude(&[_]_ih.Key{.Nine}, .And)) {
                         self.input_timer.is_active = true;
-                        if (app.camera.snap_to_canvas) {
-                            app.camera.snap_to_canvas = false;
-                        } else app.camera.snap_to_canvas = true;
+                        if (app.camera.snap_to_map) {
+                            app.camera.snap_to_map = false;
+                        } else app.camera.snap_to_map = true;
                     }
                 },
                 .__Game => {
@@ -149,7 +149,7 @@ pub const Dev = struct {
                         }
                     }
                 },
-                .__Canvas, .__InputHandler, .__Settings => return,
+                .__Map, .__InputHandler, .__Settings => return,
             }
         }
     }
