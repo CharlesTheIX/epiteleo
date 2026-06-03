@@ -25,25 +25,22 @@ pub const Map = struct {
             const rect = plr.sprite.data.hitboxRect(&plr.data.pos);
             const offset = rl.Vector2.init(@as(f32, @floatFromInt(hb[0])), @as(f32, @floatFromInt(hb[1])));
             if (rect.x - origin.x < self.rect.x) {
-                plr.data.pos.x = self.rect.x + offset.x;
+                plr.data.pos.x = self.rect.x + origin.x - offset.x;
                 if (plr.body.velocity.x < 0) plr.body.velocity.x = 0;
                 if (plr.body.acceleration.x < 0) plr.body.acceleration.x = 0;
             }
-            // broken
             if (rect.y - origin.y < self.rect.y) {
-                plr.data.pos.y = self.rect.y + offset.y;
+                plr.data.pos.y = self.rect.y + origin.y - offset.y;
                 if (plr.body.velocity.y < 0) plr.body.velocity.y = 0;
                 if (plr.body.acceleration.y < 0) plr.body.acceleration.y = 0;
             }
-            // broken
             if (rect.x + rect.width - origin.x > self.rect.width) {
-                plr.data.pos.x = self.rect.width - rect.width + origin.x;
+                plr.data.pos.x = self.rect.width - rect.width - offset.x + origin.x;
                 if (plr.body.velocity.x > 0) plr.body.velocity.x = 0;
                 if (plr.body.acceleration.x > 0) plr.body.acceleration.x = 0;
             }
-            // broken
             if (rect.y + rect.height - origin.y > self.rect.height) {
-                plr.data.pos.y = self.rect.height - rect.height + origin.y;
+                plr.data.pos.y = self.rect.height - rect.height - offset.y + origin.y;
                 if (plr.body.velocity.y > 0) plr.body.velocity.y = 0;
                 if (plr.body.acceleration.y > 0) plr.body.acceleration.y = 0;
             }
