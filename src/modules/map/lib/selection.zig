@@ -8,12 +8,6 @@ pub const Selection = struct {
     start: ?rl.Vector2 = null,
     rect: ?rl.Rectangle = null,
 
-    fn reset(self: *Selection) void {
-        self.end = null;
-        self.rect = null;
-        self.start = null;
-    }
-
     pub fn draw(self: *Selection) void {
         if (self.rect) |rect| _ui.drawRect(.{ .rect = rect, .color = rl.Color.white.alpha(0.5) });
     }
@@ -41,6 +35,12 @@ pub const Selection = struct {
                 };
             } else return null;
         } else return null;
+    }
+
+    pub fn reset(self: *Selection) void {
+        self.end = null;
+        self.rect = null;
+        self.start = null;
     }
 
     pub fn update(self: *Selection, ih: *_ih.InputHandler, camera: *Camera) void {

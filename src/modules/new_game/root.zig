@@ -7,6 +7,7 @@ const App = @import("../../root.zig").App;
 const _job = @import("../loader/lib/job.zig");
 const Timer = @import("../timer/root.zig").Timer;
 const Resources = @import("./lib/resources.zig").Resources;
+const setName = @import("../player/root.zig").setName;
 
 pub const NewGame = struct {
     text_box: _ui.TextBox,
@@ -57,6 +58,14 @@ pub const NewGame = struct {
         self.text_input.draw(allocator, font, &input_pos);
     }
 
+    pub fn load(self: *NewGame, io: *std.Io, ah: *_ah.AudioHandler) void {
+        _ = ah;
+        _ = io;
+        std.debug.print("NewGame : Loading...\n", .{});
+        self.resources.load();
+        self.fade_in_timer.is_active = true;
+    }
+
     pub fn resize(self: *NewGame) void {
         const spacing: f32 = 16;
         const template = _ui.initScreenRect();
@@ -71,10 +80,10 @@ pub const NewGame = struct {
             app.ah.playAudio(.Sfx, "test");
             defer app.new_game = null;
             defer self.deinit();
-            if (app.game == null) app.game = _game.Game.init();
+            if (app.game == null) app.game = _game.Game.init(app.*.allocator);
             if (app.game) |*_gm| {
                 _gm.new_game = true;
-                _gm.player.data.setName(self.text_input.getText());
+                setName(&_gm.player, self.text_input.getText());
                 const request: _job.Request = .{ .Task = .{
                     .io = app.io,
                     .ah = &app.ah,
@@ -90,9 +99,6 @@ pub const NewGame = struct {
 };
 
 pub fn loadNewGameTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
-    _ = ah;
-    _ = io;
     const module: *NewGame = @ptrCast(@alignCast(ctx));
-    module.resources.load();
-    module.fade_in_timer.is_active = true;
+    module.load(io, ah);
 }

@@ -26,7 +26,7 @@ pub const Sprite = struct {
         if (self.texture) |texture| {
             if (self.data.size == null) return;
             const size_v = self.data.sizeVector();
-            const origin = size_v.scale(0.5);
+            const origin = self.data.originVector();
             const x = @as(f32, @floatFromInt(self.animation.frame)) * size_v.x;
             const y = @as(f32, @floatFromInt(self.direction.toTextureRow(&self.state))) * size_v.y;
             const rect = rl.Rectangle.init(x, y, size_v.x, size_v.y);

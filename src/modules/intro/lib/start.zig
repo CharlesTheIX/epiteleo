@@ -65,7 +65,7 @@ pub const Start = struct {
                     0 => {
                         defer intro.deinit();
                         self.option_index = 0;
-                        if (app.game == null) app.game = _game.Game.init();
+                        if (app.game == null) app.game = _game.Game.init(app.*.allocator);
                         if (app.game) |*_gm| {
                             const request: _job.Request = .{ .Task = .{
                                 .io = app.io,

@@ -9,6 +9,7 @@ pub const Rotation = struct {
     lerp_speed: f32 = 0.1,
 
     pub fn init() Rotation {
+        std.debug.print("Camera Rotation : Initializing...\n", .{});
         return .{};
     }
 

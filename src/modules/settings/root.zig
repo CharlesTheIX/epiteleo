@@ -10,15 +10,21 @@ const _job = @import("../loader/lib/job.zig");
 const Timer = @import("../timer/root.zig").Timer;
 const Resources = @import("./lib/resources.zig").Resources;
 
+const loadData = _data.load;
+const saveData = _data.save;
+
 pub const Settings = struct {
+    volume: u8 = 50,
+    difficulty: u8 = 1,
     option_index: u4 = 0,
-    data: _data.Data = .{},
     resources: Resources = .{},
     input_timer: Timer = .init(0.3),
     fade_in_timer: Timer = .init(0.5),
+    path: *const [16:0]u8 = ".data/settings.z",
     options: [3][]const u8 = .{ "Volume", "Difficulty", "Back" },
 
     pub fn init() Settings {
+        std.debug.print("Settings : Initializing...\n", .{});
         return .{};
     }
 
@@ -31,7 +37,7 @@ pub const Settings = struct {
         app.ah.playAudio(.Sfx, "test");
         defer self.deinit();
         self.option_index = 0;
-        self.data.save(app.io);
+        saveData(self, app.io);
         if (app.intro == null) app.intro = _intro.Intro.init();
         if (app.intro) |*p| {
             const request: _job.Request = .{ .Task = .{
@@ -61,16 +67,16 @@ pub const Settings = struct {
             switch (i) {
                 0 => {
                     const option_txt = if (active)
-                        std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.data.volume }) catch continue
+                        std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.volume }) catch continue
                     else
-                        std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.data.volume }) catch continue;
+                        std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.volume }) catch continue;
                     _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 },
                 1 => {
                     const option_txt = if (active)
-                        std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.data.difficulty }) catch continue
+                        std.fmt.bufPrint(&option_buf, "> {s}: {d}", .{ option, self.difficulty }) catch continue
                     else
-                        std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.data.difficulty }) catch continue;
+                        std.fmt.bufPrint(&option_buf, "{s}: {d}", .{ option, self.difficulty }) catch continue;
                     _ui.drawText(.{ .text = option_txt, .pos = pos, .font = font.*, .color = tint });
                 },
                 else => {
@@ -90,16 +96,16 @@ pub const Settings = struct {
         const kb = app.ih.keyboard;
         switch (self.option_index) {
             0 => {
-                if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.data.volume = (self.data.volume + 10) % 110;
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.volume = (self.volume + 10) % 110;
                 if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
-                    self.data.volume = if (self.data.volume == 0) 100 else self.data.volume - 10;
+                    self.volume = if (self.volume == 0) 100 else self.volume - 10;
                 }
-                app.ah.setMasterVolume(self.data.volume);
+                app.ah.setMasterVolume(self.volume);
             },
             1 => {
-                if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.data.difficulty = (self.data.difficulty + 1) % 4;
+                if (kb.activeKeysInclude(&[_]_ih.Key{ .D, .Right }, .Or)) self.difficulty = (self.difficulty + 1) % 4;
                 if (kb.activeKeysInclude(&[_]_ih.Key{ .A, .Left }, .Or)) {
-                    self.data.difficulty = if (self.data.difficulty == 0) 3 else self.data.difficulty - 1;
+                    self.difficulty = if (self.difficulty == 0) 3 else self.difficulty - 1;
                 }
             },
             else => {},
@@ -121,8 +127,8 @@ pub const Settings = struct {
     }
 
     pub fn load(self: *Settings, io: *std.Io) void {
-        std.debug.print("Settings : Loading settings data...\n", .{});
-        self.data.load(io);
+        std.debug.print("Settings : Loading...\n", .{});
+        loadData(self, io);
     }
 
     pub fn update(self: *Settings, app: *App) void {

@@ -29,7 +29,7 @@ pub fn drawGameInfo(app: *App) void {
         const player_name_title = "Player | Name:";
         _ui.drawText(.{ .text = player_name_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_name_title, font).x + @as(f32, @divFloor(spacing, 2));
-        const player_name_string = game.player.data.name;
+        const player_name_string = game.player.name;
         _ui.drawText(.{ .text = &player_name_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
         pos.y += spacing;
@@ -39,8 +39,8 @@ pub fn drawGameInfo(app: *App) void {
         _ui.drawText(.{ .text = player_pos_title, .pos = pos, .font = font, .color = .white });
         pos.x += _ui.measureText(player_pos_title, font).x + @as(f32, @divFloor(spacing, 2));
         const player_pos_string = std.fmt.bufPrint(&value_buf, "{d}, {d}", .{
-            game.player.data.pos.x,
-            game.player.data.pos.y,
+            game.player.pos.x,
+            game.player.pos.y,
         }) catch "ERR";
         _ui.drawText(.{ .text = player_pos_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;
@@ -53,7 +53,7 @@ pub fn drawGameInfo(app: *App) void {
         const play_time_string = std.fmt.bufPrint(
             &value_buf,
             "{d}",
-            .{game.player.data.play_time},
+            .{game.player.play_time},
         ) catch "ERR";
         _ui.drawText(.{ .text = play_time_string, .pos = pos, .font = font, .color = .white });
         pos.x = spacing;

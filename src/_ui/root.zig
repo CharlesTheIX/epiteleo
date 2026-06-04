@@ -31,6 +31,7 @@ pub const Ui = struct {
     font: Font,
 
     pub fn init(props: UiProps) Ui {
+        std.debug.print("UI : Initializing...\n", .{});
         return .{ .font = props.font };
     }
 

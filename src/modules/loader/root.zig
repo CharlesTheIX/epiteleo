@@ -18,6 +18,7 @@ pub const Loader = struct {
     job_status: std.atomic.Value(u8) = std.atomic.Value(u8).init(_job.Status.toInt(.Idle)),
 
     pub fn init() Loader {
+        std.debug.print("Loader : Initializing...\n", .{});
         return .{};
     }
 
@@ -50,6 +51,7 @@ pub const Loader = struct {
     }
 
     pub fn load(self: *Loader, request: _job.Request, completion_state: ?_app.State) !void {
+        std.debug.print("Loader : loading...\n", .{});
         self.loading = true;
         self.showing = true;
         self.active_request = request;

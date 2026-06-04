@@ -12,18 +12,20 @@ const Timer = @import("../timer/root.zig").Timer;
 const Player = @import("../player/root.zig").Player;
 
 pub const Game = struct {
-    map: Map = .init(),
+    map: Map,
     player: Player = .{},
     new_game: bool = false,
     state: State = .Playing,
     // npcs: []Npc = &[_]Npc{},
     // items: []Item = &[_]Item{},
+    allocator: std.mem.Allocator,
     // quests: []Quest = &[_]Quest{},
     // enemies: []Enemy = &[_]Enemy{},
     fade_in_timer: Timer = .init(0.5),
 
-    pub fn init() Game {
-        return .{};
+    pub fn init(allocator: std.mem.Allocator) Game {
+        std.debug.print("Game : Initializing...\n", .{});
+        return .{ .allocator = allocator, .map = Map.init(allocator) };
     }
 
     pub fn deinit(self: *Game) void {
@@ -45,7 +47,7 @@ pub const Game = struct {
     }
 
     pub fn load(self: *Game, io: *std.Io) void {
-        std.debug.print("Game : Loading game data...\n", .{});
+        std.debug.print("Game : Loading...\n", .{});
         self.fade_in_timer.is_active = true;
         if (self.new_game) self.player.save(io);
         if (self.player.texture) |texture| {
@@ -59,7 +61,7 @@ pub const Game = struct {
         self.player.load(&self.player.texture, io);
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
-        self.map.rect = rl.Rectangle.init(0, 0, screen_w * 2, screen_h * 2);
+        self.map.load(rl.Rectangle.init(0, 0, screen_w * 2, screen_h * 2));
     }
 
     pub fn resize(self: *Game) void {

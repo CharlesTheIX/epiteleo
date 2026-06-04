@@ -21,6 +21,7 @@ pub const Intro = struct {
     player_data_path: *const [19:0]u8 = ".data/player_data.z",
 
     pub fn init() Intro {
+        std.debug.print("Intro : Initializing...\n", .{});
         return .{};
     }
 
@@ -42,6 +43,23 @@ pub const Intro = struct {
             .Init => return self._init.draw(font),
             .Start => return self._start.draw(self, font),
         }
+    }
+
+    pub fn load(self: *Intro, io: *std.Io, ah: *_ah.AudioHandler) void {
+        std.debug.print("Intro : Loading...\n", .{});
+        self.resources.load();
+        const cwd = std.Io.Dir.cwd();
+        self.fade_in_timer.is_active = true;
+        self._init.fade_in_timer.is_active = true;
+        ah.loadAudio(io, .Sfx, "assets/audio/sfx/click.mp3", "test");
+        ah.loadAudio(io, .Music, "assets/audio/music/test_1.mp3", "test");
+        // if (ah.music != null) ah.playAudio(.Music, "test");
+        if (ah.sfx != null) ah.playAudio(.Sfx, "test");
+        const file = cwd.statFile(io.*, self.player_data_path, .{}) catch {
+            self.has_player_data = false;
+            return;
+        };
+        self.has_player_data = file.kind == .file;
     }
 
     pub fn update(self: *Intro, app: *App) void {
@@ -68,18 +86,6 @@ pub const Intro = struct {
 };
 
 pub fn loadIntroTask(ctx: *anyopaque, io: *std.Io, ah: *_ah.AudioHandler) void {
-    const cwd = std.Io.Dir.cwd();
     const module: *Intro = @ptrCast(@alignCast(ctx));
-    module.resources.load();
-    module.fade_in_timer.is_active = true;
-    module._init.fade_in_timer.is_active = true;
-    ah.loadAudio(io, .Sfx, "assets/audio/sfx/click.mp3", "test");
-    ah.loadAudio(io, .Music, "assets/audio/music/test_1.mp3", "test");
-    // if (ah.music != null) ah.playAudio(.Music, "test");
-    if (ah.sfx != null) ah.playAudio(.Sfx, "test");
-    const file = cwd.statFile(io.*, module.player_data_path, .{}) catch {
-        module.has_player_data = false;
-        return;
-    };
-    module.has_player_data = file.kind == .file;
+    module.load(io, ah);
 }

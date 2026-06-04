@@ -1,7 +1,7 @@
 # Sprite Data
 
 dimensions:32,32
-hitbox:8,12,16,12 
+hitbox:8,16,16,10 
 
 # state:fps=int;max_frames=int;max_v=int;cool_down=int;
 idle:fps=6;max_frames=4

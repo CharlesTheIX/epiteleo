@@ -2,15 +2,15 @@ const std = @import("std");
 const rl = @import("raylib");
 const _ih = @import("../_ih/root.zig");
 const App = @import("../root.zig").App;
+const Map = @import("../modules/map/root.zig").Map;
 const _job = @import("../modules/loader/lib/job.zig");
 const Timer = @import("../modules/timer/root.zig").Timer;
 const Camera = @import("../modules/camera/root.zig").Camera;
-const Map = @import("../modules/map/root.zig").Map;
 const SpriteType = @import("../modules/sprite/lib/utils.zig").SpriteType;
 const drawAppInfo = @import("./lib/draw_app_info.zig").drawAppInfo;
+const drawMapInfo = @import("./lib/draw_map_info.zig").drawMapInfo;
 const drawGameInfo = @import("./lib/draw_game_info.zig").drawGameInfo;
 const drawCameraInfo = @import("./lib/draw_camera_info.zig").drawCameraInfo;
-const drawMapInfo = @import("./lib/draw_map_info.zig").drawMapInfo;
 const drawInputHandlerInfo = @import("./lib/draw_input_handler_info.zig").drawInputHandlerInfo;
 const Module = enum {
     __App,
@@ -26,6 +26,7 @@ pub const Dev = struct {
     show_module: ?Module = null,
 
     pub fn init() Dev {
+        std.debug.print("__Dev : Initializing...\n", .{});
         return .{ .input_timer = Timer.init(0.3) };
     }
 

@@ -26,6 +26,13 @@ pub const Data = struct {
         };
     }
 
+    pub fn hitboxOffset(self: Data) rl.Vector2 {
+        if (self.hitbox) |hitbox| {
+            return rl.Vector2.init(@as(f32, @floatFromInt(hitbox[0])), @as(f32, @floatFromInt(hitbox[1])));
+        }
+        return rl.Vector2.zero();
+    }
+
     pub fn hitboxRect(self: Data, pos: *rl.Vector2) rl.Rectangle {
         if (self.hitbox) |hitbox| {
             const width = @as(f32, @floatFromInt(hitbox[2]));
@@ -120,6 +127,13 @@ pub const Data = struct {
             .Dying => if (self.dying) |dying| dying.max_v else null,
             .Dead => null,
         };
+    }
+
+    pub fn originVector(self: Data) rl.Vector2 {
+        if (self.size) |size| {
+            return rl.Vector2.init(@as(f32, @floatFromInt(size[0])), @as(f32, @floatFromInt(size[1]))).scale(0.5);
+        }
+        return rl.Vector2.zero();
     }
 
     pub fn sizeVector(self: Data) rl.Vector2 {

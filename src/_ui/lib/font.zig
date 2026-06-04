@@ -13,7 +13,7 @@ pub const Font = struct {
     }
 
     pub fn load(self: *Font) void {
-        std.debug.print("Font : Loading font...\n", .{});
+        std.debug.print("Font : Loading...\n", .{});
         self.loaded = false;
         self.custom = rl.loadFontEx("assets/fonts/JetBrains.ttf", @as(i32, self.size), null) catch null;
         if (self.custom == null) return;

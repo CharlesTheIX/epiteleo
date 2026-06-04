@@ -15,26 +15,32 @@ const Settings = @import("./modules/settings/root.zig").Settings;
 pub const AppProps = struct { allocator: std.mem.Allocator, io: *std.Io };
 
 pub const App = struct {
+    ui: _ui.Ui,
     io: *std.Io,
+    camera: Camera,
+    loader: Loader,
     game: ?Game = null,
+    __dev: ?Dev = null,
+    settings: Settings,
     ah: _ah.AudioHandler,
     ih: _ih.InputHandler,
     state: State = .Init,
-    __dev: ?Dev = .init(),
-    ui: _ui.Ui = .init(.{}),
     shut_down: bool = false,
-    camera: Camera = .init(),
-    loader: Loader = .init(),
     prev_state: State = .Init,
     new_game: ?NewGame = null,
-    settings: Settings = .init(),
+    intro: ?_intro.Intro = null,
     allocator: std.mem.Allocator,
-    intro: ?_intro.Intro = .init(),
 
     pub fn init(props: AppProps) App {
         std.debug.print("App : Initializing...\n", .{});
         return App{
             .io = props.io,
+            .__dev = Dev.init(),
+            .ui = _ui.Ui.init(.{}),
+            .camera = Camera.init(),
+            .loader = Loader.init(),
+            .intro = _intro.Intro.init(),
+            .settings = Settings.init(),
             .allocator = props.allocator,
             .ih = .init(props.allocator),
             .ah = _ah.AudioHandler.init(props.allocator),
@@ -90,11 +96,11 @@ pub const App = struct {
     }
 
     fn load(self: *App) void {
-        std.debug.print("App : Loading resources...\n", .{});
+        std.debug.print("App : Loading...\n", .{});
         self.ui.load();
         self.settings.load(self.io);
         self.loader.resources.load(self.io);
-        self.ah.load(self.settings.data.volume);
+        self.ah.load(self.settings.volume);
         const screen_w = @as(f32, @floatFromInt(rl.getScreenWidth()));
         const screen_h = @as(f32, @floatFromInt(rl.getScreenHeight()));
         self.camera.load(rl.Vector2.init(screen_w, screen_h).scale(0.5));
@@ -139,9 +145,8 @@ pub const App = struct {
         switch (self.state) {
             .Game => if (self.game) |*g| {
                 g.update(&self.ih);
-                const target = g.player.data.pos;
-                self.camera.update(&self.ih, target, &g.map.rect);
-                // g.map.update(&self.ih, &self.camera);
+                self.camera.update(&self.ih, g.player.pos, &g.map.rect);
+                g.map.update(&self.ih, &self.camera);
             },
             .Settings => self.settings.update(self),
             .Intro => if (self.intro) |*i| i.update(self),

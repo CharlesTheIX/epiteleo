@@ -14,6 +14,7 @@ pub const Camera = struct {
     snap_to_map: bool = true,
 
     pub fn init() Camera {
+        std.debug.print("Camera : Initializing...\n", .{});
         const zoom = Zoom.init();
         const rotation = Rotation.init();
         const movement = Movement.init(rl.Vector2.init(0, 0));
@@ -36,6 +37,7 @@ pub const Camera = struct {
     }
 
     pub fn load(self: *Camera, offset: rl.Vector2) void {
+        std.debug.print("Camera : Load...\n", .{});
         self.camera.offset = offset;
         switch (self.state) {
             .Free => {

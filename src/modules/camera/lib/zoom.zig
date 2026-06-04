@@ -11,6 +11,7 @@ pub const Zoom = struct {
     lerp_speed: f32 = 0.1,
 
     pub fn init() Zoom {
+        std.debug.print("Camera Zoom : Initializing...\n", .{});
         return .{};
     }
 

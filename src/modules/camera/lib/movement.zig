@@ -12,6 +12,7 @@ pub const Movement = struct {
     mouse_pan_active: bool = false,
 
     pub fn init(v: rl.Vector2) Movement {
+        std.debug.print("Camera Movement : Initializing...\n", .{});
         return .{ .target_position = v, .mouse_pan_start = v, .mouse_pan_target = v };
     }
 
